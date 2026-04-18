@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [agents, 색인]
+tags: [agents]
 ---
 
 # 에이전트 지침 색인

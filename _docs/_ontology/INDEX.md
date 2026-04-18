@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [ontology, 색인]
+tags: [ontology]
 ---
 
 # 온톨로지 색인

@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [readme, 소개]
+tags: [소개]
 ---
 
 [한국어](README.md) | English

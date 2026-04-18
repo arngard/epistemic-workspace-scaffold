@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [strategy, 색인]
+tags: [strategy]
 ---
 
 # 전략 색인

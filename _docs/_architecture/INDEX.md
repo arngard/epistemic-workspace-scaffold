@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [architecture, 색인]
+tags: [architecture]
 ---
 
 # 설계 명세 색인

@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [knowledge, 색인]
+tags: [knowledge]
 ---
 
 # 지식 색인

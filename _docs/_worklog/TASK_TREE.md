@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [worklog, 작업트리]
+tags: [worklog]
 ---
 
 # 작업 트리

@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [worklog, 상태]
+tags: [worklog]
 ---
 
 # 현재 상태

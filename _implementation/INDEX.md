@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [implementation, 색인]
+tags: [implementation]
 ---
 
 # 구현 프로젝트 색인
