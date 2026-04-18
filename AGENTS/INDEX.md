@@ -22,6 +22,12 @@ tags: [agents, 색인]
 |------|------|
 | [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 |
 
+## 공용 태그
+
+| 파일 | 설명 |
+|------|------|
+| [agent-tag-format.md](agent-tag-format.md) | 코드·문서에 작업자 간 메모를 남기는 공용 태그 형식 |
+
 ## 워크스페이스 조직화
 
 | 파일 | 설명 |

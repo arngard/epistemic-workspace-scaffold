@@ -64,6 +64,12 @@ tags: [에이전트, 규칙, 문서관리]
 - 제목 규칙: 파일명은 내용을 특정할 수 있어야 한다. 포괄적 이름은 금지.
 - `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 마크다운 파일은 각 INDEX에 등록한다. 하위 폴더 내 파일도 예외 없다. INDEX가 "프로젝트에 어떤 지식 문서가 존재하는가"의 single source of truth여야 한다.
 
+## 경계 (하지 말 것)
+
+- `main` 브랜치에 직접 커밋하지 않는다. 브랜치 전략은 [AGENTS/branch-strategy.md](AGENTS/branch-strategy.md) 참조.
+- `_docs/` 파일을 사람 확인 없이 삭제하거나 대폭 재편하지 않는다.
+- 코드나 문서 영역에 공용 태그(`[to:@AGENT: ...]`)가 달려 있으면 그 내용을 먼저 읽고 지시에 따른다. 형식은 [AGENTS/agent-tag-format.md](AGENTS/agent-tag-format.md) 참조. 태그가 없다고 해당 영역을 임의로 수정해도 된다는 뜻은 아니다.
+
 ## 응답 언어
 
 - 문서 작성 및 코드 주석: 한국어 기본. 에러 메시지와 public API 문서는 영문.
