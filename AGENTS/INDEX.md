@@ -28,6 +28,12 @@ tags: [agents]
 |------|------|
 | [agent-tag-format.md](agent-tag-format.md) | 코드·문서에 작업자 간 메모를 남기는 공용 태그 형식 |
 
+## 에이전트 역할
+
+| 파일 | 설명 |
+|------|------|
+| [agent-roles.md](agent-roles.md) | 서브에이전트 역할 정의 (epistemic-auditor 등). 도구 중립 정의. |
+
 ## 워크스페이스 조직화
 
 | 파일 | 설명 |

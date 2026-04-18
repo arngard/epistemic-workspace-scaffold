@@ -26,6 +26,7 @@ tags: [규칙, 문서관리]
 - [_docs/_worklog/DONE.md](_docs/_worklog/DONE.md)에 완료 항목을 추가한다. 작성 규칙은 문서 프리앰블 참조.
 - [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md)를 갱신한다. 갱신 규칙은 문서 프리앰블 참조.
 - 세션 중 새로운 관례, 규칙, 스타일이 합의되었으면 해당 내용이 AGENTS.md 또는 관련 영구 문서에 반영되었는지 확인한다.
+- 긴 세션이거나 큰 변경이 있었던 세션의 종료 전에는 epistemic-auditor 서브에이전트를 호출해 정합성 감사를 받는다. cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md).
 
 ### 새로운 사실/지식 발견 시
 - [_docs/_knowledge/INDEX.md](_docs/_knowledge/INDEX.md)(지식 색인) 또는 [_docs/_strategy/INDEX.md](_docs/_strategy/INDEX.md)(전략 색인)을 읽고, 적절한 카테고리 문서에 기록한다.
