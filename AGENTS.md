@@ -50,6 +50,7 @@ tags: [규칙, 문서관리]
 - 참고 자료/출처 표기는 `cf.` (비교/참고)와 `ref.` (출처/근거)를 사용한다.
 - 모든 .md 파일에 YAML front matter를 붙인다. 필수 필드: `date created`, `date modified`, `tags`. 날짜 형식은 `yyyy-MM-dd`. `tags`의 첫 항목은 소속 카테고리.
 - 파일명 자체가 문서의 시스템적 역할을 지시하는 고정 규격 문서(README, AGENTS, INDEX, STATUS, DONE, TASK_TREE 등)는, 그 파일명과 같은 의미의 단어가 태그에 중복되는 경우 해당 태그를 생략한다. 파일명이 콘텐츠 주제를 나타내는 일반 문서는 제목이 바뀔 수 있으므로 생략하지 않는다.
+- 도구 전용 설정 파일(`.claude/`, `.gemini/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. 위 공통 필수 필드(`date created`, `date modified`, `tags`)를 이 파일들에 강제하지 않는다.
 - **추측으로 문서를 채우지 않는다.** 논의되지 않은 내용을 확정된 것처럼 적지 않는다.
 - **예시 코드는 서술만으로 전달하기 어려운 구조에만 사용한다.** 정책이나 규칙은 서술로 충분하면 코드 블록을 두지 않는다.
 - **중복 금지.** 같은 사실/규칙/설명을 두 곳 이상에 적지 않는다. 한 사실은 한 캐논 문서에만 두고 다른 문서는 링크로 연결한다.
@@ -88,7 +89,6 @@ tags: [규칙, 문서관리]
 | [_docs/_knowledge/INDEX.md](_docs/_knowledge/INDEX.md) | 지식 색인 | 새 세션 시작 시, 문제 해결 시 |
 | [_docs/_strategy/INDEX.md](_docs/_strategy/INDEX.md) | 전략 색인 | 새 세션 시작 시, 문제 해결 시 |
 | [AGENTS/INDEX.md](AGENTS/INDEX.md) | 에이전트 지침 색인 | 에이전트 운영 방식 확인 시 |
-| [_docs/_strategy/project-overview.md](_docs/_strategy/project-overview.md) | 프로젝트 목표, 기능 범위 | 새 feature 작업 시작 전 |
 | [_docs/_architecture/INDEX.md](_docs/_architecture/INDEX.md) | 설계 명세 색인 | 새 클래스/모듈 생성 시 |
 | [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md) | 네이밍, 코딩 규약, 의존성 규칙 | 모든 코드 작성 시 |
 
