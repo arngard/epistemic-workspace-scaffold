@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-04-18
-tags: [knowledge, 프로젝트, 기능범위]
+tags: [strategy, 프로젝트, 기능범위]
 ---
 
 # Project Overview

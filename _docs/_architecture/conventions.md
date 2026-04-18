@@ -12,18 +12,4 @@ tags: [architecture, 규칙, 네이밍, 코딩규약]
 
 ## Git 규약
 
-### 브랜치 전략
-
-- `main`: 릴리즈 가능 상태 유지
-- `develop`: 통합 개발 브랜치
-- `feature/{description}`: 기능 개발
-- `fix/{description}`: 버그 수정
-- `docs/{description}`: 문서만 수정
-
-### 커밋 메시지
-
-```
-{type}({scope}): {description}
-```
-
-type: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
+→ [AGENTS/branch-strategy.md](../../AGENTS/branch-strategy.md) 참조.

@@ -30,12 +30,8 @@ tags: [에이전트, 규칙, 문서관리]
 ### 새로운 사실/지식 발견 시
 - [_docs/_knowledge/INDEX.md](_docs/_knowledge/INDEX.md)(지식 색인) 또는 [_docs/_strategy/INDEX.md](_docs/_strategy/INDEX.md)(전략 색인)을 읽고, 적절한 카테고리 문서에 기록한다.
 - 해당 카테고리가 없으면 새 파일을 만들고 색인에 등록한다.
-- 하나의 문서는 하나의 관심사를 다룬다. 두 개의 독립된 주제가 한 파일에 있으면, 줄 수와 무관하게 분리한다.
-- 단일 문서가 200줄을 넘으면 하위 주제로 분할한다.
 - 발견 일자와 출처를 반드시 명시한다.
 - 설계 문서에 반영할 내용이면 해당 문서도 함께 업데이트한다.
-- 색인만 먼저 읽고, 필요한 항목 문서만 선택적으로 연다. 전부 읽지 않는다.
-- `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 마크다운 파일은 각 INDEX에 등록한다. 하위 폴더 내 파일도 예외 없다. INDEX가 "프로젝트에 어떤 지식 문서가 존재하는가"의 single source of truth여야 한다.
 
 ## 문서 변경 시 (필수)
 
@@ -55,6 +51,18 @@ tags: [에이전트, 규칙, 문서관리]
 - **추측으로 문서를 채우지 않는다.** 논의되지 않은 내용을 확정된 것처럼 적지 않는다.
 - **예시 코드는 서술만으로 전달하기 어려운 구조에만 사용한다.** 정책이나 규칙은 서술로 충분하면 코드 블록을 두지 않는다.
 - **중복 금지.** 같은 사실/규칙/설명을 두 곳 이상에 적지 않는다. 한 사실은 한 캐논 문서에만 두고 다른 문서는 링크로 연결한다.
+- 하나의 문서는 하나의 관심사를 다룬다. 두 개의 독립된 주제가 한 파일에 있으면 분량과 무관하게 분리한다.
+- 분량 보조 지표: 한글 기준 2,000자 권장 / 3,000자 상한. 단, 위 "하나의 관심사" 원칙이 이 수치보다 앞선다 — 상한 이내여도 두 주제면 분할하고, 상한을 넘더라도 단일 주제로 응집되면 유지한다.
+- INDEX 문서는 등록 항목 증가로 자연히 길어질 수 있어 위 분량 상한을 적용하지 않는다. 다만 색인 기능(빠른 탐색)이 떨어질 만큼 길어지면 AI는 자동 분할하지 말고, 하위 카테고리 분화 등의 재편성을 사람에게 제안한다.
+
+## 색인(INDEX) 사용 규칙
+
+모든 INDEX 문서에 공통으로 적용된다. 각 INDEX는 자기 영역 고유의 규칙만 별도로 추가한다.
+
+- 읽기: 색인만 먼저 읽고, 필요한 문서만 선택적으로 연다. 전부 읽지 않는다.
+- 쓰기: 내용에 맞는 기존 문서에 추가하거나, 구체적인 제목의 새 파일을 만들고 색인에 등록한다.
+- 제목 규칙: 파일명은 내용을 특정할 수 있어야 한다. 포괄적 이름은 금지.
+- `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 마크다운 파일은 각 INDEX에 등록한다. 하위 폴더 내 파일도 예외 없다. INDEX가 "프로젝트에 어떤 지식 문서가 존재하는가"의 single source of truth여야 한다.
 
 ## 응답 언어
 
@@ -72,7 +80,7 @@ tags: [에이전트, 규칙, 문서관리]
 | [_docs/_knowledge/INDEX.md](_docs/_knowledge/INDEX.md) | 지식 색인 | 새 세션 시작 시, 문제 해결 시 |
 | [_docs/_strategy/INDEX.md](_docs/_strategy/INDEX.md) | 전략 색인 | 새 세션 시작 시, 문제 해결 시 |
 | [AGENTS/INDEX.md](AGENTS/INDEX.md) | 에이전트 지침 색인 | 에이전트 운영 방식 확인 시 |
-| [_docs/_knowledge/project-overview.md](_docs/_knowledge/project-overview.md) | 프로젝트 목표, 기능 범위 | 새 feature 작업 시작 전 |
+| [_docs/_strategy/project-overview.md](_docs/_strategy/project-overview.md) | 프로젝트 목표, 기능 범위 | 새 feature 작업 시작 전 |
 | [_docs/_architecture/INDEX.md](_docs/_architecture/INDEX.md) | 설계 명세 색인 | 새 클래스/모듈 생성 시 |
 | [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md) | 네이밍, 코딩 규약, 의존성 규칙 | 모든 코드 작성 시 |
 

@@ -31,9 +31,9 @@ tags: [worklog, 작업트리]
   - [ ] 모든 `.md` 파일의 `date created` / `date modified`를 오늘 날짜로 일괄 업데이트
     - 스캐폴드에는 생성 시점의 날짜가 박혀 있다. 복제 직후 전체를 현재 날짜로 갱신한다.
   - [ ] 이 워크스페이스의 유일한 목표 선정
-    - [_docs/_knowledge/project-overview.md](../_knowledge/project-overview.md)의 "프로젝트 목표" 섹션을 작성한다.
+    - [_docs/_strategy/project-overview.md](../_strategy/project-overview.md)의 "프로젝트 목표" 섹션을 작성한다.
   - [ ] 보조적 목표 선정
-    - [_docs/_knowledge/project-overview.md](../_knowledge/project-overview.md)의 나머지 섹션(핵심 결정사항, 첫 출시 핵심 목표/스펙, 향후 확장, 대상 고객/사용자)을 작성한다.
+    - [_docs/_strategy/project-overview.md](../_strategy/project-overview.md)의 나머지 섹션(핵심 결정사항, 첫 출시 핵심 목표/스펙, 향후 확장, 대상 고객/사용자)을 작성한다.
     - 작성 완료 후 문서 상단의 `⚠️ 스캐폴드 상태` 주의문을 삭제한다.
   - [ ] 도메인 온톨로지 정의
     - 의미가 갈릴 수 있는 핵심 용어를 식별하고 [_docs/_ontology/](../_ontology/INDEX.md)에 정의한다.

@@ -8,11 +8,7 @@ tags: [agents, 색인]
 
 > AI 에이전트 운영, 워크스페이스 관리 택틱, 도구 환경 정보.
 > 프로젝트 컨텐츠 맥락은 [_knowledge/](../_docs/_knowledge/INDEX.md)와 [_strategy/](../_docs/_strategy/INDEX.md), 설계 명세는 [_architecture/](../_docs/_architecture/INDEX.md) 참조.
-
-## 사용 규칙
-
-1. 읽기: 이 색인만 읽고, 필요한 문서만 연다. 전부 읽지 않는다.
-2. 쓰기: 내용에 맞는 기존 문서에 추가하거나, 구체적인 제목의 새 파일을 만들고 이 색인에 등록한다.
+> 공통 사용 규칙은 [AGENTS.md](../AGENTS.md)의 "색인(INDEX) 사용 규칙" 섹션 참조.
 
 ## 도구/환경
 
