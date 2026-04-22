@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-04-18
+date modified: 2026-04-22
 tags: [소개]
 ---
 
@@ -8,20 +8,22 @@ tags: [소개]
 
 # Epistemic Workspace Scaffold
 
-A workspace scaffold that partitions documentation by epistemic category. Prevents the loss of higher-level context when humans and AI work together.
+A workspace scaffold that partitions documentation by epistemic category. Prevents the loss of higher-level intent and rationale when humans and AI work together.
 
 ## The problem this workspace addresses
 
-In AI collaboration, verbal comprehension ability appears to strongly shape work outcomes. Good outcomes come from good instructions, and good instructions come from well-organized context documentation. When tacit knowledge and meta-cognition are not properly recorded, intent and direction fail to reach the concrete-level documents and designs below them. Actual workers — human or AI — often end up moving without a clear sense of why. And writing ability varies widely between individuals.
+In human-AI collaboration, it is common to jump into the code-generation-and-revision cycle without first documenting the expected outcomes. But starting this way, trial and error will end up revising the code toward those expectations anyway — and that process is not lean but a waste of tokens. Writing the expectations up front saves iteration time and tokens. Meaning transmission and token economy are not separate problems.
 
-This scaffold is an attempt to address that gap through structure. Examples of describing a system by slicing it into layers include the Zachman Framework, Domain-Driven Design, Architecture Decision Records, Aristotle's Four Causes, and Popper's Three Worlds. This scaffold chooses four categories suited to LLM collaboration and classifies design documents accordingly. In the course of organizing their writing, workers also come to clarify their own thinking.
+Ultimately, verbal comprehension ability appears to strongly shape work outcomes. Good outcomes come from good understanding, and good understanding comes from well-organized context documentation. When tacit knowledge and meta-cognition are not properly recorded, intent and direction fail to reach concrete-level designs. Actual workers — human or AI — end up moving without a clear sense of why, and this leads to wasteful iterations. Yet writing ability varies widely between individuals.
 
-- What exists
-- How the world is
-- Why we decided this way
-- How we build it
+This scaffold is an attempt to address that gap through structure. Examples of describing a system by slicing it into layers include the Zachman Framework, Domain-Driven Design, Architecture Decision Records, Aristotle's Four Causes, and Popper's Three Worlds. Tailored to the context of collaboration with AI, this scaffold classifies design documents into four categories.
 
-If harness engineering is the approach of drawing fences at the boundary between normal and abnormal to contain problems, this scaffold is designed to delegate more to workers so they can pursue the right goal themselves. It aims to be a framework that captures even high-level context in documentation without omission, while allowing only the needed parts to be retrieved efficiently.
+- Ontology: What exists
+- Knowledge: How the world is
+- Strategy: Why we decided this way
+- Architecture: How we build it
+
+If harness engineering is the approach of drawing fences at the boundary between normal and abnormal to contain problems, this scaffold takes the opposite direction. By bounding what is made explicit, it delegates the remaining free zone to workers all the more clearly — with the intent of helping them pursue the right goal. It aims to be a framework that captures even high-level context in documentation without omission, while allowing only the needed parts to be retrieved efficiently.
 
 ## Directory structure
 
@@ -37,8 +39,6 @@ If harness engineering is the approach of drawing fences at the boundary between
     ├── backend/
     └── web/
 ```
-
-The `_` prefix marks the fixed skeleton of the workspace. Items without the prefix are content that arises and changes over the project's lifetime.
 
 ## Core principles
 
