@@ -35,7 +35,9 @@ tags: [agents, 워크스페이스]
 │   ├── _knowledge/                     ← 외부 사실, 환경, 벤치마크 ("세상이 어떠한가")
 │   ├── _strategy/                      ← 우리의 결정과 근거 ("왜 이렇게 하기로 했는가")
 │   └── _architecture/                  ← 설계 명세 ("어떻게 만드는가")
-└── _implementation/                    ← 프로젝트
+└── _implementation/                    ← 구현 프로젝트들 (프로젝트마다 하위 폴더)
+    ├── <project-A>/                    ← 각 프로젝트의 실제 소스 (또는 서브모듈 포인터 등)
+    └── <project-B>/
 ```
 
 `_docs/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 참조.
