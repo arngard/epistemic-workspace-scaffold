@@ -44,7 +44,7 @@ If harness engineering is the approach of drawing fences at the boundary between
 
 - Distinguish speculation from what is settled: do not write undiscussed content as if it were decided. When an AI agent lacks the necessary information, it asks the human rather than filling in arbitrarily.
 - Small documents + INDEX: read the index first and open only what is needed. Saves tokens; also less taxing for humans to read.
-- No duplication / SSOT: keep the same fact in one place; other documents link to it.
+- No duplication / SSOT (single source of truth): keep the same fact in one place; other documents link to it.
 - Single entry point AGENTS.md: tool-specific auto-loaded files (Claude, Gemini, Copilot, Kiro, etc.) contain only pointers; the body of the guidance lives in AGENTS.md alone.
 - Division of labor between documentation and code: `_docs/` holds only what cannot be expressed in code. Interfaces, types, and error contracts are specified by the code itself.
 
