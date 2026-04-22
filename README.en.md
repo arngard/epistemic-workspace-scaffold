@@ -8,13 +8,13 @@ tags: [소개]
 
 # Epistemic Workspace Scaffold
 
-A workspace scaffold that partitions documentation by epistemic category. Prevents the loss of higher-level intent and rationale when humans and AI work together.
+A workspace scaffold that partitions documentation by epistemic category. Keeps higher-level intent and rationale from getting lost when humans and AI work together.
 
 ## The problem this workspace addresses
 
-In human-AI collaboration, it is common to jump into the code-generation-and-revision cycle without first documenting the expected outcomes. But starting this way, trial and error will end up revising the code toward those expectations anyway — and that process is not lean but a waste of tokens. Writing the expectations up front saves iteration time and tokens. Meaning transmission and token economy are not separate problems.
+In human-AI collaboration, it is common to jump into the code-generation-and-revision cycle without first documenting the expected outcomes. But starting this way, you'll end up revising the code toward those expectations through trial and error anyway — and that process is not lean but a waste of tokens. Writing the expectations up front saves iteration time and tokens. Getting meaning across and spending tokens well are the same problem.
 
-Ultimately, verbal comprehension ability appears to strongly shape work outcomes. Good outcomes come from good understanding, and good understanding comes from well-organized context documentation. When tacit knowledge and meta-cognition are not properly recorded, intent and direction fail to reach concrete-level designs. Actual workers — human or AI — end up moving without a clear sense of why, and this leads to wasteful iterations. Yet writing ability varies widely between individuals.
+Ultimately, verbal comprehension appears to be decisive for work outcomes. Good outcomes come from good understanding, and good understanding comes from well-organized context documentation. When tacit knowledge and meta-cognition are not properly recorded, the intent and direction don't propagate to the implementation-level design. Actual workers — human or AI — end up moving without a clear sense of why, and this leads to wasteful iterations. Yet writing ability varies widely between individuals.
 
 This scaffold is an attempt to address that gap through structure. Examples of describing a system by slicing it into layers include the Zachman Framework, Domain-Driven Design, Architecture Decision Records, Aristotle's Four Causes, and Popper's Three Worlds. Tailored to the context of collaboration with AI, this scaffold classifies design documents into four categories.
 
@@ -23,7 +23,7 @@ This scaffold is an attempt to address that gap through structure. Examples of d
 - Strategy: Why we decided this way
 - Architecture: How we build it
 
-If harness engineering is the approach of drawing fences at the boundary between normal and abnormal to contain problems, this scaffold takes the opposite direction. By bounding what is made explicit, it delegates the remaining free zone to workers all the more clearly — with the intent of helping them pursue the right goal. It aims to be a framework that captures even high-level context in documentation without omission, while allowing only the needed parts to be retrieved efficiently.
+If harness engineering is the approach of drawing fences at the boundary between normal and abnormal to contain problems, this scaffold takes the opposite direction. By keeping explicit expectations narrow, it actually hands the surrounding latitude to workers more clearly — with the intent of helping them pursue the right goal. It aims to be a framework that keeps even the high-level context on paper, while letting you pull up only what you need.
 
 ## Directory structure
 
