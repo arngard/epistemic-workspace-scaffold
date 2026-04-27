@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-19
 date modified: 2026-04-22
-tags: [에이전트, 역할]
+tags: [agents, 역할]
 ---
 
 # 서브에이전트 역할 정의
