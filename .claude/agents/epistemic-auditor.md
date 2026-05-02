@@ -20,6 +20,7 @@ model: sonnet
 2. INDEX와 실제 파일의 일치
    - `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 `.md` 파일이 각 INDEX에 등록되어 있는가
    - INDEX에 등록된 파일이 실제로 존재하는가
+   - `_reference/INDEX.md`의 인벤토리가 `_reference/` 폴더 실제 내용과 일치하는가 (양방향: INDEX에 있으나 폴더에 없음 / 폴더에 있으나 INDEX에 없음)
    - 명시적인 sub-INDEX 예외(부모 INDEX 본문에서 "이 하위는 sub-INDEX가 관리한다"고 선언한 경우)는 위반으로 보지 않되, 그 sub-INDEX 자체의 등록 정합성은 점검한다.
 3. 문서 규약 준수
    - 모든 `.md` 파일에 YAML front matter(`date created`, `date modified`, `tags`)가 있는가
@@ -42,7 +43,7 @@ model: sonnet
 
 1. `AGENTS.md`의 "필수 참조 문서" 표를 먼저 읽고 프로젝트 구조를 파악한다.
 2. `git log --oneline -20` 등으로 최근 커밋을 확인해 STATUS.md/DONE.md가 정합한지 비교한다.
-3. 각 `_docs/*/INDEX.md`를 읽고 Glob으로 실제 파일 목록을 받아 대조한다. sub-INDEX 예외 선언이 있으면 그 sub-INDEX도 함께 읽는다.
+3. 각 `_docs/*/INDEX.md`를 읽고 Glob으로 실제 파일 목록을 받아 대조한다. sub-INDEX 예외 선언이 있으면 그 sub-INDEX도 함께 읽는다. `_reference/INDEX.md`도 같은 방식으로 폴더 실제 내용과 대조한다.
 4. Grep으로 front matter 패턴(`^---$`)을 전체 스캔해 누락을 찾는다.
 5. [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md)를 읽고 4범주 정의를 정확히 확인한 뒤, 각 `_docs/_X/` 폴더의 파일 본문 또는 INDEX 등록 설명을 훑어 카테고리 부합 여부를 점검한다. 본문 전체를 다 읽지 않아도 좋다 — 첫 단락과 INDEX 등록 설명만으로 의미가 어느 카테고리에 가까운지 판정 가능한 경우가 많다. 판정이 불확실하면 본문을 더 읽고, 그래도 모호하면 [확실하지 않음]으로 처리한다.
 6. 스캔이 끝나면 위반 항목을 번호 매겨 보고한다.

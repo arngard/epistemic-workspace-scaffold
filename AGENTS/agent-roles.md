@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-19
-date modified: 2026-04-22
+date modified: 2026-05-03
 tags: [agents, 역할]
 ---
 
@@ -24,23 +24,31 @@ tags: [agents, 역할]
 
 ### 점검 항목
 
-- _worklog/ 문서의 최신성
-  - STATUS.md가 현재 git HEAD와 실제 작업 상태를 반영하는가
-  - DONE.md에 최근 커밋·완료 항목이 기록되어 있는가
-  - TASK_TREE.md의 체크박스가 현실을 반영하는가
-- INDEX와 실제 파일의 일치
-  - `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 .md 파일이 각 INDEX에 등록되어 있는가
-  - INDEX에 등록된 파일이 실제로 존재하는가
-- 문서 규약 준수
-  - 모든 .md 파일에 YAML front matter(date created, date modified, tags)가 있는가
-  - 단일 문서가 3,000자 상한을 명확히 초과하면서 여러 관심사가 섞여 있는가
-  - 고정 규격 문서(README, AGENTS, INDEX 등)의 태그 중복 규칙 위반 여부
-  - `sample-*.md` 튜토리얼 샘플이 실제 콘텐츠로 교체되었다면 "스캐폴드 상태" 주의문이 제거됐는가
-- 링크 정합성
-  - 문서 간 마크다운 링크가 깨진 경로를 가리키지 않는가
+1. _worklog/ 문서의 최신성
+   - STATUS.md가 현재 git HEAD와 실제 작업 상태를 반영하는가
+   - DONE.md에 최근 커밋·완료 항목이 기록되어 있는가
+   - TASK_TREE.md의 체크박스가 현실을 반영하는가
+2. INDEX와 실제 파일의 일치
+   - `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 .md 파일이 각 INDEX에 등록되어 있는가
+   - INDEX에 등록된 파일이 실제로 존재하는가
+   - `_reference/INDEX.md`의 인벤토리가 `_reference/` 폴더 실제 내용과 일치하는가 (양방향: INDEX에 있으나 폴더에 없음 / 폴더에 있으나 INDEX에 없음)
+   - 명시적인 sub-INDEX 예외(부모 INDEX 본문에서 "이 하위는 sub-INDEX가 관리한다"고 선언한 경우)는 위반으로 보지 않되, 그 sub-INDEX 자체의 등록 정합성은 점검한다
+3. 문서 규약 준수
+   - 모든 .md 파일에 YAML front matter(date created, date modified, tags)가 있는가. 도구 전용 진입점 파일(CLAUDE.md, .gemini/, .github/ 등)은 면제
+   - 단일 문서가 한글 기준 3,000자 상한을 명확히 초과하면서 여러 관심사가 섞여 있는가
+   - 고정 규격 문서(README, AGENTS, INDEX 등)의 태그 중복 규칙 위반 여부
+   - `sample-*.md` 튜토리얼 샘플이 실제 콘텐츠로 교체되었다면 "스캐폴드 상태" 주의문이 제거됐는가
+4. 링크 정합성
+   - 문서 간 마크다운 링크가 깨진 경로를 가리키지 않는가
+5. 카테고리 배치 적절성 (의미 판단)
+   - 각 `_docs/_X/` 안의 문서가 그 카테고리의 정의에 부합하는가
+   - 판별 규칙은 [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) "판별 규칙"을 그대로 적용한다
+   - 의심 사례마다 (1) 현재 위치, (2) 제안 위치, (3) 그 카테고리 정의의 어느 조항에 해당하는지를 함께 보고한다
+   - 의미 판단이 들어가므로 형식 점검(1~4)보다 신뢰도가 낮다. 모호한 사례는 "확실하지 않음"으로 처리
 
 ### 호출 시점
 
+- 새 세션 시작 시 STATUS.md "마지막 정합성 감사" 시각이 12시간 초과면 본 작업 시작 전에 자동 호출 (cf. [../AGENTS.md](../AGENTS.md) "새 세션 시작 시" 3번). 메인 에이전트가 호출 후 STATUS.md의 시각 필드를 새로 기록한다.
 - 긴 세션 종료 전, 큰 변경 후
 - 사용자가 정합성 의심 시
 - 주기적 점검 (별도 세션으로 사용자가 수동 호출)
