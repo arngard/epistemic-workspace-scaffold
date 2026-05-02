@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-04-22
+date modified: 2026-05-03
 tags: [소개]
 ---
 
@@ -35,6 +35,7 @@ tags: [소개]
 │   ├── _knowledge/        ← 외부 사실
 │   ├── _strategy/         ← 결정과 근거
 │   └── _architecture/     ← 설계 명세
+├── _reference/        ← 사용자가 dump한 raw 자료의 immutable 보관 영역
 └── _implementation/   ← 구현체 코드
     ├── backend/
     └── web/

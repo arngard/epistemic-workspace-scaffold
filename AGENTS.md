@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-04-22
+date modified: 2026-05-03
 tags: [규칙, 문서관리]
 ---
 
@@ -13,8 +13,12 @@ tags: [규칙, 문서관리]
 
 1. 이 파일을 읽는다.
 2. [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)를 읽고 현재 작업 상태와 다음 할 일을 파악한다.
-3. 작업 범위에 해당하는 `_docs/` 문서를 읽는다 (아래 참조 테이블 기준).
-4. 코드 생성/수정 전에는 관련 문서의 기존 결정과 충돌이 없는지 확인한다.
+3. STATUS.md의 "마지막 정합성 감사" 시각이 12시간 초과면 본 작업 시작 전에 epistemic-auditor 서브에이전트를 호출한다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)). 보고된 위반은 정리하거나 사용자에게 짚은 뒤 STATUS.md의 시각 필드를 새로 기록한다.
+4. [`_reference/`](_reference/README.md) 폴더의 미처리 항목을 [_docs/_architecture/ingest-workflow.md](_docs/_architecture/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 점검한다. 미처리 항목이 있으면 그 내용에 따라 통합하거나 사용자에게 처리 방향을 묻는다.
+5. 작업 범위에 해당하는 `_docs/` 문서를 읽는다 (아래 참조 테이블 기준).
+6. 코드 생성/수정 전에는 관련 문서의 기존 결정과 충돌이 없는지 확인한다.
+
+새 정보(사실·의견·예측·결정·자료)가 세션 중 들어오면 [_docs/_architecture/ingest-workflow.md](_docs/_architecture/ingest-workflow.md)의 표준 시퀀스를 따른다.
 
 ## 단위 작업 시작/종료 시 (필수)
 

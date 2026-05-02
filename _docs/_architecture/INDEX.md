@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-04-18
+date modified: 2026-05-03
 tags: [architecture]
 ---
 
@@ -24,6 +24,12 @@ tags: [architecture]
 |------|------|
 | [core-constraints.md](core-constraints.md) | 설계 원칙 및 핵심 제약. 스캐폴드 상태 — 제약 목록 작성 필요. |
 | [conventions.md](conventions.md) | 코딩 규약 (현재는 Git 규약만). 스캐폴드 상태 — 프로젝트 고유 규약 확장 필요. |
+
+### 운영 절차
+
+| 파일 | 설명 |
+|------|------|
+| [ingest-workflow.md](ingest-workflow.md) | 새 사실·의견·예측·결정·자료가 들어올 때의 표준 시퀀스. contradiction flagging, `_reference/` 처리, 빠뜨림 방지 자체 점검 포함. |
 
 ### 구조/모듈
 

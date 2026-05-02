@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-04-22
+date modified: 2026-05-03
 tags: [소개]
 ---
 
@@ -35,6 +35,7 @@ If harness engineering is the approach of drawing fences at the boundary between
 │   ├── _knowledge/        ← External facts
 │   ├── _strategy/         ← Decisions and rationale
 │   └── _architecture/     ← Design specifications
+├── _reference/        ← Immutable raw materials dumped by the user
 └── _implementation/   ← Implementation code
     ├── backend/
     └── web/
