@@ -45,25 +45,29 @@ tags: [architecture, 절차, ingest]
 
 ## `_reference/` 폴더 처리
 
-`_reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). cf. [`_reference/README.md`](../../_reference/README.md).
+`_reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). cf. [`_reference/INDEX.md`](../../_reference/INDEX.md).
 
 ### 처리 여부 식별
 
-별도 처리 로그 파일은 두지 않는다. 워크스페이스 본문 어디든 그 파일 경로(`_reference/<file>`)를 reference로 적었는지를 SSOT로 본다.
+[`_reference/INDEX.md`](../../_reference/INDEX.md)가 인벤토리이자 처리 진척의 SSOT다. 별도 처리 로그 파일은 두지 않는다.
 
 세션 시작 시 또는 작업 중 트리거가 있을 때:
 
 1. `_reference/` 내용 listing.
-2. 각 파일에 대해 워크스페이스 본문에서 그 파일 경로 reference 검색 (Grep).
-3. Reference가 없으면 "미처리". 있으면 "처리됨" (참조 자체가 derived 노드의 존재 증거).
+2. 본 INDEX와 대조.
+3. 폴더에는 있지만 INDEX에 없으면 신규 미처리 자료. INDEX에 등재하고 처리 절차 시작.
+4. INDEX에 있으나 폴더에는 없으면 raw 자료가 사라진 것. 사용자에게 짚는다.
+5. INDEX 상태 컬럼이 `처리 대기`인 항목은 처리 절차 진행 또는 사용자에게 우선순위 확인.
+
+보조 검증으로 본문에서 `_reference/<file>` 경로를 grep해 derived 노드의 존재를 교차 확인할 수 있다 (INDEX 상태와 실제 cross-reference의 일치 점검).
 
 ### 미처리 항목 처리
 
 미처리 항목 발견 시:
 
 1. 자료 내용을 읽고 어떤 카테고리·노드에 통합할지 판단.
-2. 명확하면 위 표준 시퀀스로 통합 후 derived 노드에 raw 파일 경로를 reference로 명시 (`cf. _reference/<file>`).
-3. 모호하거나 사용자 의도가 불분명하면 사용자에게 의견을 묻는다.
+2. 명확하면 위 표준 시퀀스로 통합 후 derived 노드에 raw 파일 경로를 reference로 명시 (`cf. _reference/<file>`). INDEX 상태를 `처리됨`으로 갱신하고 derived 노드 링크를 함께 적는다.
+3. 모호하거나 사용자 의도가 불분명하면 INDEX 상태를 `사용자 의견 필요`로 두고 사용자에게 의견을 묻는다.
 
 ### Raw 자료 자체는 immutable
 
@@ -78,4 +82,4 @@ tags: [architecture, 절차, ingest]
 - [AGENTS.md](../../AGENTS.md) "새 세션 시작 시" — 본 워크플로의 트리거 위치
 - [AGENTS.md](../../AGENTS.md) "문서 작성 스타일" — 사실/의견 주체 분리 원칙
 - [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) — 카테고리 판별 규칙
-- [`_reference/README.md`](../../_reference/README.md) — raw 자료 보관 영역
+- [`_reference/INDEX.md`](../../_reference/INDEX.md) — raw 자료 보관 영역의 인벤토리 + 처리 상태

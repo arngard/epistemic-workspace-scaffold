@@ -14,7 +14,7 @@ tags: [규칙, 문서관리]
 1. 이 파일을 읽는다.
 2. [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)를 읽고 현재 작업 상태와 다음 할 일을 파악한다.
 3. STATUS.md의 "마지막 정합성 감사" 시각이 12시간 초과면 본 작업 시작 전에 epistemic-auditor 서브에이전트를 호출한다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)). 보고된 위반은 정리하거나 사용자에게 짚은 뒤 STATUS.md의 시각 필드를 새로 기록한다.
-4. [`_reference/`](_reference/README.md) 폴더의 미처리 항목을 [_docs/_architecture/ingest-workflow.md](_docs/_architecture/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 점검한다. 미처리 항목이 있으면 그 내용에 따라 통합하거나 사용자에게 처리 방향을 묻는다.
+4. [`_reference/INDEX.md`](_reference/INDEX.md)를 읽고 폴더 실제 내용과 대조한다. 인벤토리·실제 불일치 또는 `처리 대기`/`사용자 의견 필요` 항목이 있으면 [_docs/_architecture/ingest-workflow.md](_docs/_architecture/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 진행한다.
 5. 작업 범위에 해당하는 `_docs/` 문서를 읽는다 (아래 참조 테이블 기준).
 6. 코드 생성/수정 전에는 관련 문서의 기존 결정과 충돌이 없는지 확인한다.
 
@@ -113,6 +113,7 @@ tags: [규칙, 문서관리]
 | [AGENTS/INDEX.md](AGENTS/INDEX.md) | 에이전트 지침 색인 | 에이전트 운영 방식 확인 시 |
 | [_docs/_architecture/INDEX.md](_docs/_architecture/INDEX.md) | 설계 명세 색인 | 새 클래스/모듈 생성 시 |
 | [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md) | 네이밍, 코딩 규약, 의존성 규칙 | 모든 코드 작성 시 |
+| [_reference/INDEX.md](_reference/INDEX.md) | raw 자료 인벤토리 + 처리 상태 | 매 세션 시작 시 (4단계와 함께) |
 
 ## 핵심 제약
 
