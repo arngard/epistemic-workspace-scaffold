@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-03
+date modified: 2026-05-08
 tags: [규칙, 문서관리]
 ---
 
@@ -29,6 +29,7 @@ tags: [규칙, 문서관리]
 - [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)를 갱신한다. 갱신 규칙은 문서 프리앰블 참조.
 - [_docs/_worklog/DONE.md](_docs/_worklog/DONE.md)에 완료 항목을 추가한다. 작성 규칙은 문서 프리앰블 참조.
 - [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md)를 갱신한다. 갱신 규칙은 문서 프리앰블 참조.
+- TASK_TREE.md에 완결된 루트 노드가 있으면 사용자에게 커밋을 제안한다. 사용자가 승인하면 같은 커밋에 완결 루트를 트리에서 제거 + DONE.md에 이력. 갱신 규칙은 [TASK_TREE.md](_docs/_worklog/TASK_TREE.md) 프리앰블 참조.
 - 세션 중 새로운 관례, 규칙, 스타일이 합의되었으면 해당 내용이 AGENTS.md 또는 관련 영구 문서에 반영되었는지 확인한다.
 - 긴 세션이거나 큰 변경이 있었던 세션의 종료 전에는 epistemic-auditor 서브에이전트를 호출해 문서 정합성 감사를 받는다. cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md).
 
