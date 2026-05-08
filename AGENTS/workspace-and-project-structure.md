@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-03
+date modified: 2026-05-09
 tags: [agents, 워크스페이스]
 ---
 
@@ -42,6 +42,8 @@ tags: [agents, 워크스페이스]
 ```
 
 `_docs/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 참조. `_reference/` 운용은 [`../_reference/INDEX.md`](../_reference/INDEX.md)와 [`../_docs/_architecture/ingest-workflow.md`](../_docs/_architecture/ingest-workflow.md) 참조.
+
+워크스페이스 안의 단위 작업(자료 N건 묶음 ingest 라운드, 메타 결정 라운드, 큰 마이그레이션 등)은 진입·진행·종료 흐름이 정해져 있다. 단위 작업 시작 시 어떤 절차를 거쳐야 하는지는 [unit-work-workflow.md](unit-work-workflow.md) 참조. 워크로그(`_docs/_worklog/`)의 STATUS·TASK_TREE·DONE는 그 흐름의 진입·종료 시점에서 갱신되는 운영 메타다.
 
 ## 문서와 코드의 역할 분담
 

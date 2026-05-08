@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-04-18
+date modified: 2026-05-09
 tags: [agents, git, 브랜치]
 ---
 
@@ -13,6 +13,8 @@ tags: [agents, git, 브랜치]
 - 장기 브랜치: `main` 하나만 유지
 - feature branch는 수명을 짧게 가져가고 PR을 통해 main에 머지
 - release branch는 릴리스 시점에 main에서 분기 (필요 시)
+
+브랜치는 단위 작업 단위로 따며 라운드 진입·진행·종료의 전체 흐름은 [unit-work-workflow.md](unit-work-workflow.md) 참조.
 
 ## 브랜치 네이밍 룰
 
