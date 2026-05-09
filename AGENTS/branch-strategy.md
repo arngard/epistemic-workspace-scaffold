@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-09
+date modified: 2026-05-10
 tags: [agents, git, 브랜치]
 ---
 
@@ -14,7 +14,7 @@ tags: [agents, git, 브랜치]
 - feature branch는 수명을 짧게 가져가고 PR을 통해 main에 머지
 - release branch는 릴리스 시점에 main에서 분기 (필요 시)
 
-브랜치는 단위 작업 단위로 따며 라운드 진입·진행·종료의 전체 흐름은 [unit-work-workflow.md](unit-work-workflow.md) 참조.
+브랜치는 단위 작업 단위로 따며 단위 작업의 진입·진행·종료 전체 흐름은 [unit-work-workflow.md](unit-work-workflow.md) 참조. 단위 작업의 정의는 [_docs/_ontology/unit-work.md](../_docs/_ontology/unit-work.md) — 의미적으로 atomic한 작업 단위, 작업 트리 한 노드에 대응. TBD에서는 보통 메인 머지 1회 = 브랜치 1개.
 
 ## 브랜치 네이밍 룰
 
