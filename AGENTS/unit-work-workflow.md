@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-05-09
+date modified: 2026-05-10
 tags: [agents, 워크스페이스, 운영]
 ---
 
@@ -37,10 +37,14 @@ tags: [agents, 워크스페이스, 운영]
 
 순서를 지킨다.
 
-1. **마무리 commit**: 작업 마지막 정리(미캡처 보강·표준 패턴 추가 학습 사항 반영·STATUS 마지막 작업 일시 갱신 등)를 담은 commit.
+1. **마무리 commit**: 작업 마지막 정리(미캡처 보강·표준 패턴 추가 학습 사항 반영·STATUS 마지막 작업 일시 갱신 등)를 담은 commit. 이 시점까지의 모든 작업은 작업 브랜치에만 있고 main에는 아직 반영되지 않은 상태.
 2. **TASK_TREE 정리 + DONE 이력화**: 라운드 루트 노드의 모든 자식이 완료(`[x]` 또는 `[-]`)됐으면 [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md) 갱신 규칙대로 트리에서 제거하고 [DONE.md](../_docs/_worklog/DONE.md)에 이력 기록. 트리에는 활성·대기 작업만 남긴다.
-3. **main 머지**: `git checkout main && git merge <branch> --no-ff`. `--no-ff`로 단위 작업 단위 머지 commit이 명시적으로 git log에 남도록.
-4. **푸시·정리**: `git push origin main` + 작업 브랜치 삭제 (`git branch -d <branch>` + 원격에도 push했다면 `git push origin --delete <branch>`).
+3. **사용자 검토 통과**: 변경 요약(브랜치명·변경 파일 수·핵심 변경 한 단락 + 짚어둘 점)을 사용자에게 보고하고 결정 신호를 받는다. AI 자율 판단으로 머지하지 않는다.
+   - 사용자 결정 갈래: (a) OK·머지 진행 / (b) 추가 정정 (어느 부분을 어떻게 정정할지 명시 받고 추가 commit으로 처리 후 다시 본 단계 반복) / (c) 롤백 (브랜치 폐기).
+   - "사용자 검토 통과" 시그널은 명시적이어야 한다. 사용자가 침묵하거나 다음 작업을 시작하는 것을 OK로 추론하지 않는다.
+   - 단발 작업·메타 정정 한 줄·오탈자 같이 이 흐름 자체를 적용하지 않는 작은 변경은 본 단계도 면제 (cf. "단발 작업과의 경계").
+4. **main 머지**: `git checkout main && git merge <branch> --no-ff`. `--no-ff`로 단위 작업 단위 머지 commit이 명시적으로 git log에 남도록. 머지 commit message는 `Merge <branch>: <라운드 요약> (사용자 검토 통과)` 형태가 권장 — git log에서 자율 머지/검토 머지 구분 가능.
+5. **푸시·정리**: `git push origin main` + 작업 브랜치 삭제 (`git branch -d <branch>` + 원격에도 push했다면 `git push origin --delete <branch>`).
 
 ## 단발 작업과의 경계
 
