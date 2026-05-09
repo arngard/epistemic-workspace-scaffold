@@ -38,10 +38,10 @@ model: sonnet
      - 바꾸면 실제 코드/빌드/배포 또는 운영 절차 명세가 달라지는가 → `_architecture/`
    - 한 문서가 두 카테고리에 걸치면 SSOT 분리 원칙(같은 문서의 "교차 링크" 절)에 따라 한 곳을 주(主) 위치로 정하고 나머지는 링크로 분리 가능한지 검토한다. 분리 불가 또는 어느 쪽이 주인지 모호하면 [확실하지 않음] 태그로 보고한다.
    - 의심 사례마다 (1) 현재 위치, (2) 제안 위치, (3) 그 카테고리 정의의 어느 조항에 해당하는지를 함께 보고한다.
-6. **행동 양상 감사** (직전 N개 단위 작업의 행동 패턴) — 단위 작업 정의는 [_docs/_ontology/unit-work.md](../../_docs/_ontology/unit-work.md). 단위 작업은 commit·브랜치 단위가 아니라 **의미 atomic 단위**이므로, 직후 정정 commit은 같은 단위 작업 안의 일부로 본다.
+6. **행동 양상 감사** (직전 N개 단위 작업의 행동 패턴) — 단위 작업 정의는 [_docs/_ontology/unit-task.md](../../_docs/_ontology/unit-task.md). 단위 작업은 commit·브랜치 단위가 아니라 **의미 atomic 단위**이므로, 직후 정정 commit은 같은 단위 작업 안의 일부로 본다.
    - 입력: 직전 7~10개 단위 작업 분량의 `git log --oneline --merges -30` + `DONE.md`의 최근 항목들 + STATUS·TASK_TREE의 활성·후속 항목 (세션 transcript는 입력에 포함하지 않는다 — 비용 회피).
    - 다음 패턴들을 검출한다:
-     - **자율 머지 패턴**: 단위 작업 시작 commit과 `Merge <branch>` commit 사이에 "사용자 검토 통과" 시그널이 commit message·DONE.md·머지 commit 안에 명시되지 않은 사례. cf. [unit-work-workflow.md](../../AGENTS/unit-work-workflow.md) "종료 흐름 3".
+     - **자율 머지 패턴**: 단위 작업 시작 commit과 `Merge <branch>` commit 사이에 "사용자 검토 통과" 시그널이 commit message·DONE.md·머지 commit 안에 명시되지 않은 사례. cf. [unit-task-workflow.md](../../AGENTS/unit-task-workflow.md) "종료 흐름 3".
      - **잘못된 이해 누적·반복 정정 패턴**: 직전 단위 작업의 commit을 직후 단위 작업에서 "정정/되돌림" 키워드(commit message·DONE 본문)로 되돌리는 사례. 같은 슬러그·파일에 단기간 여러 단위 작업이 반복되는 패턴.
      - **자율 격상 패턴**: 사용자 결정 영역(채택·격상·운영 정책 변경 등)에 AI가 자의로 박은 흔적. DONE.md 본문에서 "자율로 박았다 → 사용자 정정으로 제거"가 보이는 사례.
      - **격리 위반 패턴**: 자식 워크스페이스 안에서 부모 메타 결정·메타 작업 로그를 박은 사례. 자식 측 git log + 부모 scaffold-management UPGRADING.md의 변경 노트와의 정합 확인.

@@ -4,7 +4,7 @@ date modified: 2026-05-10
 tags: [ontology, 단위 작업]
 ---
 
-# 단위 작업 (unit work)
+# 단위 작업 (unit task)
 
 ## 정의
 
@@ -18,7 +18,7 @@ tags: [ontology, 단위 작업]
 
 작업 트리는 깊이를 가진다. 단위 작업도 그에 따라 재귀적으로 쪼개진다.
 
-- 1뎁스에서 보면 큰 단위 작업 (예: "사용자 공유 영상 3건 ingest 라운드")
+- 1뎁스에서 보면 큰 단위 작업 (예: "사용자 공유 영상 3건 ingest")
 - 그 자식 노드가 더 세부적 단위 작업 (예: 영상 1건 ingest)
 
 어느 깊이를 단위 작업으로 볼지는 작업 트리의 어느 노드에 풀 리퀘스트(또는 메인 머지)를 묶는가의 문제다.
@@ -44,5 +44,5 @@ TBD 환경에서는 단위 작업과 작업 트리 노드의 대응이 규격상
 ## 관련 문서
 
 - [TASK_TREE.md](../_worklog/TASK_TREE.md) — 작업 트리 본체.
-- [AGENTS/unit-work-workflow.md](../../AGENTS/unit-work-workflow.md) — 단위 작업의 진입·진행·종료 흐름.
+- [AGENTS/unit-task-workflow.md](../../AGENTS/unit-task-workflow.md) — 단위 작업의 진입·진행·종료 흐름.
 - [AGENTS/branch-strategy.md](../../AGENTS/branch-strategy.md) — 브랜치 네이밍·운영 모델 (TBD 기준).

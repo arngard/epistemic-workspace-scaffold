@@ -36,4 +36,4 @@ tags: [ontology]
 | 파일 | 설명 |
 |------|------|
 | [sample-term.md](sample-term.md) | (튜토리얼용 샘플) 용어 정의 문서의 위치/형식을 보여주는 예시. 실제 작성 시 삭제·교체. |
-| [unit-work.md](unit-work.md) | 단위 작업 — 의미적으로 atomic한 작업 단위. 작업 트리 한 노드에 대응. TBD에서는 보통 메인 머지 1회 = 브랜치 1개. |
+| [unit-task.md](unit-task.md) | 단위 작업 — 의미적으로 atomic한 작업 단위. 작업 트리 한 노드에 대응. TBD에서는 보통 메인 머지 1회 = 브랜치 1개. |

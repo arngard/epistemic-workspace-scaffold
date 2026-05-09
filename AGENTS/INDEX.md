@@ -21,7 +21,7 @@ tags: [agents]
 | 파일 | 설명 |
 |------|------|
 | [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 |
-| [unit-work-workflow.md](unit-work-workflow.md) | 단위 작업 운영 흐름 (브랜치·워크로그·시작점 commit·**사용자 검토 통과**·머지·정리) |
+| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 흐름 (브랜치·워크로그·시작점 commit·**사용자 검토 통과**·머지·정리) |
 
 ## 공용 태그
 

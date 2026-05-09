@@ -8,7 +8,7 @@ tags: [agents, 워크스페이스, 운영]
 
 ## 단위 작업이란
 
-용어 정의는 [_docs/_ontology/unit-work.md](../_docs/_ontology/unit-work.md) 참조 — 의미적으로 atomic한 작업 단위, 작업 트리 한 노드에 대응. 본 문서는 그 단위 작업의 운영 흐름을 다룬다.
+용어 정의는 [_docs/_ontology/unit-task.md](../_docs/_ontology/unit-task.md) 참조 — 의미적으로 atomic한 작업 단위, 작업 트리 한 노드에 대응. 본 문서는 그 단위 작업의 운영 흐름을 다룬다.
 
 다음 중 하나에 해당하면 단위 작업으로 다룬다 (cf. ontology 정의 — 의미 atomic 단위):
 
@@ -26,7 +26,7 @@ tags: [agents, 워크스페이스, 운영]
 
 순서를 지킨다. 한 단계도 건너뛰지 않는다.
 
-1. **작업 트리 점검·노드 결정**: 새 작업 시작 전 [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)를 보고 어느 노드에 대한 작업인지 정한다. 노드가 없으면 신설. 단위 작업 깊이를 정함 — 그 노드를 통째로 한 단위 작업으로 잡을지, 자식들을 별도 단위 작업으로 쪼갤지 결정. TBD 환경에서는 어느 노드에 대한 브랜치인지가 브랜치명만으로는 결정 안 되므로 본 단계가 누락되면 단위 작업의 의미 단위가 흐려진다 (cf. [_docs/_ontology/unit-work.md](../_docs/_ontology/unit-work.md) "운영 권장").
+1. **작업 트리 점검·노드 결정**: 새 작업 시작 전 [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)를 보고 어느 노드에 대한 작업인지 정한다. 노드가 없으면 신설. 단위 작업 깊이를 정함 — 그 노드를 통째로 한 단위 작업으로 잡을지, 자식들을 별도 단위 작업으로 쪼갤지 결정. TBD 환경에서는 어느 노드에 대한 브랜치인지가 브랜치명만으로는 결정 안 되므로 본 단계가 누락되면 단위 작업의 의미 단위가 흐려진다 (cf. [_docs/_ontology/unit-task.md](../_docs/_ontology/unit-task.md) "운영 권장").
 2. **작업 브랜치 생성** (cf. [branch-strategy.md](branch-strategy.md)): `<type>/YYMMDD-<짧은-설명>` 형식. 1단계에서 결정된 단위 작업의 슬러그를 짧은 설명으로 사용. 단위 작업마다 격리된 commit 라인을 확보 — 도중 컨텍스트 압축·세션 끊김이 일어나도 작업 라인 추적이 깔끔하다.
 3. **워크로그 등재**: `_docs/_worklog/STATUS.md`의 "현재 단계" 갱신 (작업 내용 + 시작 일시). `TASK_TREE.md`의 해당 노드를 진행 중(`[/]`)으로 표시. 1단계에서 신설한 노드면 자식들도 같이 등재. STATUS·TASK_TREE는 다음 세션 진입자가 작업 컨텍스트를 복원하는 1차 입구다.
 4. **시작점 commit**: 워크로그 등재만 담은 commit으로 작업 시작점을 git log에 마킹. `--allow-empty` 라도 만들어 두면 작업 브랜치 base와 첫 실작업 사이에 명확한 anchor가 생긴다. (워크로그 변경이 있으면 그걸 포함, 없으면 빈 commit.)
