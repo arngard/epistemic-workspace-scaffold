@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-05-11 (PR 운영 절 신설 — 본문 형식·속성·리뷰 코멘트 응답·명시적 멘션)
+date modified: 2026-05-11 (종료 흐름 6단계 신설 — 상위 레포 서브모듈 pointer 정렬)
 tags: [agents, 워크스페이스, 운영]
 ---
 
@@ -50,6 +50,7 @@ tags: [agents, 워크스페이스, 운영]
    - 단발 작업·메타 정정 한 줄·오탈자 같이 이 흐름 자체를 적용하지 않는 작은 변경은 본 단계도 면제 (cf. "단발 작업과의 경계").
 4. **main 머지**: `git checkout main && git merge <branch> --no-ff`. `--no-ff`로 단위 작업 단위 머지 commit이 명시적으로 git log에 남도록. 머지 commit message는 `Merge <branch>: <단위 작업 요약> (사용자 검토 통과)` 형태가 권장 — git log에서 자율 머지/검토 머지 구분 가능.
 5. **푸시·정리**: `git push origin main` + 작업 브랜치 삭제 (`git branch -d <branch>` + 원격에도 push했다면 `git push origin --delete <branch>`).
+6. **상위 레포 서브모듈 pointer 정렬** (해당하는 경우): 본 레포가 다른 레포의 서브모듈로 등록돼 있다면, 그 상위 레포에서 서브모듈 pointer를 본 단위 작업 종료 시점의 main HEAD로 갱신한다 — `cd <상위 레포> && git add <서브모듈 경로> && git commit -m "..."`. 부모 레포에 변경 노트 누적 문서(예: `UPGRADING.md`)가 있다면 자식 hash 추기까지 같은 단위에 묶는다. 본 단계가 누락되면 부모 레포가 옛 자식 commit을 가리키는 상태로 부정합 — 자식 sync는 끝나도 부모는 끝나지 않은 상태가 된다. cf. [`UPGRADING.md` 패턴](../UPGRADING.md) (스캐폴드 측 cheat sheet).
 
 ## 단발 작업과의 경계
 
