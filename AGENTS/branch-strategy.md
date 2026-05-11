@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-10
+date modified: 2026-05-11 (feat → feature 정정 — 줄임말 회피 정책 적용)
 tags: [agents, git, 브랜치]
 ---
 
@@ -28,7 +28,7 @@ tags: [agents, git, 브랜치]
 ### 예시
 
 ```
-feat/260414-event-queue
+feature/260414-event-queue
 fix/260414-retry-timeout
 docs/260414-architecture-update
 ```
@@ -37,7 +37,7 @@ docs/260414-architecture-update
 
 | type | 용도 |
 |------|------|
-| `feat` | 새로운 기능과 관련된 것 |
+| `feature` | 새로운 기능과 관련된 것 |
 | `fix` | 오류와 같은 것을 수정했을 때 |
 | `docs` | 문서와 관련하여 수정한 부분이 있을 때 |
 | `style` | 코드의 변화와 관련없는 포맷이나 세미콜론 누락 등 |
