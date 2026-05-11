@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-08
+date modified: 2026-05-11 (줄임말 회피 원칙 명문화 + 비속어 자제 frontmatter 정합)
 tags: [규칙, 문서관리]
 ---
 
@@ -65,6 +65,7 @@ tags: [규칙, 문서관리]
 - 문서 간 참조는 마크다운 링크로 작성한다. `[표시 텍스트](상대경로)` 형식.
 - 참고 자료/출처 표기는 `cf.` (비교/참고)와 `ref.` (출처/근거)를 사용한다.
 - 약어가 처음 등장할 때는 풀어쓴 원문을 병기한다. 예: `SSOT(single source of truth)`, `ADR(Architecture Decision Record)`. 원문이 외국어이고 한국어 설명이 추가로 필요하면 세미콜론으로 덧붙인다. 예: `KAI(Korea Aerospace Industries; 한국항공우주산업)`. 이후 같은 문서 내에서는 약어만 사용한다.
+- 약어와 줄임말을 구분한다. 약어(acronym; 단어 첫 글자를 모아 만든 형태 — SSOT·ADR·API 등)는 허용. **줄임말(truncation; 단어 중간을 잘라낸 형태 — feature → feat, configuration → config, repository → repo 등)은 피하고 공식 형태(full form)를 그대로 사용한다.** 줄임말 남발은 입문자 진입 비용을 높이고 검색·일치성을 떨어뜨린다. 일반 도메인에 완전히 정착해 공식 형태처럼 통용되는 경우(예: `docs` 폴더명, `dev` 환경명)는 예외 — 그 경우 본 워크스페이스에서 표준 사용 형태를 명시한다.
 - 모든 .md 파일에 YAML front matter를 붙인다. 필수 필드: `date created`, `date modified`, `tags`. 날짜 형식은 `yyyy-MM-dd`. `tags`의 첫 항목은 소속 카테고리.
 - 파일명 자체가 문서의 시스템적 역할을 지시하는 고정 규격 문서(README, AGENTS, INDEX, STATUS, DONE, TASK_TREE 등)는, 그 파일명과 같은 의미의 단어가 태그에 중복되는 경우 해당 태그를 생략한다. 파일명이 콘텐츠 주제를 나타내는 일반 문서는 제목이 바뀔 수 있으므로 생략하지 않는다.
 - 도구 전용 설정 파일(`.claude/`, `.gemini/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. 위 공통 필수 필드(`date created`, `date modified`, `tags`)를 이 파일들에 강제하지 않는다.
