@@ -79,7 +79,7 @@ PR 본문은 다음 두 섹션을 갖춘다. 추가 섹션은 자유.
 PR 생성 시 다음 속성을 적절히 할당한다.
 
 - Assignees: 본 PR의 작업자·검토 책임자. AI가 PR을 생성한 경우 작업 의뢰한 사용자를 assign.
-- Labels: 변경 종류 라벨(chore·docs·feature·fix 등 — `branch-strategy.md` 브랜치 타입과 통일) + 영역 라벨(레포별 도메인에 따라). 라벨 풀이 비어 있으면 본 PR이 첫 라벨을 만들 수도 있다 — 향후 분류 비용 회수를 위해 작은 라벨이라도 등재한다.
+- Labels: 변경 종류 라벨(chore·docs·feature·fix 등 — [branch-strategy.md](branch-strategy.md) 브랜치 타입과 통일) + 영역 라벨(레포별 도메인에 따라). 라벨 풀이 비어 있으면 본 PR이 첫 라벨을 만들 수도 있다 — 향후 분류 비용 회수를 위해 작은 라벨이라도 등재한다.
 - Milestone·Projects: 레포 운영 흐름에 따라 선택. 본 워크플로우는 강제하지 않는다.
 
 ### 리뷰 코멘트 응답 방식
