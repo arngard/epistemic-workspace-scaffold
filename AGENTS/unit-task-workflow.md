@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-05-14 (PR 운영 절 sub-section 2건 신설 — 제출 전 자기 검토·제출 후 능동 리뷰 확인)
+date modified: 2026-05-14 (능동 리뷰 확인 도구 명령에 reviewDecision 필드 추가)
 tags: [agents, 워크스페이스, 운영]
 ---
 
@@ -145,7 +145,7 @@ PR 생성·push 직후 검토자(자동 리뷰 봇·사용자·다른 개발자)
 확인 방법:
 
 - 환경이 GitHub webhook을 받을 수 있다면 webhook 트리거로 처리.
-- 그렇지 않으면 PR 생성 후 5분 정도의 타이머를 걸어 능동 확인. 도구: `gh pr view <num> --repo <owner>/<repo> --json reviews,comments` + `gh api repos/<owner>/<repo>/pulls/<num>/comments`.
+- 그렇지 않으면 PR 생성 후 5분 정도의 타이머를 걸어 능동 확인. 도구: `gh pr view <num> --repo <owner>/<repo> --json reviewDecision,reviews,comments` + `gh api repos/<owner>/<repo>/pulls/<num>/comments`. `reviewDecision`은 PR 전체 상태(APPROVED·CHANGES_REQUESTED·REVIEW_REQUIRED 등)를 열거형으로 제공해 머지 가능 여부 1차 판단을 빠르게 한다 — 개별 리뷰 코멘트 파싱은 후속 단계.
 
 리뷰가 달려 있으면 즉시 처리:
 
