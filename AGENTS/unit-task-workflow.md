@@ -194,7 +194,7 @@ PR 생성·push 직후 검토자(자동 리뷰 봇·사용자·다른 개발자)
 확인 방법:
 
 - 환경이 GitHub webhook을 받을 수 있다면 webhook 트리거로 처리.
-- 그렇지 않으면 PR 생성 후 5분 정도의 타이머를 걸어 능동 확인. 도구: `gh pr view <number> --repo <owner>/<repository> --json reviewDecision,reviews,comments` + `gh api repos/<owner>/<repository>/pulls/<number>/comments`. `reviewDecision`은 PR 전체 상태(APPROVED·CHANGES_REQUESTED·REVIEW_REQUIRED 등)를 열거형으로 제공해 머지 가능 여부 1차 판단을 빠르게 한다 — 개별 리뷰 코멘트 파싱은 [후속 단계](#리뷰가-달려-있으면-즉시-처리).
+- 그렇지 않으면 PR 생성 후 약 10분의 타이머를 걸어 능동 확인. 5분은 자동 리뷰 봇(예: Gemini Code Assist)의 응답이 아직 안 들어와 빈 결과만 보고 헛 종료되는 빈도가 높았다 — 10분 정도가 1차 응답 안착 시점에 더 가깝다. 봇이 더 느린 환경이라면 사용자가 별도로 조정. 도구: `gh pr view <number> --repo <owner>/<repository> --json reviewDecision,reviews,comments` + `gh api repos/<owner>/<repository>/pulls/<number>/comments`. `reviewDecision`은 PR 전체 상태(APPROVED·CHANGES_REQUESTED·REVIEW_REQUIRED 등)를 열거형으로 제공해 머지 가능 여부 1차 판단을 빠르게 한다 — 개별 리뷰 코멘트 파싱은 [후속 단계](#리뷰가-달려-있으면-즉시-처리).
 
 AI 도구가 사용자 turn에만 동작하는 환경(예: Claude Code의 일반 채팅 흐름)에서는 "5분 후 확인"을 자율로 보장할 수 없다 — 사용자가 다음 메시지를 보낼 때까지 AI는 정지 상태다. 따라서 다음 중 하나로 처리한다.
 
