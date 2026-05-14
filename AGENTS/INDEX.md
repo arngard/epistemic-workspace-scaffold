@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-10
+date modified: 2026-05-14 (unit-task-workflow.md 설명에 PR 운영·재귀 정합화 풀이 추가)
 tags: [agents]
 ---
 
@@ -21,7 +21,7 @@ tags: [agents]
 | 파일 | 설명 |
 |------|------|
 | [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 |
-| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 흐름 (브랜치·워크로그·시작점 commit·**사용자 검토 통과**·머지·정리) |
+| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 흐름 (진입·진행·종료·재귀 정합화) 및 PR 운영 규약 (본문 형식·자기 검토·리뷰 대응 등) |
 
 ## 공용 태그
 
