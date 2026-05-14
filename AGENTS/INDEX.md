@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-14 (unit-task-workflow.md 설명에 종료 흐름 머지 패턴 분기 반영)
+date modified: 2026-05-14
 tags: [agents]
 ---
 

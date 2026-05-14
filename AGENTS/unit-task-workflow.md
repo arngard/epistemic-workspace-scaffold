@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-05-14 (단위 작업 종료 흐름 두 패턴 분기 — 직접 머지 / PR 흐름)
+date modified: 2026-05-14
 tags: [agents, 워크스페이스, 운영]
 ---
 
