@@ -180,6 +180,13 @@ PR 생성·push 직후 검토자(자동 리뷰 봇·사용자·다른 개발자)
 - 환경이 GitHub webhook을 받을 수 있다면 webhook 트리거로 처리.
 - 그렇지 않으면 PR 생성 후 5분 정도의 타이머를 걸어 능동 확인. 도구: `gh pr view <number> --repo <owner>/<repository> --json reviewDecision,reviews,comments` + `gh api repos/<owner>/<repository>/pulls/<number>/comments`. `reviewDecision`은 PR 전체 상태(APPROVED·CHANGES_REQUESTED·REVIEW_REQUIRED 등)를 열거형으로 제공해 머지 가능 여부 1차 판단을 빠르게 한다 — 개별 리뷰 코멘트 파싱은 [후속 단계](#리뷰가-달려-있으면-즉시-처리).
 
+AI 도구가 사용자 turn에만 동작하는 환경(예: Claude Code의 일반 채팅 흐름)에서는 "5분 후 확인"을 자율로 보장할 수 없다 — 사용자가 다음 메시지를 보낼 때까지 AI는 정지 상태다. 따라서 다음 중 하나로 처리한다.
+
+- 환경에 자동 wake-up 도구가 있으면(예: Claude Code의 `ScheduleWakeup`, 외부 cron 트리거 등) PR 생성 직후 그 도구로 능동 확인 turn을 예약한다.
+- 자동 트리거 도구가 없으면 사용자에게 "잠시 후 PR 리뷰 확인을 트리거해 주세요"라고 명시 요청한 뒤 사용자 응답을 기다린다.
+
+"잠시 후 자율 확인하겠다"는 표현은 turn 메커니즘 한계로 거짓 약속이 되므로 쓰지 않는다.
+
 리뷰가 달려 있으면 즉시 처리:
 
 - 수용 가능한 지적은 본 PR 안에서 정정 commit + 스레드 reply (cf. [리뷰 코멘트 응답 방식](#리뷰-코멘트-응답-방식)·[명시적 멘션 의무](#명시적-멘션-의무)·[AI 시그니처 의무](#ai-시그니처-의무) 적용).
