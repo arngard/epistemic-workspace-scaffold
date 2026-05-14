@@ -24,7 +24,7 @@ tags: [규칙, 문서관리]
 
 ## 단위 작업 시작/종료 시 (필수)
 
-단위 작업의 시작·진행·종료 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) 참조 — 진입 4단계·진행·종료 5+1단계·PR 운영·끊김 재진입의 SSOT.
+단위 작업의 시작·진행·종료 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) 참조 — 진입·진행·종료(머지 패턴 분기[직접 머지·PR 흐름] + 재귀 정합화)·PR 운영·끊김 재진입의 SSOT.
 
 본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작·종료 시 STATUS·TASK_TREE·DONE 갱신 + 사용자 검토 통과 후 main 머지**. AI 자율 머지 회피.
 
