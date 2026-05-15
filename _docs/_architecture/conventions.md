@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-13 (일반 작성 규약 본문 흡수 + 폴더·파일 이동 연쇄 갱신 절 신설)
+date modified: 2026-05-13
 tags: [architecture, 규칙, 네이밍, 코딩규약]
 ---
 

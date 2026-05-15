@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-13 (단위 작업·새 사실·문서 변경 절 포인터화 + 작성 스타일 슬림화 — conventions.md로 본문 이전)
+date modified: 2026-05-13
 tags: [규칙, 문서관리]
 ---
 

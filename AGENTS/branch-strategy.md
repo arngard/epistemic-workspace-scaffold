@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-11 (feat → feature 정정 — 줄임말 회피 정책 적용)
+date modified: 2026-05-11
 tags: [agents, git, 브랜치]
 ---
 
