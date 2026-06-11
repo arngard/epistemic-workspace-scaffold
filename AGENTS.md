@@ -26,7 +26,7 @@ tags: [규칙, 문서관리]
 
 단위 작업의 시작·진행·종료 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) 참조 — 진입·진행·종료(머지 패턴 분기[직접 머지·PR 흐름] + 재귀 정합화)·PR 운영·끊김 재진입의 SSOT.
 
-본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작·종료 시 STATUS·TASK_TREE·DONE 갱신 + 사용자 검토 통과 후 main 머지**. AI 자율 머지 회피.
+본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작과 종료 시 STATUS, TASK_TREE, DONE 갱신 + 사용자 검토 통과 후 main 머지**. AI 자율 머지 회피. 근거 원리는 [core-constraints.md 원본 보호 원칙](_docs/_architecture/core-constraints.md)이다.
 
 세션 중 새로운 관례·규칙·스타일이 합의되었으면 해당 내용이 본 파일 또는 관련 영구 문서에 반영되었는지 확인한다. 긴 세션이거나 큰 변경이 있었던 세션의 종료 전에는 epistemic-auditor 서브에이전트를 호출해 문서 정합성 감사를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)).
 
@@ -67,6 +67,8 @@ tags: [규칙, 문서관리]
 - `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 마크다운 파일은 각 INDEX에 등록한다. 하위 폴더 내 파일도 예외 없다. INDEX가 "프로젝트에 어떤 지식 문서가 존재하는가"의 single source of truth여야 한다.
 
 ## 경계 (하지 말 것)
+
+데이터 안전 관련 항목(`main` 직접 커밋, `_docs/` 대폭 재편)의 근거 원리는 [core-constraints.md 원본 보호 원칙](_docs/_architecture/core-constraints.md)이다.
 
 - `main` 브랜치에 직접 커밋하지 않는다. 브랜치 전략은 [AGENTS/branch-strategy.md](AGENTS/branch-strategy.md) 참조.
 - `_docs/` 파일을 사람 확인 없이 삭제하거나 대폭 재편하지 않는다.
