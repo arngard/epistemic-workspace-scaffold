@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-03
+date modified: 2026-06-12
 tags: [소개]
 ---
 
@@ -8,7 +8,7 @@ tags: [소개]
 
 # Epistemic Workspace Scaffold
 
-문서를 인식론적 범주로 나누는 워크스페이스 골격. 인간과 AI가 함께 일할 때 상위 의도·근거가 유실되지 않게 한다.
+문서를 인식론적 범주로 나누는 워크스페이스 골격. 인간과 AI가 함께 일할 때 상위 의도, 근거가 유실되지 않게 한다.
 
 ## 이 워크스페이스가 풀려는 문제
 
@@ -29,14 +29,14 @@ tags: [소개]
 
 ```
 (workspace-root)/
-├── _docs/             ← 코드로 표현할 수 없는 지식
-│   ├── _worklog/          ← 작업 상태, 이력
-│   ├── _ontology/         ← 도메인 개념
-│   ├── _knowledge/        ← 외부 사실
-│   ├── _strategy/         ← 결정과 근거
-│   └── _architecture/     ← 설계 명세
-├── _reference/        ← 사용자가 dump한 raw 자료의 immutable 보관 영역
-└── _implementation/   ← 구현체 코드
+├── _docs/             <- 코드로 표현할 수 없는 지식
+│   ├── _worklog/          <- 작업 상태, 이력
+│   ├── _ontology/         <- 도메인 개념
+│   ├── _knowledge/        <- 외부 사실
+│   ├── _strategy/         <- 결정과 근거
+│   └── _architecture/     <- 설계 명세
+├── _reference/        <- 사용자가 dump한 raw 자료의 immutable 보관 영역
+└── _implementation/   <- 구현체 코드
     ├── backend/
     └── web/
 ```
@@ -46,8 +46,8 @@ tags: [소개]
 - 추측과 확정을 구분한다: 논의되지 않은 내용을 확정된 것처럼 쓰지 않는다. AI 에이전트는 필요한 정보가 부족하면 임의로 채우지 말고 인간에게 질문해 확보한다.
 - 작은 문서 + INDEX: 색인만 먼저 읽고 필요한 것만 연다. 토큰도 절약되고, 사람이 읽기에도 덜 부담스럽다.
 - 중복 금지 / SSOT(single source of truth): 같은 사실은 한 곳에만 두고 다른 문서는 링크로 연결한다.
-- 단일 진입점 AGENTS.md: Claude·Gemini·Copilot·Kiro 등 도구별 자동 참조 파일은 포인터만 담고, 지침 본체는 AGENTS.md 하나다.
-- 문서와 코드의 분업: `_docs/`는 코드로 표현할 수 없는 것만 담는다. 인터페이스·타입·에러 계약은 코드 자체가 명세다.
+- 단일 진입점 AGENTS.md: Claude, Gemini, Copilot, Kiro 등 도구별 자동 참조 파일은 포인터만 담고, 지침 본체는 AGENTS.md 하나다.
+- 문서와 코드의 분업: `_docs/`는 코드로 표현할 수 없는 것만 담는다. 인터페이스, 타입, 에러 계약은 코드 자체가 명세다.
 
 ## 사용법
 
@@ -57,5 +57,5 @@ tags: [소개]
 
 ## 더 읽을 거리
 
-- [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) — 구조 근거
-- [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) — `_docs/` 분류 기준
+- [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - 구조 근거
+- [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - `_docs/` 분류 기준

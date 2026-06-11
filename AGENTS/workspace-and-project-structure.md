@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-10
+date modified: 2026-06-12
 tags: [agents, 워크스페이스]
 ---
 
@@ -26,24 +26,24 @@ tags: [agents, 워크스페이스]
 ## 최상위 구조
 
 ```
-(workspace-root)/                      ← 워크스페이스 루트
-├── AGENTS.md                           ← AI 에이전트 공통 지침 (모든 도구의 진입점)
-├── AGENTS/                             ← AGENTS.md의 하위 문서
-├── _docs/                              ← 코드로 표현할 수 없는 지식
-│   ├── _worklog/                       ← 작업 상태, 이력, 작업 트리
-│   ├── _ontology/                      ← 도메인 개념 정의 ("무엇이 존재하는가")
-│   ├── _knowledge/                     ← 외부 사실, 환경, 벤치마크 ("세상이 어떠한가")
-│   ├── _strategy/                      ← 우리의 결정과 근거 ("왜 이렇게 하기로 했는가")
-│   └── _architecture/                  ← 설계 명세 ("어떻게 만드는가")
-├── _reference/                         ← 사용자가 dump한 raw 자료의 immutable 보관 영역
-└── _implementation/                    ← 구현 프로젝트들 (프로젝트마다 하위 폴더)
-    ├── <project-A>/                    ← 각 프로젝트의 실제 소스 (또는 서브모듈 포인터 등)
+(workspace-root)/                      <- 워크스페이스 루트
+├── AGENTS.md                           <- AI 에이전트 공통 지침 (모든 도구의 진입점)
+├── AGENTS/                             <- AGENTS.md의 하위 문서
+├── _docs/                              <- 코드로 표현할 수 없는 지식
+│   ├── _worklog/                       <- 작업 상태, 이력, 작업 트리
+│   ├── _ontology/                      <- 도메인 개념 정의 ("무엇이 존재하는가")
+│   ├── _knowledge/                     <- 외부 사실, 환경, 벤치마크 ("세상이 어떠한가")
+│   ├── _strategy/                      <- 우리의 결정과 근거 ("왜 이렇게 하기로 했는가")
+│   └── _architecture/                  <- 설계 명세 ("어떻게 만드는가")
+├── _reference/                         <- 사용자가 dump한 raw 자료의 immutable 보관 영역
+└── _implementation/                    <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
+    ├── <project-A>/                    <- 각 프로젝트의 실제 소스 (또는 서브모듈 포인터 등)
     └── <project-B>/
 ```
 
 `_docs/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 참조. `_reference/` 운용은 [`../_reference/INDEX.md`](../_reference/INDEX.md)와 [`../_docs/_architecture/ingest-workflow.md`](../_docs/_architecture/ingest-workflow.md) 참조.
 
-워크스페이스 안의 단위 작업(자료 N건 묶음 ingest, 메타 결정·정책 변경, 큰 마이그레이션 등)은 진입·진행·종료 흐름이 정해져 있다. 단위 작업의 정의는 [_docs/_ontology/unit-task.md](../_docs/_ontology/unit-task.md) — 의미적으로 atomic한 작업 단위, 작업 트리 한 노드에 대응. 단위 작업 시작 시 어떤 절차를 거쳐야 하는지는 [unit-task-workflow.md](unit-task-workflow.md) 참조. 워크로그(`_docs/_worklog/`)의 STATUS·TASK_TREE·DONE는 그 흐름의 진입·종료 시점에서 갱신되는 운영 메타다.
+워크스페이스 안의 단위 작업(자료 N건 묶음 ingest, 메타 결정, 정책 변경, 큰 마이그레이션 등)은 진입, 진행, 종료 흐름이 정해져 있다. 단위 작업의 정의는 [_docs/_ontology/unit-task.md](../_docs/_ontology/unit-task.md): 의미적으로 atomic한 작업 단위, 작업 트리 한 노드에 대응. 단위 작업 시작 시 어떤 절차를 거쳐야 하는지는 [unit-task-workflow.md](unit-task-workflow.md) 참조. 워크로그(`_docs/_worklog/`)의 STATUS, TASK_TREE, DONE는 그 흐름의 진입, 종료 시점에서 갱신되는 운영 메타다.
 
 ## 문서와 코드의 역할 분담
 
