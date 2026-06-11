@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-14
+date modified: 2026-06-12
 tags: [agents]
 ---
 
@@ -21,13 +21,13 @@ tags: [agents]
 | 파일 | 설명 |
 |------|------|
 | [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 |
-| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 흐름 (진입·진행·종료 패턴 분기 및 재귀 정합화) 및 PR 운영 규약 (본문·검토·응답) |
+| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 흐름 (진입, 진행, 종료 패턴 분기 및 재귀 정합화) 및 PR 운영 규약 (본문, 검토, 응답) |
 
 ## 공용 태그
 
 | 파일 | 설명 |
 |------|------|
-| [agent-tag-format.md](agent-tag-format.md) | 코드·문서에 작업자 간 메모를 남기는 공용 태그 형식 |
+| [agent-tag-format.md](agent-tag-format.md) | 코드, 문서에 작업자 간 메모를 남기는 공용 태그 형식 |
 
 ## 에이전트 역할
 
