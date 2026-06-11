@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-05-13
+date modified: 2026-06-12
 tags: [규칙, 문서관리]
 ---
 
