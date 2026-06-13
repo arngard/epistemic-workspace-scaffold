@@ -2,7 +2,7 @@
 name: epistemic-auditor
 description: 에피스테믹 워크스페이스 스캐폴드 구조 프로젝트에서 문서, 행동 양상 정합성을 감사한다. _worklog/가 현재 상태를 반영하는지, INDEX와 실제 파일이 일치하는지, 태그, 분량, 배치 규약 위반 여부, 각 문서가 자신이 속한 4범주(_ontology/_knowledge/_strategy/_architecture)에 의미적으로 부합하는지, 그리고 직전 단위 작업들에 메타-컨텐츠 영역 혼동 패턴이 있었는지(격리 위반, 자율 격상, 자율 머지, 반복 정정, 분석적 쪼개기, 단위 경계 오인 등)를 git log + DONE.md 기반으로 확인. 수정은 하지 않고 지적만 한다. 긴 세션 종료 전이나 사용자가 정합성 의심 시 호출.
 tools: Read, Grep, Glob, Bash
-model: opus
+model: opus[1m]
 effort: xhigh
 ---
 
