@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-06-12
+date modified: 2026-06-23
 tags: [소개]
 ---
 
@@ -50,6 +50,16 @@ tags: [소개]
 - 문서와 코드의 분업: `_docs/`는 코드로 표현할 수 없는 것만 담는다. 인터페이스, 타입, 에러 계약은 코드 자체가 명세다.
 
 ## 사용법
+
+먼저 이 스캐폴드를 가져온다. 세 가지 방식이 있다.
+
+- GitHub fork: 스캐폴드 저장소를 fork해 자신의 저장소로 둔다.
+- 단순 복사: clone하거나 GitHub template으로 복사해 독립 저장소로 시작한다.
+- clone 후 upstream 연결: 스캐폴드를 clone하고 원본을 `upstream` remote로 두면, 이후 스캐폴드 개선을 `git fetch upstream && git merge upstream/main`으로 받을 수 있다.
+
+부모의 후속 개선을 계속 반영하려면 upstream 연결 방식이 적합하다. 한 번 복제해 독립적으로 쓸 것이라면 fork나 단순 복사로 충분하다.
+
+가져온 뒤에는 다음을 진행한다.
 
 1. 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾼다.
 2. `_docs/_worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따라 진행한다.
