@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-06-12
+date modified: 2026-06-23
 tags: [소개]
 ---
 
@@ -50,6 +50,16 @@ If harness engineering is the approach of drawing fences at the boundary between
 - Division of labor between documentation and code: `_docs/` holds only what cannot be expressed in code. Interfaces, types, and error contracts are specified by the code itself.
 
 ## How to use
+
+First, obtain the scaffold. There are three ways.
+
+- GitHub fork: Fork the scaffold repository as your own.
+- Plain copy: Clone it or copy via GitHub template to start an independent repository.
+- Clone and connect upstream: Clone the scaffold and add the original as an `upstream` remote repository, so you can pull later scaffold improvements with `git fetch upstream && git merge upstream/main`.
+
+The upstream-connected approach suits keeping up with the parent's later improvements. A one-time copy via fork or plain copy is enough if you will use it independently.
+
+After obtaining it, proceed:
 
 1. Rename the workspace folder to match your project.
 2. Follow the "Workspace initial setup" checklist in `_docs/_worklog/TASK_TREE.md`.
