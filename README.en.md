@@ -55,7 +55,7 @@ First, obtain the scaffold. There are three ways.
 
 - GitHub fork: Fork the scaffold repository as your own.
 - Plain copy: Clone it or copy via GitHub template to start an independent repository.
-- Clone and connect upstream: Clone the scaffold and keep the original as an `upstream` remote, so you can pull later scaffold improvements with `git fetch upstream && git merge upstream/main`.
+- Clone and connect upstream: Clone the scaffold and add the original as an `upstream` remote repository, so you can pull later scaffold improvements with `git fetch upstream && git merge upstream/main`.
 
 The upstream-connected approach suits keeping up with the parent's later improvements. A one-time copy via fork or plain copy is enough if you will use it independently.
 

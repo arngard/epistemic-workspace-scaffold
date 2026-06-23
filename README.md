@@ -55,7 +55,7 @@ tags: [소개]
 
 - GitHub fork: 스캐폴드 저장소를 fork해 자신의 저장소로 둔다.
 - 단순 복사: clone하거나 GitHub template으로 복사해 독립 저장소로 시작한다.
-- clone 후 upstream 연결: 스캐폴드를 clone하고 원본을 `upstream` remote로 두면, 이후 스캐폴드 개선을 `git fetch upstream && git merge upstream/main`으로 받을 수 있다.
+- clone 후 upstream 연결: 스캐폴드를 clone하고 원본을 `upstream` 원격 저장소(remote)로 등록하면, 이후 스캐폴드 개선을 `git fetch upstream && git merge upstream/main`으로 받을 수 있다.
 
 부모의 후속 개선을 계속 반영하려면 upstream 연결 방식이 적합하다. 한 번 복제해 독립적으로 쓸 것이라면 fork나 단순 복사로 충분하다.
 
