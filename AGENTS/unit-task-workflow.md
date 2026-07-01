@@ -237,6 +237,7 @@ PR 상태 확인 도구: `gh pr view <number> --repo <owner>/<repository> --json
 
 ## 관련 문서
 
+- [working-principles.md](working-principles.md) - 작업 수행 원칙 (목표 주도의 성공 기준, 재귀 세분 등 토대 태도).
 - [branch-strategy.md](branch-strategy.md) - 트렁크 기반 개발 모델, 브랜치 네이밍 규약.
 - [workspace-and-project-structure.md](workspace-and-project-structure.md) - 워크스페이스 구조 (워크로그 폴더 위치 포함).
 - [`_docs/_worklog/STATUS.md`](../_docs/_worklog/STATUS.md), [`TASK_TREE.md`](../_docs/_worklog/TASK_TREE.md), [`DONE.md`](../_docs/_worklog/DONE.md) - 워크로그 본체와 갱신 규칙.

@@ -16,6 +16,13 @@ tags: [agents]
 |------|------|
 | [tools.md](tools.md) | AI 도구별 자동 참조 파일 경로 |
 
+## 작업 수행
+
+| 파일 | 설명 |
+|------|------|
+| [working-principles.md](working-principles.md) | 단위 작업을 대하는 토대 원칙 (넘겨짚지 않기, 단순함, 외과적 변경, 목표 주도, 기억보다 실제 상태) |
+| [coding-guidelines.md](coding-guidelines.md) | 코드 작업 전용 지침 (성공 기준을 테스트로, 코드 단순함, 코드 외과적 변경) |
+
 ## Git 운영
 
 | 파일 | 설명 |
