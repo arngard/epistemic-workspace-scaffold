@@ -38,5 +38,5 @@ tags: [agents, 코딩]
 ## 참고
 
 - [working-principles.md](working-principles.md) - 일반 작업 수행 원칙.
-- [core-constraints.md](../_docs/_architecture/core-constraints.md) - 설계 원칙(강타입), 원본 보호 원칙.
+- [core-constraints.md](../_docs/_architecture/core-constraints.md) - 설계 원칙(강타입). 원본 보호 원칙은 [original-protection-principle.md](original-protection-principle.md).
 - [unit-task-workflow.md](unit-task-workflow.md) - 단위 작업 운영 흐름.

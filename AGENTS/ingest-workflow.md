@@ -1,7 +1,7 @@
 ---
 date created: 2026-05-03
-date modified: 2026-06-29
-tags: [architecture, 절차, ingest]
+date modified: 2026-07-02
+tags: [agents, 절차, ingest]
 ---
 
 # 새 정보 ingest 워크플로
@@ -32,7 +32,7 @@ tags: [architecture, 절차, ingest]
    - 두 진술을 모두 보존하고 차이를 명시한다 (예: "같은 출처가 시점 T1에 ...라고 했지만 시점 T2에 ...로 갱신", "A는 ...라고 주장, B는 반대 주장").
    - 동일 주체의 시간차 진술 변화는 해당 노드에 시점과 함께 누적.
    - 충돌 의미가 모호하면 사용자에게 짚어 묻는다 - AI가 단정하지 않는다.
-5. **카테고리 결정**: [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) 판별 규칙 적용.
+5. **카테고리 결정**: [AGENTS/how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 판별 규칙 적용.
 6. **노드 결정**: 기존 노드에 추가 vs 신규 노드 생성. 기존 노드의 주제 응집성을 깨면 신규로 분리 (한 문서는 한 관심사 원칙).
 7. **교차 참조 갱신**: 같은 정보가 여러 노드에 걸쳐 있으면 노드 간 마크다운 링크로 연결한다. 워크스페이스가 양방향 그래프 패턴을 채택했다면 그 양방향 의무도 같은 단계에서 처리한다.
 8. **INDEX 갱신**: 신규 노드면 해당 INDEX 또는 sub-INDEX에 등록. 기존 노드 갱신이면 INDEX의 설명, `date modified`, 등록 정보를 점검.
@@ -45,11 +45,11 @@ tags: [architecture, 절차, ingest]
 
 ## `_reference/` 폴더 처리
 
-`_reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). cf. [`_reference/INDEX.md`](../../_reference/INDEX.md).
+`_reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). cf. [`_reference/INDEX.md`](../_reference/INDEX.md).
 
 ### 처리 여부 식별
 
-[`_reference/INDEX.md`](../../_reference/INDEX.md)가 인벤토리이자 처리 진척의 SSOT다. 별도 처리 로그 파일은 두지 않는다.
+[`_reference/INDEX.md`](../_reference/INDEX.md)가 인벤토리이자 처리 진척의 SSOT다. 별도 처리 로그 파일은 두지 않는다.
 
 세션 시작 시 또는 작업 중 트리거가 있을 때:
 
@@ -79,7 +79,7 @@ tags: [architecture, 절차, ingest]
 
 ## 참고
 
-- [AGENTS.md](../../AGENTS.md) "새 세션 시작 시" - 본 워크플로의 트리거 위치
-- [AGENTS.md](../../AGENTS.md) "문서 작성 스타일" - 사실/의견 주체 분리 원칙
-- [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) - 카테고리 판별 규칙
-- [`_reference/INDEX.md`](../../_reference/INDEX.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태
+- [AGENTS.md](../AGENTS.md) "새 세션 시작 시" - 본 워크플로의 트리거 위치
+- [AGENTS.md](../AGENTS.md) "문서 작성 스타일" - 사실/의견 주체 분리 원칙
+- [AGENTS/how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) - 카테고리 판별 규칙
+- [`_reference/INDEX.md`](../_reference/INDEX.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태

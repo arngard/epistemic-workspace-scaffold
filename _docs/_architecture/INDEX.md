@@ -25,13 +25,7 @@ tags: [architecture]
 | 파일 | 설명 |
 |------|------|
 | [core-constraints.md](core-constraints.md) | 설계 원칙 및 핵심 제약. 스캐폴드 상태 - 제약 목록 작성 필요. |
-| [conventions.md](conventions.md) | 코딩 규약 (현재는 Git 규약만). 스캐폴드 상태 - 프로젝트 고유 규약 확장 필요. |
-
-### 운영 절차
-
-| 파일 | 설명 |
-|------|------|
-| [ingest-workflow.md](ingest-workflow.md) | 새 사실, 의견, 예측, 결정, 자료가 들어올 때의 표준 시퀀스. contradiction flagging, `_reference/` 처리, 빠뜨림 방지 자체 점검 포함. |
+| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [AGENTS/conventions.md](../../AGENTS/conventions.md). |
 
 ### 구조/모듈
 
