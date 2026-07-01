@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-06-12
+date modified: 2026-07-02
 tags: [agents]
 ---
 
@@ -14,7 +14,7 @@ tags: [agents]
 
 | 파일 | 설명 |
 |------|------|
-| [tools.md](tools.md) | AI 도구별 자동 참조 파일 경로 |
+| [tools.md](tools.md) | AI 도구별 자동 참조 파일 경로, 기계 감사 스크립트(tools/audit.py), Claude Code 절차 스킬 래퍼 |
 
 ## 작업 수행
 

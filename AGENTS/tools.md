@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-06-12
+date modified: 2026-07-02
 tags: [agents, 도구, 환경, IDE]
 ---
 
@@ -22,3 +22,16 @@ tags: [agents, 도구, 환경, IDE]
 
 - 진입점 파일은 "[AGENTS.md](../AGENTS.md)를 읽으라"는 포인터 역할만 한다. 지침 자체를 진입점에 적지 않는다. 중복, 불일치 방지.
 - 새로운 도구가 추가되면: 해당 도구의 자동 참조 경로에 진입점 파일을 만들고, 이 표에 등록한다.
+
+## 기계 감사 스크립트
+
+[tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위: front matter 필수 필드, 카테고리 INDEX와 실제 파일의 양방향 대조(sub-INDEX 위임 인정), `_reference/` 인벤토리 대조, 문서 간 상대 링크 정합(대소문자, 유니코드 정규화 불일치 포함), 파일명의 크로스 플랫폼 이식성(윈도우 금지 문자, 예약어), 분량 상한 경고. epistemic-auditor의 형식 점검을 이관받은 것이며, 의미 판단은 여전히 감사자 몫이다 (cf. [agent-roles.md](agent-roles.md)).
+
+- 실행: 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (윈도우는 `python` 또는 `py`).
+- 의존성: Python 3.8+ 표준 라이브러리만. 특정 AI 도구, OS(operating system)에 의존하지 않는다. 사람, 어느 AI 도구의 협업자든 동일하게 실행 가능.
+- 자동 실행: GitHub Actions([.github/workflows/epistemic-audit.yml](../.github/workflows/epistemic-audit.yml))가 push, pull request 시점에 실행한다. 새 세션 시작 시의 실행 의무는 [AGENTS.md](../AGENTS.md) "새 세션 시작 시" 참조.
+- 종료 코드: 위반이 있으면 1, 경고(분량 상한 등)만 있으면 0.
+
+## Claude Code 절차 스킬 래퍼
+
+`.claude/skills/` 하위의 각 SKILL.md(ingest, unit-task-start, unit-task-finish)는 절차 문서를 해당 시점에 로드하는 씬 래퍼다. 절차 내용을 복사하지 않고 트리거 조건과 SSOT(single source of truth) 링크만 담는다 - 복사하면 SSOT 위배 + drift. 다른 도구 사용자는 SSOT 절차 문서를 직접 읽으면 동일 효과를 얻는다.
