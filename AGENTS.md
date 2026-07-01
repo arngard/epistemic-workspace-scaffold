@@ -16,28 +16,28 @@ tags: [규칙, 문서관리]
 1. 이 파일을 읽는다.
 2. [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)를 읽고 현재 작업 상태와 다음 할 일을 파악한다.
 3. 형식 정합성 스크립트를 실행한다 - 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (cf. [AGENTS/tools.md](AGENTS/tools.md) "기계 감사 스크립트"). 보고된 위반은 정리하거나 사용자에게 짚는다. 추가로 STATUS.md의 "마지막 정합성 감사" 시각이 12시간 초과면 본 작업 시작 전에 epistemic-auditor 서브에이전트를 호출해 의미 감사(워크로그 최신성, 카테고리 배치 등)를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)). 보고된 위반은 정리하거나 사용자에게 짚은 뒤 STATUS.md의 시각 필드를 새로 기록한다.
-4. [`_reference/INDEX.md`](_reference/INDEX.md)를 읽고 폴더 실제 내용과 대조한다. 인벤토리와 실제가 불일치하거나 `처리 대기`/`사용자 의견 필요` 항목이 있으면 [_docs/_architecture/ingest-workflow.md](_docs/_architecture/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 진행한다.
+4. [`_reference/INDEX.md`](_reference/INDEX.md)를 읽고 폴더 실제 내용과 대조한다. 인벤토리와 실제가 불일치하거나 `처리 대기`/`사용자 의견 필요` 항목이 있으면 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 진행한다.
 5. 작업 범위에 해당하는 `_docs/` 문서를 읽는다 (아래 참조 테이블 기준).
 6. 코드 생성/수정 전에는 관련 문서의 기존 결정과 충돌이 없는지 확인한다.
 
-새 정보(사실, 의견, 예측, 결정, 자료)가 세션 중 들어오면 [_docs/_architecture/ingest-workflow.md](_docs/_architecture/ingest-workflow.md)의 표준 시퀀스를 따른다.
+새 정보(사실, 의견, 예측, 결정, 자료)가 세션 중 들어오면 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md)의 표준 시퀀스를 따른다.
 
 ## 단위 작업 시작/종료 시 (필수)
 
 단위 작업의 시작, 진행, 종료 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) 참조. 진입, 진행, 종료(머지 패턴 분기[직접 머지/PR 흐름] + 재귀 정합화), PR 운영, 끊김 재진입의 SSOT.
 
-본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작과 종료 시 STATUS, TASK_TREE, DONE 갱신 + 사용자 검토 통과 후 main 머지**. AI 자율 머지 회피. 근거 원리는 [core-constraints.md 원본 보호 원칙](_docs/_architecture/core-constraints.md)이다.
+본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작과 종료 시 STATUS, TASK_TREE, DONE 갱신 + 사용자 검토 통과 후 main 머지**. AI 자율 머지 회피. 근거 원리는 [원본 보호 원칙](AGENTS/original-protection-principle.md)이다.
 
 세션 중 새로운 관례, 규칙, 스타일이 합의되었으면 해당 내용이 본 파일 또는 관련 영구 문서에 반영되었는지 확인한다. 긴 세션이거나 큰 변경이 있었던 세션의 종료 전에는 epistemic-auditor 서브에이전트를 호출해 문서 정합성 감사를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)).
 
 ## 문서 변경 시 (필수)
 
 - 모듈/의존성 변경 -> [_docs/_architecture/INDEX.md](_docs/_architecture/INDEX.md) 먼저 업데이트
-- 네이밍/규약 변경 -> [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md) 먼저 업데이트
+- 문서/구조 규약 변경 -> [AGENTS/conventions.md](AGENTS/conventions.md) 먼저 업데이트. 프로젝트 코딩 규약이면 [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md).
 - 문서 간 정합성 확인을 항상 수행한다 (특히 cross-reference 되는 섹션 번호).
 - 문서나 주석을 수정한 경우, "문서 작성 스타일" 섹션의 규칙을 위배하는 것이 없는지 검토한다.
 - INDEX를 읽을 때 `date modified`가 오래된 문서가 눈에 띄면 점검한다. INDEX상 설명이 부적절해서 참조되지 않는 건지, 정말 불필요한 문서인지 판단하여 설명 개선 / 다른 문서로 통합 / 삭제 중 하나를 수행한다. 오래 방치된 문서는 유의미한 역할을 하지 못하고 있다는 신호다.
-- 폴더/파일 이동 또는 리네임은 연쇄 갱신을 요구한다. 절차는 [`conventions.md` "폴더/파일 이동 시 연쇄 갱신"](_docs/_architecture/conventions.md) 참조.
+- 폴더/파일 이동 또는 리네임은 연쇄 갱신을 요구한다. 절차는 [`AGENTS/conventions.md` "폴더, 파일 이동 시 연쇄 갱신"](AGENTS/conventions.md) 참조.
 
 ## 작업 수행 원칙
 
@@ -53,7 +53,7 @@ tags: [규칙, 문서관리]
 
 ## 문서 작성 스타일
 
-진입자가 첫 화면에서 봐야 할 핵심 항목만 본 절에 둔다. 그 외 일반 작성 규약(1관심사, 분량 보조 지표, 중복 금지와 외부 SSOT 비복제, 이름 안정성, 문서 시간성, 코드 블록 절제, 표준 표현 우선, 출처 표기 범위, 자체 완결성, 고정 규격 태그 중복 회피, 도구 전용 파일 예외, 문장 부호 ASCII 우선)은 [`conventions.md` "일반 문서 작성 스타일"](_docs/_architecture/conventions.md) SSOT.
+진입자가 첫 화면에서 봐야 할 핵심 항목만 본 절에 둔다. 그 외 일반 작성 규약(1관심사, 분량 보조 지표, 중복 금지와 외부 SSOT 비복제, 이름 안정성, 문서 시간성, 코드 블록 절제, 표준 표현 우선, 출처 표기 범위, 자체 완결성, 고정 규격 태그 중복 회피, 도구 전용 파일 예외, 문장 부호 ASCII 우선)은 [`AGENTS/conventions.md` "일반 문서 작성 스타일"](AGENTS/conventions.md) SSOT.
 
 - 볼드, 이탤릭, 이모지 등 서식/기호 강조는 강한 경고/금지/주의 사항에만 사용한다. 나열, 제목, 항목 라벨, 일반 개념어, 장식에는 쓰지 않는다. 남발하면 진짜 강조가 필요할 때의 진정성을 잃는다.
 - 문서 간 참조는 마크다운 링크로 작성한다. `[표시 텍스트](상대경로)` 형식.
@@ -75,7 +75,7 @@ tags: [규칙, 문서관리]
 
 ## 경계 (하지 말 것)
 
-데이터 안전 관련 항목(`main` 직접 커밋, `_docs/` 대폭 재편)의 근거 원리는 [core-constraints.md 원본 보호 원칙](_docs/_architecture/core-constraints.md)이다.
+데이터 안전 관련 항목(`main` 직접 커밋, `_docs/` 대폭 재편)의 근거 원리는 [원본 보호 원칙](AGENTS/original-protection-principle.md)이다.
 
 - `main` 브랜치에 직접 커밋하지 않는다. 브랜치 전략은 [AGENTS/branch-strategy.md](AGENTS/branch-strategy.md) 참조.
 - `_docs/` 파일을 사람 확인 없이 삭제하거나 대폭 재편하지 않는다.
@@ -103,7 +103,7 @@ tags: [규칙, 문서관리]
 | [_docs/_strategy/INDEX.md](_docs/_strategy/INDEX.md) | 전략 색인 | 새 세션 시작 시, 문제 해결 시 |
 | [AGENTS/INDEX.md](AGENTS/INDEX.md) | 에이전트 지침 색인 | 에이전트 운영 방식 확인 시 |
 | [_docs/_architecture/INDEX.md](_docs/_architecture/INDEX.md) | 설계 명세 색인 | 새 클래스/모듈 생성 시 |
-| [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md) | 네이밍, 작성 규약, 구조 규약 SSOT | 모든 문서, 코드 작성 시 |
+| [AGENTS/conventions.md](AGENTS/conventions.md) | 문서 작성 규약, 구조 규약 SSOT | 모든 문서 작성 시 |
 | [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) | 단위 작업 운영 흐름 SSOT | 단위 작업 시작, 종료 시 |
 | [_reference/INDEX.md](_reference/INDEX.md) | raw 자료 인벤토리 + 처리 상태 | 매 세션 시작 시 |
 

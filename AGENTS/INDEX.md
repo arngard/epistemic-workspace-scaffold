@@ -16,6 +16,14 @@ tags: [agents]
 |------|------|
 | [tools.md](tools.md) | AI 도구별 자동 참조 파일 경로, 기계 감사 스크립트(tools/audit.py), Claude Code 절차 스킬 래퍼 |
 
+## 규약과 절차
+
+| 파일 | 설명 |
+|------|------|
+| [conventions.md](conventions.md) | 문서 작성 규약, 구조 규약 SSOT (1관심사, 중복 금지와 외부 SSOT 비복제, 문서 시간성, 출처 표기 범위, 자체 완결성, ASCII 부호, 연쇄 갱신 등) |
+| [ingest-workflow.md](ingest-workflow.md) | 새 사실, 의견, 예측, 결정, 자료가 들어올 때의 표준 시퀀스. contradiction flagging, `_reference/` 처리, 빠뜨림 방지 자체 점검 |
+| [original-protection-principle.md](original-protection-principle.md) | 원본 보호 원칙 (가역성 우선, 공유 기준선 보호) - 에이전트가 원본을 다룰 때의 안전 기준 |
+
 ## 작업 수행
 
 | 파일 | 설명 |
