@@ -1,0 +1,17 @@
+# 에피스테믹 워크스페이스 기계 감사 (Layer 1, git 표준 연동).
+# AGENTS/tools/audit.py를 push, pull request 시점에 실행한다.
+# 스크립트 자체는 도구 중립(Python 표준 라이브러리만)이며, 상세는 AGENTS/tools.md 참조.
+name: epistemic-audit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run mechanical audit
+        run: python3 AGENTS/tools/audit.py .
