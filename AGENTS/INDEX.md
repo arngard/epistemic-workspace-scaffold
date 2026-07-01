@@ -40,7 +40,7 @@ tags: [agents]
 
 | 파일 | 설명 |
 |------|------|
-| [agent-roles.md](agent-roles.md) | 서브에이전트 역할 정의 (epistemic-auditor 등). 도구 중립 정의. |
+| [agent-roles.md](agent-roles.md) | 서브에이전트 역할 정의 (epistemic-auditor 등)와 인스턴스 전용 감사자 확장 패턴. 도구 중립 정의. |
 
 ## 워크스페이스 조직화
 
