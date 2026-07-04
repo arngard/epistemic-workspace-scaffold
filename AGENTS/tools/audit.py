@@ -120,6 +120,29 @@ def nfc(text: str) -> str:
     return unicodedata.normalize("NFC", text)
 
 
+_nested_repo_cache: dict[Path, tuple[Path, ...]] = {}
+
+
+def nested_repo_dirs(root: Path) -> tuple[Path, ...]:
+    """루트 아래 중첩 git 레포(서브모듈, 내장 클론)의 최상위 폴더들.
+
+    자체 .git(폴더 또는 파일)을 가진 폴더는 독립 워크스페이스이며 자기
+    규약으로 별도 감사한다. 스캐폴드를 서브모듈로 품는 배치에서 감사가
+    서브모듈 내부까지 이중 스캔하는 것을 막는다.
+    """
+    if root not in _nested_repo_cache:
+        _nested_repo_cache[root] = tuple(
+            p.parent for p in sorted(root.rglob(".git")) if p.parent != root
+        )
+    return _nested_repo_cache[root]
+
+
+def in_nested_repo(root: Path, path: Path) -> bool:
+    return any(
+        path == repo or repo in path.parents for repo in nested_repo_dirs(root)
+    )
+
+
 def iter_md_files(root: Path):
     """규약 검사 대상 .md 순회.
 
@@ -129,11 +152,14 @@ def iter_md_files(root: Path):
     소스 폴더 구조는 코드 생태계 관례가 지배한다 (cf. folder-structure.md
     "폴더 구조와 디스크립터" _implementation 예외). 직할 AGENTS.md와
     그 하위 문서 폴더 AGENTS/만 검사한다.
+    중첩 git 레포(서브모듈 등) 내부는 독립 워크스페이스라 제외한다.
     """
     ref_descriptor = (root / REFERENCE_DIR / DESCRIPTOR_NAME).resolve()
     for path in sorted(root.rglob("*.md")):
         parts = path.relative_to(root).parts
         if any(part in EXEMPT_DIRS for part in parts):
+            continue
+        if in_nested_repo(root, path):
             continue
         if parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_descriptor:
             continue
@@ -280,6 +306,8 @@ def content_dirs(root: Path):
             continue
         parts = path.relative_to(root).parts
         if any(part in EXEMPT_DIRS for part in parts):
+            continue
+        if in_nested_repo(root, path):
             continue
         if len(parts) >= 2 and parts[0] == IMPLEMENTATION_DIR and parts[1] != "AGENTS":
             continue
@@ -600,6 +628,8 @@ def check_name_collision(root: Path):
         for sub in sorted(d.iterdir()):
             if not sub.is_dir() or sub.name in EXEMPT_DIRS:
                 continue
+            if in_nested_repo(root, sub):
+                continue
             doc = d / (sub.name + ".md")
             if not doc.exists():
                 continue
@@ -620,6 +650,8 @@ def check_filename_portability(root: Path):
     for path in sorted(root.rglob("*")):
         parts = path.relative_to(root).parts
         if any(part in EXEMPT_DIRS for part in parts):
+            continue
+        if in_nested_repo(root, path):
             continue
         name = path.name
         rel = path.relative_to(root)
