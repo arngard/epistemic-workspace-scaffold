@@ -18,6 +18,14 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   8. 폴더 직속 md 파일 수 임계 초과 - 경고 (분화 권고)
   9. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
  10. 파일명의 크로스 플랫폼 이식성 (윈도우 금지 문자, 예약어 등)
+ 11. 규범 폴더 디스크립터의 파일별 안내 완전성 - 경고
+     (골격 기본 규범 폴더 AGENTS/, _docs/_architecture/ 및 그 하위 전체 +
+      파일별 안내 표를 가진 디스크립터의 폴더)
+ 12. TASK_TREE.md 완료 노드의 브랜치 속성 잔존 - 경고
+ 13. STATUS.md 레지스트리 표 스키마, 시각 형식 - 경고
+ 14. _docs/ 4범주 직속 문서의 tags 첫 항목 정합 - 경고
+ 15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더 제외) - 경고
+     (찌꺼기인지 사양 동결인지 첫 실체 대기인지는 감사자가 판단)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tools.md "기계 감사 스크립트".
 
@@ -55,6 +63,25 @@ EXEMPT_DIRS = {".git", ".claude", ".gemini", ".github", ".kiro", "node_modules"}
 # "폴더 구조와 디스크립터"). 도구 계층 자동 인식용 명명.
 DESCRIPTOR_NAME = "AGENTS.md"
 
+# 골격 기본 규범 폴더 (conventions.md "폴더 구조와 디스크립터"). 하위 폴더도
+# 규범 폴더로 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
+NORMATIVE_DIRS = ("AGENTS", "_docs/_architecture")
+
+# 에피스테믹 골격이 출고하는 표준 폴더. 실체 0건 검출에서 상시 예외.
+SKELETON_DIRS = {
+    ".", "AGENTS", "AGENTS/tools", "_docs", "_docs/_ontology",
+    "_docs/_knowledge", "_docs/_strategy", "_docs/_architecture",
+    "_docs/_worklog", REFERENCE_DIR, IMPLEMENTATION_DIR,
+}
+
+# _docs/ 4범주 직속 문서의 tags 첫 항목 기대값 (하위 폴더에는 강제하지 않는다).
+CATEGORY_TAG_DIRS = {
+    "_docs/_ontology": "ontology",
+    "_docs/_knowledge": "knowledge",
+    "_docs/_strategy": "strategy",
+    "_docs/_architecture": "architecture",
+}
+
 # --- 임계값 (초기값. 보수적으로 시작해 운영하며 조정) ---
 # 공백 제외 문자 수. "한글 기준" 근사.
 SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
@@ -76,6 +103,10 @@ DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}([-.]|$)")
 DATE_LINE_RE = re.compile(r"^\s*(?:[-*#>]+\s*)*\d{4}-\d{2}-\d{2}\b", re.MULTILINE)
 # TASK_TREE 속성 노드 표준 키. 이 키로 시작하는 불릿만 표준으로 인정.
 TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
+# STATUS 레지스트리 표의 시각 표기와 표준 헤더. 미수행 placeholder는 허용.
+STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
+STATUS_HEADER_CELLS = ["이름", "마지막 수행", "주기/트리거"]
+STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
 
 violations: list[str] = []
 warnings: list[str] = []
@@ -373,6 +404,183 @@ def check_task_tree_attrs(root: Path):
         )
 
 
+def is_normative_dir(root: Path, d: Path) -> bool:
+    """골격 기본 규범 폴더(하위 포함) 또는 파일별 안내 표를 가진 폴더인지 판별.
+
+    파일별 안내 표 판별: 디스크립터의 마크다운 표 행에 폴더 직속 md 파일로의
+    링크가 하나라도 있으면 그 폴더는 파일별 안내를 운영하는 것으로 본다.
+    """
+    rel = d.relative_to(root).as_posix() if d != root else "."
+    for base in NORMATIVE_DIRS:
+        if rel == base or rel.startswith(base + "/"):
+            return True
+    descriptor = d / DESCRIPTOR_NAME
+    if not descriptor.exists():
+        return False
+    direct_md_names = {
+        p.name for p in d.iterdir()
+        if p.is_file() and p.suffix == ".md"
+        and p.name != DESCRIPTOR_NAME and p.name not in EXEMPT_FILENAMES
+    }
+    if not direct_md_names:
+        return False
+    for line in body_of(descriptor).splitlines():
+        if not line.lstrip().startswith("|"):
+            continue
+        for name in direct_md_names:
+            if name in line or urllib.parse.quote(name) in line:
+                return True
+    return False
+
+
+def check_normative_guides(root: Path):
+    """규범 폴더 디스크립터의 파일별 안내 완전성 검사 (경고).
+
+    규범 폴더의 직속 md 파일이 디스크립터 본문에 언급되지 않으면 경고.
+    존재를 모르면 위반 행동이 나오는 문서들이므로 안내 누락 자체가 신호다.
+    """
+    for d in content_dirs(root):
+        if not is_normative_dir(root, d):
+            continue
+        descriptor = d / DESCRIPTOR_NAME
+        if not descriptor.exists():
+            continue  # 디스크립터 부재는 check_descriptors가 위반으로 잡는다
+        text = body_of(descriptor)
+        rel = d.relative_to(root) if d != root else Path(".")
+        for p in sorted(d.iterdir()):
+            if not (p.is_file() and p.suffix == ".md"):
+                continue
+            if p.name == DESCRIPTOR_NAME or p.name in EXEMPT_FILENAMES:
+                continue
+            if p.name in text or urllib.parse.quote(p.name) in text:
+                continue
+            warnings.append(
+                f"[normative] {rel}: 디스크립터 파일별 안내에 미등재 - {p.name}. "
+                "규범 폴더는 파일별 설명과 읽기 트리거를 유지한다"
+            )
+
+
+def check_task_tree_completed_branch(root: Path):
+    """완료(`[x]`/`[-]`) 노드에 브랜치 속성이 잔존하는지 검출 (경고).
+
+    완료 시 브랜치 속성은 제거한다 (TASK_TREE 관리 규칙). 잔존하면 끊김
+    재진입이 죽은 포인터를 따라갈 수 있다.
+    """
+    tree = root / WORKLOG_DIR / "TASK_TREE.md"
+    if not tree.exists():
+        return
+    body = re.sub(r"```.*?```", "", body_of(tree), flags=re.DOTALL)
+    checkbox_re = re.compile(r"^(\s*)-\s*\[([ /x\-])\]\s")
+    bullet_re = re.compile(r"^(\s*)-\s+(?!\[[ /x\-]\])(.*)$")
+    stack: list[tuple[int, str]] = []  # (들여쓰기 폭, 상태 문자)
+    for raw_line in body.splitlines():
+        if raw_line.lstrip().startswith(">"):
+            continue
+        m = checkbox_re.match(raw_line)
+        if m:
+            indent = len(m.group(1))
+            while stack and stack[-1][0] >= indent:
+                stack.pop()
+            stack.append((indent, m.group(2)))
+            continue
+        b = bullet_re.match(raw_line)
+        if not b:
+            continue
+        indent = len(b.group(1))
+        content = b.group(2).strip()
+        ancestor = next((s for i, s in reversed(stack) if i < indent), None)
+        if ancestor in ("x", "-") and content.startswith("브랜치"):
+            warnings.append(
+                f"[task-tree] {tree.relative_to(root)}: 완료 노드에 브랜치 속성 잔존 - "
+                f'"{content[:40]}". 완료 시 브랜치 속성은 제거한다'
+            )
+
+
+def check_status_schema(root: Path):
+    """STATUS.md 레지스트리 표의 스키마와 시각 표기 형식 검사 (경고)."""
+    status = root / WORKLOG_DIR / "STATUS.md"
+    if not status.exists():
+        return
+    rel = status.relative_to(root)
+    header_seen = False
+    for raw_line in body_of(status).splitlines():
+        line = raw_line.strip()
+        if not line.startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if all(re.fullmatch(r":?-+:?", c) for c in cells):  # 구분선
+            continue
+        if not header_seen:
+            header_seen = True
+            if cells != STATUS_HEADER_CELLS:
+                warnings.append(
+                    f"[status] {rel}: 레지스트리 표 헤더가 표준 스키마와 다름 - "
+                    f"기대 {STATUS_HEADER_CELLS}, 실제 {cells}"
+                )
+            continue
+        if len(cells) != len(STATUS_HEADER_CELLS):
+            warnings.append(
+                f"[status] {rel}: 레지스트리 행 열 수 불일치 - \"{line[:40]}\""
+            )
+            continue
+        value = cells[1]
+        if value in STATUS_PLACEHOLDER or STATUS_TIMESTAMP_RE.match(value):
+            continue
+        warnings.append(
+            f"[status] {rel}: 마지막 수행 시각 형식 위반 - \"{value}\". "
+            "yyyy-MM-dd HH:mm:ss KST 표기"
+        )
+
+
+def check_tags_category(root: Path):
+    """_docs/ 4범주 직속 문서의 tags 첫 항목이 카테고리와 일치하는지 (경고).
+
+    하위 폴더 문서에는 강제하지 않는다 (cf. AGENTS.md "문서 작성 스타일").
+    """
+    for rel_dir, expected in CATEGORY_TAG_DIRS.items():
+        d = root / rel_dir
+        if not d.is_dir():
+            continue
+        for p in sorted(d.iterdir()):
+            if not (p.is_file() and p.suffix == ".md"):
+                continue
+            if p.name in EXEMPT_FILENAMES:
+                continue
+            m = FRONT_MATTER_RE.match(read(p))
+            if not m:
+                continue  # front matter 부재는 check_front_matter가 잡는다
+            t = re.search(r"^tags\s*:\s*\[([^\]]*)\]", m.group(1), re.MULTILINE)
+            if not t:
+                continue
+            first = t.group(1).split(",")[0].strip()
+            if first != expected:
+                warnings.append(
+                    f"[tags] {p.relative_to(root)}: tags 첫 항목 \"{first}\" - "
+                    f"4범주 직속 문서는 \"{expected}\" 기대"
+                )
+
+
+def check_empty_folders(root: Path):
+    """디스크립터 외 실체가 0건인 폴더 검출 (경고, 골격 폴더 제외).
+
+    삭제 대상 잔재인지, 사양만 있고 실체 0건인 동결인지, 첫 실체 대기 중인
+    정상 신설인지는 감사자(LLM)가 판단한다.
+    """
+    for d in content_dirs(root):
+        rel = d.relative_to(root).as_posix() if d != root else "."
+        if rel in SKELETON_DIRS:
+            continue
+        try:
+            entries = [e for e in d.iterdir() if e.name != DESCRIPTOR_NAME]
+        except OSError:
+            continue
+        if not entries:
+            warnings.append(
+                f"[empty-folder] {rel}: 디스크립터 외 실체 0건. "
+                "잔재 삭제/사양 동결/첫 실체 대기 여부 감사자 판단 필요"
+            )
+
+
 def check_filename_portability(root: Path):
     """윈도우 등 다른 OS에서 clone조차 불가능한 이름을 잡는다."""
     for path in sorted(root.rglob("*")):
@@ -411,7 +619,12 @@ def main() -> int:
     check_size(root)
     check_temporality_mix(root)
     check_status_registry(root)
+    check_status_schema(root)
     check_task_tree_attrs(root)
+    check_task_tree_completed_branch(root)
+    check_normative_guides(root)
+    check_tags_category(root)
+    check_empty_folders(root)
     check_filename_portability(root)
 
     for line in violations:

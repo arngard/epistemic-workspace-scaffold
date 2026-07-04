@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-04
+date modified: 2026-07-05
 tags: [architecture]
 ---
 
@@ -8,7 +8,7 @@ tags: [architecture]
 
 > "우리가 어떻게 만들겠다" - 최종 설계의 스니펫. 현재 상태의 도면.
 > 설계의 맥락은 [_knowledge/](../_knowledge/AGENTS.md)와 [_strategy/](../_strategy/AGENTS.md) 참조.
-> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (cf. [AGENTS.md](../../AGENTS.md) "폴더 디스크립터 사용 규칙").
+> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS/conventions.md](../../AGENTS/conventions.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
 
 ## 작성 스타일
 
@@ -18,11 +18,10 @@ tags: [architecture]
 - 각 설계 요소의 즉각적 취지(무엇을 위해 이렇게 두는가)는 명세에 함께 적는다. 그 너머의 결정 배경, 근거는 여기에 담지 않는다. 그건 `_strategy/`에 두고 cf.로 가리킨다.
 - 코드로 표현 가능한 인터페이스, 타입, 에러 계약은 코드 자체가 명세다. 이 폴더에는 그 외의 상위 구조 결정만 남긴다.
 
-## 프로젝트 수준 규약
+## 파일별 안내
 
-- [core-constraints.md](core-constraints.md): 설계 원칙 및 핵심 제약. 스캐폴드 상태 - 제약 목록 작성 필요.
-- [conventions.md](conventions.md): 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [AGENTS/conventions.md](../../AGENTS/conventions.md).
-
-## 스캐폴드 샘플
-
-`sample-spec.md`는 설계 명세 문서의 위치와 형식을 보여주는 튜토리얼용 샘플이다. 실제 작성 시 삭제하거나 교체한다.
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [core-constraints.md](core-constraints.md) | 설계 원칙 및 핵심 제약. 스캐폴드 상태 - 제약 목록 작성 필요 | 설계 결정, 구현 착수 전 |
+| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [AGENTS/conventions.md](../../AGENTS/conventions.md) | 코드 작성, 빌드 설정 시 |
+| [sample-spec.md](sample-spec.md) | 설계 명세 문서의 위치와 형식을 보여주는 튜토리얼용 샘플. 실제 작성 시 삭제하거나 교체한다 | 첫 명세 작성 시 |
