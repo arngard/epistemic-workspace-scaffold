@@ -14,7 +14,7 @@ tags: [agents]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [tools.md](tools.md) | AI 도구별 자동 참조 파일 경로, 기계 감사 스크립트(tools/audit.py), Claude Code 절차 스킬 래퍼 | 도구 환경 확인, 감사 스크립트 실행 시 |
+| [tool-environment.md](tool-environment.md) | AI 도구별 자동 참조 파일 경로, 기계 감사 스크립트(tools/audit.py), Claude Code 절차 스킬 래퍼 | 도구 환경 확인, 감사 스크립트 실행 시 |
 
 ## 규약과 절차
 
