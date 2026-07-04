@@ -24,7 +24,7 @@ tags: [agents, 역할]
 
 ### 점검 항목
 
-형식 점검의 결정론적 항목(구체 목록은 [tools.md](tools.md) "기계 감사 스크립트"가 SSOT)은 [tools/audit.py](tools/audit.py)로 이관되었다. 감사자는 스크립트를 실행해 결과를 보고에 첨부하고, 그 형식 항목들을 손으로 재검사하지 않는다. 감사자 본체는 의미 판단과 git 맥락 검출에 집중한다.
+형식 점검의 결정론적 항목(구체 목록은 [tool-environment.md](tool-environment.md) "기계 감사 스크립트"가 SSOT)은 [tools/audit.py](tools/audit.py)로 이관되었다. 감사자는 스크립트를 실행해 결과를 보고에 첨부하고, 그 형식 항목들을 손으로 재검사하지 않는다. 감사자 본체는 의미 판단과 git 맥락 검출에 집중한다.
 
 1. _worklog/ 문서의 최신성 (git 상태 대비 의미 판단)
    - STATUS.md 레지스트리가 감사, 주기 작업의 실제 수행 이력을 반영하는가
@@ -35,6 +35,7 @@ tags: [agents, 역할]
    - `sample-*.md` 튜토리얼 샘플이 실제 콘텐츠로 교체되었다면 "스캐폴드 상태" 주의문이 제거됐는가
    - 스크립트가 분량 임계 경고를 낸 문서에 실제로 여러 관심사가 섞여 있는가 (스크립트는 길이만 본다)
    - 폴더 디스크립터의 최신성 - 설명이 폴더 실제 내용과 부합하는가 (파일별 안내의 등재 누락 검출은 스크립트가 담당)
+   - 동명 문서-폴더 쌍이 실제 하위 문서 묶음 관계인가 (스크립트는 하위 문서 없는 쌍만 확정 검출한다 - md가 든 동명 쌍의 의미 관계는 여기서 판단)
    - 스크립트가 실체 0건 폴더 경고를 낸 폴더의 성격 판단 - 삭제 대상 잔재인지, 사양만 있고 실체 0건인 동결(보류 명시 또는 첫 실체 필요)인지, 첫 실체 대기 중인 정상 신설인지
    - 현재적 문서의 근거 보존 예외로 남긴 근거 요지가 경위 서사로 비대해지지 않았는가 (cf. [document-temporality.md](document-temporality.md) "시간성 혼합 금지")
 3. git 맥락 검출 (스크립트 미담당, git 비의존 원칙상 audit.py 밖)
@@ -65,7 +66,7 @@ tags: [agents, 역할]
 ### 도구별 구현
 
 - Claude Code: [`.claude/agents/epistemic-auditor.md`](../.claude/agents/epistemic-auditor.md).
-- 기타 도구: 미구현. 필요 시 [tools.md](tools.md) 참고해 추가한다.
+- 기타 도구: 미구현. 필요 시 [tool-environment.md](tool-environment.md) 참고해 추가한다.
 
 ## 인스턴스 전용 감사자 확장
 

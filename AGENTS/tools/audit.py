@@ -26,8 +26,11 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  14. _docs/ 4범주 직속 문서의 tags 첫 항목 정합 - 경고
  15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더 제외) - 경고
      (찌꺼기인지 사양 동결인지 첫 실체 대기인지는 감사자가 판단)
+ 16. 하위 문서 없는 동명 문서-폴더 쌍 - 경고
+     (동명 쌍은 하위 문서 묶음 관계의 예약 신호. md가 든 동명 쌍의
+      실제 관계 판단은 감사자 몫)
 
-위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tools.md "기계 감사 스크립트".
+위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
 사용법:
     python3 AGENTS/tools/audit.py [워크스페이스 루트]   # 생략 시 현재 디렉토리
@@ -581,6 +584,36 @@ def check_empty_folders(root: Path):
             )
 
 
+def check_name_collision(root: Path):
+    """하위 문서 묶음이 아닌 동명 문서-폴더 쌍 검출 (경고).
+
+    `X.md` + `X/`는 하위 문서 묶음 관계의 예약 신호다 (cf.
+    workspace-and-project-structure.md "하위 문서 폴더 규칙"). 폴더에
+    디스크립터 외 md가 없으면 그 관계가 성립할 수 없으므로 확정 검출한다.
+    md가 든 동명 쌍의 실제 관계 판단은 감사자(LLM) 몫이다.
+    """
+    for d in content_dirs(root):
+        parts = d.relative_to(root).parts if d != root else ()
+        if parts and parts[0] == REFERENCE_DIR:
+            continue  # immutable raw 영역의 이름은 규약 대상이 아니다
+        for sub in sorted(d.iterdir()):
+            if not sub.is_dir() or sub.name in EXEMPT_DIRS:
+                continue
+            doc = d / (sub.name + ".md")
+            if not doc.exists():
+                continue
+            has_md = any(
+                p.is_file() and p.suffix == ".md" and p.name != DESCRIPTOR_NAME
+                for p in sub.iterdir()
+            )
+            if not has_md:
+                rel = doc.relative_to(root)
+                warnings.append(
+                    f"[naming] {rel}: 동명 폴더 {sub.relative_to(root)}/에 하위 문서가 없음. "
+                    "하위 문서 묶음 관계가 아니면 한쪽을 개명한다"
+                )
+
+
 def check_filename_portability(root: Path):
     """윈도우 등 다른 OS에서 clone조차 불가능한 이름을 잡는다."""
     for path in sorted(root.rglob("*")):
@@ -625,6 +658,7 @@ def main() -> int:
     check_normative_guides(root)
     check_tags_category(root)
     check_empty_folders(root)
+    check_name_collision(root)
     check_filename_portability(root)
 
     for line in violations:

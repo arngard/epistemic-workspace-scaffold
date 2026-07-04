@@ -15,7 +15,7 @@ tags: [규칙, 문서관리]
 
 1. 이 파일을 읽는다.
 2. [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md)와 [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)를 읽는다. TASK_TREE에서 진행 중, 다음 할 일을 파악하고, STATUS 레지스트리에서 감사, 주기 작업의 마지막 수행 시각을 확인한다.
-3. 형식 정합성 스크립트를 실행한다 - 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (cf. [AGENTS/tools.md](AGENTS/tools.md) "기계 감사 스크립트"). 보고된 위반은 정리하거나 사용자에게 짚는다. 추가로 STATUS 레지스트리의 에피스테믹 의미 감사 행의 마지막 수행이 12시간 초과면 본 작업 시작 전에 epistemic-auditor 서브에이전트를 호출해 의미 감사(워크로그 최신성, 카테고리 배치 등)를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)). 보고된 위반은 정리하거나 사용자에게 짚은 뒤 STATUS 레지스트리의 해당 행을 새 시각으로 갱신한다.
+3. 형식 정합성 스크립트를 실행한다 - 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (cf. [AGENTS/tool-environment.md](AGENTS/tool-environment.md) "기계 감사 스크립트"). 보고된 위반은 정리하거나 사용자에게 짚는다. 추가로 STATUS 레지스트리의 에피스테믹 의미 감사 행의 마지막 수행이 12시간 초과면 본 작업 시작 전에 epistemic-auditor 서브에이전트를 호출해 의미 감사(워크로그 최신성, 카테고리 배치 등)를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)). 보고된 위반은 정리하거나 사용자에게 짚은 뒤 STATUS 레지스트리의 해당 행을 새 시각으로 갱신한다.
 4. [`_reference/AGENTS.md`](_reference/AGENTS.md)를 읽고 폴더 실제 내용과 대조한다. 인벤토리와 실제가 불일치하거나 `처리 대기`/`사용자 의견 필요` 항목이 있으면 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 진행한다.
 5. 작업 범위에 해당하는 `_docs/` 문서를 읽는다 (아래 참조 테이블 기준).
 6. 코드 생성/수정 전에는 관련 문서의 기존 결정과 충돌이 없는지 확인한다.
