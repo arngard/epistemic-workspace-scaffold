@@ -55,15 +55,15 @@ REFERENCE_DIR = "_reference"
 IMPLEMENTATION_DIR = "_implementation"
 WORKLOG_DIR = "_docs/_worklog"
 # 도구 전용 파일은 front matter 면제 (cf. agent-roles.md 점검 항목 3,
-# conventions.md "도구 전용 파일 예외"). SKILL.md는 자체 규격(name, description).
+# writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "GEMINI.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".gemini", ".github", ".kiro", "node_modules"}
 
-# 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (conventions.md
+# 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (folder-structure.md
 # "폴더 구조와 디스크립터"). 도구 계층 자동 인식용 명명.
 DESCRIPTOR_NAME = "AGENTS.md"
 
-# 골격 기본 규범 폴더 (conventions.md "폴더 구조와 디스크립터"). 하위 폴더도
+# 골격 기본 규범 폴더 (folder-structure.md "폴더 구조와 디스크립터"). 하위 폴더도
 # 규범 폴더로 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
 NORMATIVE_DIRS = ("AGENTS", "_docs/_architecture")
 
@@ -122,7 +122,7 @@ def iter_md_files(root: Path):
     _reference/ 내부는 immutable raw 자료라 규약 검사 대상이 아니다
     (디스크립터 AGENTS.md 자체만 예외).
     _implementation/ 하위 프로젝트 내부(소스 트리)도 대상이 아니다 -
-    소스 폴더 구조는 코드 생태계 관례가 지배한다 (cf. conventions.md
+    소스 폴더 구조는 코드 생태계 관례가 지배한다 (cf. folder-structure.md
     "폴더 구조와 디스크립터" _implementation 예외). 직할 AGENTS.md와
     그 하위 문서 폴더 AGENTS/만 검사한다.
     """
@@ -266,7 +266,7 @@ def content_dirs(root: Path):
 
     EXEMPT_DIRS(.git, .claude 등 도구 전용)와 그 하위는 제외한다.
     _implementation/ 하위 프로젝트 내부(소스 트리)는 제외한다 - 직할
-    문서 폴더 AGENTS/만 대상 (cf. conventions.md "폴더 구조와 디스크립터"
+    문서 폴더 AGENTS/만 대상 (cf. folder-structure.md "폴더 구조와 디스크립터"
     _implementation 예외).
     루트 자신도 디스크립터(루트 AGENTS.md)를 가진다.
     """

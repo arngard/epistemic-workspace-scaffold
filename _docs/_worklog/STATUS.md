@@ -1,12 +1,12 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-04
+date modified: 2026-07-05
 tags: [worklog]
 ---
 
 # 상태 레지스트리
 
-> 감사, 주기 작업의 레지스트리. 현재적 문서이며 항상 최신값으로 덮어쓴다 (시간성 규약의 "시간 스냅샷 문서"와 구별된다 - cf. [AGENTS/conventions.md](../../AGENTS/conventions.md) "문서 시간성").
+> 감사, 주기 작업의 레지스트리. 현재적 문서이며 항상 최신값으로 덮어쓴다 (시간성 규약의 "시간 스냅샷 문서"와 구별된다 - cf. [AGENTS/document-temporality.md](../../AGENTS/document-temporality.md)).
 >
 > 진행 서사를 일절 두지 않는다. 진행 상태는 [TASK_TREE.md](TASK_TREE.md)가, 완료 이력은 git 이력이 담당한다.
 >

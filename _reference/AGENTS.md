@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-03
-date modified: 2026-07-04
+date modified: 2026-07-05
 tags: [reference]
 ---
 
@@ -11,7 +11,7 @@ tags: [reference]
 ## 운용 원칙
 
 - 처리 후에도 이 폴더의 파일은 삭제, 수정하지 않는다. derived 노드(`_docs/_*` 하위)에서 `cf. _reference/<file>` 형태로 reference만 남긴다.
-- 본 디스크립터는 인벤토리별 처리 진척의 SSOT(single source of truth)다. 처리 상태는 파일시스템으로 대체할 수 없는 정보이므로, 일반 폴더와 달리 인벤토리 표를 유지하는 특수형이다 (cf. [`../AGENTS/conventions.md`](../AGENTS/conventions.md) "폴더 구조와 디스크립터"). 새 파일이 추가되면 아래 표에 등재하고, 통합, 처리 후 상태 컬럼을 갱신한다.
+- 본 디스크립터는 인벤토리별 처리 진척의 SSOT(single source of truth)다. 처리 상태는 파일시스템으로 대체할 수 없는 정보이므로, 일반 폴더와 달리 인벤토리 표를 유지하는 특수형이다 (cf. [`../AGENTS/folder-structure.md`](../AGENTS/folder-structure.md) "폴더 구조와 디스크립터"). 새 파일이 추가되면 아래 표에 등재하고, 통합, 처리 후 상태 컬럼을 갱신한다.
 - AI는 새 세션 시작 시 아래 표와 폴더 실제 내용을 대조한다. 폴더에는 있지만 표에 없으면 신규 미처리 자료다 (등재하고 처리 절차 시작). 표에는 있지만 폴더에 없으면 raw 자료가 사라졌다는 뜻이며, 사용자에게 짚는다.
 - 자세한 처리 절차: [`../AGENTS/ingest-workflow.md`](../AGENTS/ingest-workflow.md) "`_reference/` 폴더 처리" 섹션.
 

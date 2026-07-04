@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-04
+date modified: 2026-07-05
 tags: [agents, 워크스페이스]
 ---
 
@@ -26,7 +26,7 @@ tags: [agents, 워크스페이스]
 - 자식 파일명에 부모 이름을 프리픽스로 반복하지 않는다. 폴더 경로가 계층 맥락을 준다. 하이픈 나열(`X-sub.md`)이나 부모명과 다른 폴더명(`X.md` + `other/`)은 쓰지 않는다.
 - 자식이 또 자식을 가지면 같은 규칙을 재귀 적용한다 (`X.md`, `X/Y.md`, `X/Y/Z.md`).
 - 하위 문서 폴더를 신설하면 그 폴더의 디스크립터(AGENTS.md)를 같은 커밋에 동반한다 (cf. [AGENTS.md](../AGENTS.md) "폴더 디스크립터 사용 규칙").
-- 이동, 리네임에 따른 연쇄 갱신은 [conventions.md "폴더, 파일 이동 시 연쇄 갱신"](conventions.md) 참조.
+- 이동, 리네임에 따른 연쇄 갱신은 [folder-structure.md "폴더, 파일 이동 시 연쇄 갱신"](folder-structure.md) 참조.
 
 ## 최상위 구조
 

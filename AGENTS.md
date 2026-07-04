@@ -33,12 +33,12 @@ tags: [규칙, 문서관리]
 ## 문서 변경 시 (필수)
 
 - 모듈/의존성 변경 -> [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md) 먼저 업데이트
-- 문서/구조 규약 변경 -> [AGENTS/conventions.md](AGENTS/conventions.md) 먼저 업데이트. 프로젝트 코딩 규약이면 [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md).
+- 문서/구조 규약 변경 -> 해당 관심사의 규약 문서([AGENTS/document-units.md](AGENTS/document-units.md), [AGENTS/folder-structure.md](AGENTS/folder-structure.md), [AGENTS/document-temporality.md](AGENTS/document-temporality.md), [AGENTS/writing-style.md](AGENTS/writing-style.md))를 먼저 업데이트. 프로젝트 코딩 규약이면 [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md).
 - 문서 간 정합성 확인을 항상 수행한다 (특히 cross-reference 되는 섹션 번호).
 - 문서나 주석을 수정한 경우, "문서 작성 스타일" 섹션의 규칙을 위배하는 것이 없는지 검토한다.
-- 폴더를 신설할 때는 그 폴더의 디스크립터(`AGENTS.md`)를 같은 커밋에 동반한다. 규범 폴더의 디스크립터는 파일별 설명과 읽기 트리거를 유지한다 (cf. [AGENTS/conventions.md](AGENTS/conventions.md) "폴더 구조와 디스크립터").
+- 폴더를 신설할 때는 그 폴더의 디스크립터(`AGENTS.md`)를 같은 커밋에 동반한다. 규범 폴더의 디스크립터는 파일별 설명과 읽기 트리거를 유지한다 (cf. [AGENTS/folder-structure.md](AGENTS/folder-structure.md) "폴더 구조와 디스크립터").
 - 절차 문서나 폴더를 신설할 때는 첫 실체 1건을 같은 단위 작업에 포함한다. 사양만 있고 실체 0건인 상태는 추측으로 채운 결과로 본다.
-- 폴더/파일 이동 또는 리네임은 연쇄 갱신을 요구한다. 절차는 [`AGENTS/conventions.md` "폴더, 파일 이동 시 연쇄 갱신"](AGENTS/conventions.md) 참조.
+- 폴더/파일 이동 또는 리네임은 연쇄 갱신을 요구한다. 절차는 [`AGENTS/folder-structure.md` "폴더, 파일 이동 시 연쇄 갱신"](AGENTS/folder-structure.md) 참조.
 
 ## 작업 수행 원칙
 
@@ -54,7 +54,7 @@ tags: [규칙, 문서관리]
 
 ## 문서 작성 스타일
 
-진입자가 첫 화면에서 봐야 할 핵심 항목만 본 절에 둔다. 그 외 일반 작성 규약(1관심사, 분량 보조 지표, 중복 금지와 외부 SSOT 비복제, 이름 안정성, 문서 시간성, 코드 블록 절제, 표준 표현 우선, 출처 표기 범위, 자체 완결성, 고정 규격 태그 중복 회피, 도구 전용 파일 예외, 문장 부호 ASCII 우선)은 [`AGENTS/conventions.md` "일반 문서 작성 스타일"](AGENTS/conventions.md) SSOT.
+진입자가 첫 화면에서 봐야 할 핵심 항목만 본 절에 둔다. 그 외 규약은 관심사별 SSOT 문서에 둔다: 문서 단위와 SSOT 원칙(1관심사, 분량, 중복 금지, 이름 안정성)은 [`AGENTS/document-units.md`](AGENTS/document-units.md), 문서 시간성은 [`AGENTS/document-temporality.md`](AGENTS/document-temporality.md), 문장, 서술 수준 규칙(코드 블록 절제, 표준 표현, 출처 표기, 자체 완결성, 태그 중복 회피, 도구 전용 파일 예외, ASCII 부호)은 [`AGENTS/writing-style.md`](AGENTS/writing-style.md).
 
 - 볼드, 이탤릭, 이모지 등 서식/기호 강조는 강한 경고/금지/주의 사항에만 사용한다. 나열, 제목, 항목 라벨, 일반 개념어, 장식에는 쓰지 않는다. 남발하면 진짜 강조가 필요할 때의 진정성을 잃는다.
 - 문서 간 참조는 마크다운 링크로 작성한다. `[표시 텍스트](상대경로)` 형식.
@@ -67,7 +67,7 @@ tags: [규칙, 문서관리]
 
 ## 폴더 디스크립터 사용 규칙
 
-모든 폴더는 디스크립터(`AGENTS.md`)를 가진다. 규약 SSOT는 [AGENTS/conventions.md](AGENTS/conventions.md) "폴더 구조와 디스크립터"이며, 아래는 진입자용 요지다.
+모든 폴더는 디스크립터(`AGENTS.md`)를 가진다. 규약 SSOT는 [AGENTS/folder-structure.md](AGENTS/folder-structure.md) "폴더 구조와 디스크립터"이며, 아래는 진입자용 요지다.
 
 - 읽기: 폴더 디스크립터를 먼저 읽고 그 서브트리의 목적, 로컬 규칙, 행동 유발 항목을 파악한 뒤, 필요한 문서만 선택적으로 연다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템 자체이므로 디스크립터에 인벤토리 표를 강제하지 않는다.
 - 쓰기: 내용에 맞는 기존 문서에 추가하거나, 구체적인 제목의 새 파일을 만든다. 규범 폴더면 디스크립터의 파일별 안내에 새 파일의 설명과 읽기 트리거를 등재한다.
@@ -103,7 +103,10 @@ tags: [규칙, 문서관리]
 | [_docs/_strategy/AGENTS.md](_docs/_strategy/AGENTS.md) | 전략 디스크립터 | 새 세션 시작 시, 문제 해결 시 |
 | [AGENTS/AGENTS.md](AGENTS/AGENTS.md) | 에이전트 지침 디스크립터 | 에이전트 운영 방식 확인 시 |
 | [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md) | 설계 명세 디스크립터 | 새 클래스/모듈 생성 시 |
-| [AGENTS/conventions.md](AGENTS/conventions.md) | 문서 작성 규약, 구조 규약 SSOT | 모든 문서 작성 시 |
+| [AGENTS/document-units.md](AGENTS/document-units.md) | 문서 단위와 SSOT 규약 | 문서 신설, 분할 판단 시 |
+| [AGENTS/folder-structure.md](AGENTS/folder-structure.md) | 폴더 구조, 디스크립터, 연쇄 갱신 규약 | 폴더 구조 변경 시 |
+| [AGENTS/document-temporality.md](AGENTS/document-temporality.md) | 문서 시간성 규약 | 날짜 프리픽스 문서 작성, 수정 시 |
+| [AGENTS/writing-style.md](AGENTS/writing-style.md) | 일반 문서 작성 스타일 | 모든 문서 작성 시 |
 | [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) | 단위 작업 운영 흐름 SSOT | 단위 작업 시작, 종료 시 |
 | [_reference/AGENTS.md](_reference/AGENTS.md) | raw 자료 인벤토리 + 처리 상태 | 매 세션 시작 시 |
 
