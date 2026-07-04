@@ -1,15 +1,14 @@
 ---
 date created: 2026-04-18
-date modified: 2026-06-12
+date modified: 2026-07-04
 tags: [strategy]
 ---
 
-# 전략 색인
+# 전략 디스크립터
 
 > "우리가 왜 이렇게 하기로 했는가" - 우리의 결정과 그 근거.
-> 외부 사실과 환경 정보는 [_knowledge/](../_knowledge/INDEX.md) 참조.
-> 최종 설계 명세는 [_architecture/](../_architecture/INDEX.md) 참조.
-> 공통 사용 규칙은 [AGENTS.md](../../AGENTS.md)의 "색인(INDEX) 사용 규칙" 섹션 참조.
+> 외부 사실과 환경 정보는 [_knowledge/](../_knowledge/AGENTS.md) 참조. 최종 설계 명세는 [_architecture/](../_architecture/AGENTS.md) 참조.
+> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (cf. [AGENTS.md](../../AGENTS.md) "폴더 디스크립터 사용 규칙").
 
 ## 작성 스타일
 
@@ -56,9 +55,7 @@ urgency: 상 | 중 | 하
 - "결정이 필요한 것들"처럼 확정 상태가 드러나지 않는 오픈 리스트 형식은 쓰지 않는다. 독자가 무엇이 확정이고 무엇이 미결인지 판단할 수 없다.
 - 내부 재편만으로 감당이 안 될 만큼 커지면 새로운 시각에서 문서 자체의 분할과 재배치를 검토한다. 별도 전략 문서로 쪼개거나, 내용의 성격에 따라 재배치할 수 있다. 이 경우 일반적인 기준에 따라 재검토한다. cf. [how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md).
 
-## 문서 목록
+## 스캐폴드 샘플
 
-| 파일 | 설명 |
-|------|------|
-| [project-overview.md](project-overview.md) | (튜토리얼용 샘플) 프로젝트 수준의 상위 결정을 전략 문서 형식으로 담는 예시. 실제 워크스페이스에서는 이 파일을 삭제하거나, 목표, 첫 출시 범위, 대상 고객 등을 각각의 `why-*.md`로 분리 작성한다. |
-| [sample-decision.md](sample-decision.md) | (튜토리얼용 샘플) 설계 결정 문서의 위치/형식을 보여주는 예시. 실제 작성 시 삭제, 교체. |
+- `project-overview.md`: 프로젝트 수준의 상위 결정을 전략 문서 형식으로 담는 튜토리얼용 샘플. 실제 워크스페이스에서는 삭제하거나, 목표, 첫 출시 범위, 대상 고객 등을 각각의 `why-*.md`로 분리 작성한다.
+- `sample-decision.md`: 설계 결정 문서의 위치와 형식을 보여주는 튜토리얼용 샘플. 실제 작성 시 삭제하거나 교체한다.
