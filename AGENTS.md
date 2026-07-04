@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-02
+date modified: 2026-07-04
 tags: [규칙, 문서관리]
 ---
 
@@ -14,9 +14,9 @@ tags: [규칙, 문서관리]
 ## 새 세션 시작 시 (필수)
 
 1. 이 파일을 읽는다.
-2. [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)를 읽고 현재 작업 상태와 다음 할 일을 파악한다.
-3. 형식 정합성 스크립트를 실행한다 - 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (cf. [AGENTS/tools.md](AGENTS/tools.md) "기계 감사 스크립트"). 보고된 위반은 정리하거나 사용자에게 짚는다. 추가로 STATUS.md의 "마지막 정합성 감사" 시각이 12시간 초과면 본 작업 시작 전에 epistemic-auditor 서브에이전트를 호출해 의미 감사(워크로그 최신성, 카테고리 배치 등)를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)). 보고된 위반은 정리하거나 사용자에게 짚은 뒤 STATUS.md의 시각 필드를 새로 기록한다.
-4. [`_reference/INDEX.md`](_reference/INDEX.md)를 읽고 폴더 실제 내용과 대조한다. 인벤토리와 실제가 불일치하거나 `처리 대기`/`사용자 의견 필요` 항목이 있으면 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 진행한다.
+2. [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md)와 [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)를 읽는다. TASK_TREE에서 진행 중, 다음 할 일을 파악하고, STATUS 레지스트리에서 감사, 주기 작업의 마지막 수행 시각을 확인한다.
+3. 형식 정합성 스크립트를 실행한다 - 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (cf. [AGENTS/tools.md](AGENTS/tools.md) "기계 감사 스크립트"). 보고된 위반은 정리하거나 사용자에게 짚는다. 추가로 STATUS 레지스트리의 에피스테믹 의미 감사 행의 마지막 수행이 12시간 초과면 본 작업 시작 전에 epistemic-auditor 서브에이전트를 호출해 의미 감사(워크로그 최신성, 카테고리 배치 등)를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)). 보고된 위반은 정리하거나 사용자에게 짚은 뒤 STATUS 레지스트리의 해당 행을 새 시각으로 갱신한다.
+4. [`_reference/AGENTS.md`](_reference/AGENTS.md)를 읽고 폴더 실제 내용과 대조한다. 인벤토리와 실제가 불일치하거나 `처리 대기`/`사용자 의견 필요` 항목이 있으면 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md) "`_reference/` 폴더 처리" 절차로 진행한다.
 5. 작업 범위에 해당하는 `_docs/` 문서를 읽는다 (아래 참조 테이블 기준).
 6. 코드 생성/수정 전에는 관련 문서의 기존 결정과 충돌이 없는지 확인한다.
 
@@ -26,17 +26,17 @@ tags: [규칙, 문서관리]
 
 단위 작업의 시작, 진행, 종료 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) 참조. 진입, 진행, 종료(머지 패턴 분기[직접 머지/PR 흐름] + 재귀 정합화), PR 운영, 끊김 재진입의 SSOT.
 
-본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작과 종료 시 STATUS, TASK_TREE, DONE 갱신 + 사용자 검토 통과 후 main 머지**. AI 자율 머지 회피. 근거 원리는 [원본 보호 원칙](AGENTS/original-protection-principle.md)이다.
+본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작과 종료 시 TASK_TREE 갱신 + 사용자 검토 통과 후 main 머지**. 완료 이력은 git 이력이 담당하며 별도 이력 파일을 두지 않는다. AI 자율 머지 회피. 근거 원리는 [원본 보호 원칙](AGENTS/original-protection-principle.md)이다.
 
 세션 중 새로운 관례, 규칙, 스타일이 합의되었으면 해당 내용이 본 파일 또는 관련 영구 문서에 반영되었는지 확인한다. 긴 세션이거나 큰 변경이 있었던 세션의 종료 전에는 epistemic-auditor 서브에이전트를 호출해 문서 정합성 감사를 받는다 (cf. [AGENTS/agent-roles.md](AGENTS/agent-roles.md)).
 
 ## 문서 변경 시 (필수)
 
-- 모듈/의존성 변경 -> [_docs/_architecture/INDEX.md](_docs/_architecture/INDEX.md) 먼저 업데이트
+- 모듈/의존성 변경 -> [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md) 먼저 업데이트
 - 문서/구조 규약 변경 -> [AGENTS/conventions.md](AGENTS/conventions.md) 먼저 업데이트. 프로젝트 코딩 규약이면 [_docs/_architecture/conventions.md](_docs/_architecture/conventions.md).
 - 문서 간 정합성 확인을 항상 수행한다 (특히 cross-reference 되는 섹션 번호).
 - 문서나 주석을 수정한 경우, "문서 작성 스타일" 섹션의 규칙을 위배하는 것이 없는지 검토한다.
-- INDEX를 읽을 때 `date modified`가 오래된 문서가 눈에 띄면 점검한다. INDEX상 설명이 부적절해서 참조되지 않는 건지, 정말 불필요한 문서인지 판단하여 설명 개선 / 다른 문서로 통합 / 삭제 중 하나를 수행한다. 오래 방치된 문서는 유의미한 역할을 하지 못하고 있다는 신호다.
+- 폴더를 신설할 때는 그 폴더의 디스크립터(`AGENTS.md`)를 같은 커밋에 동반한다. 규범 폴더의 디스크립터는 파일별 설명과 읽기 트리거를 유지한다 (cf. [AGENTS/conventions.md](AGENTS/conventions.md) "폴더 구조와 디스크립터").
 - 폴더/파일 이동 또는 리네임은 연쇄 갱신을 요구한다. 절차는 [`AGENTS/conventions.md` "폴더, 파일 이동 시 연쇄 갱신"](AGENTS/conventions.md) 참조.
 
 ## 작업 수행 원칙
@@ -64,14 +64,14 @@ tags: [규칙, 문서관리]
 - **추측으로 문서를 채우지 않는다.** 논의되지 않은 내용을 확정된 것처럼 적지 않는다.
 - 사실과 의견, 의견의 주체를 분명히 구분한다. 근거 있는 사실, 작성자 본인의 판단, 타인/외부의 판단은 서술 형태를 달리한다. 의견에는 주체를 명시한다 (예: "`@아릉`의 판단", "Klaviyo 팀의 설계", "AI 제안"). 의견을 사실인 양 서술하거나 주체를 흐리면 이후 결정의 근거 추적이 깨진다.
 
-## 색인(INDEX) 사용 규칙
+## 폴더 디스크립터 사용 규칙
 
-모든 INDEX 문서에 공통으로 적용된다. 각 INDEX는 자기 영역 고유의 규칙만 별도로 추가한다.
+모든 폴더는 디스크립터(`AGENTS.md`)를 가진다. 규약 SSOT는 [AGENTS/conventions.md](AGENTS/conventions.md) "폴더 구조와 디스크립터"이며, 아래는 진입자용 요지다.
 
-- 읽기: 색인만 먼저 읽고, 필요한 문서만 선택적으로 연다. 전부 읽지 않는다.
-- 쓰기: 내용에 맞는 기존 문서에 추가하거나, 구체적인 제목의 새 파일을 만들고 색인에 등록한다.
-- 제목 규칙: 파일명은 내용을 특정할 수 있어야 한다. 포괄적 이름은 금지.
-- `_docs/_ontology/`, `_docs/_knowledge/`, `_docs/_strategy/`, `_docs/_architecture/` 하위의 모든 마크다운 파일은 각 INDEX에 등록한다. 하위 폴더 내 파일도 예외 없다. INDEX가 "프로젝트에 어떤 지식 문서가 존재하는가"의 single source of truth여야 한다.
+- 읽기: 폴더 디스크립터를 먼저 읽고 그 서브트리의 목적, 로컬 규칙, 행동 유발 항목을 파악한 뒤, 필요한 문서만 선택적으로 연다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템 자체이므로 디스크립터에 인벤토리 표를 강제하지 않는다.
+- 쓰기: 내용에 맞는 기존 문서에 추가하거나, 구체적인 제목의 새 파일을 만든다. 규범 폴더면 디스크립터의 파일별 안내에 새 파일의 설명과 읽기 트리거를 등재한다.
+- 제목 규칙: 파일명은 내용을 특정할 수 있어야 한다. 포괄적 이름은 금지. 자기설명적 파일명이 참조 폴더의 기본 인덱스 기능을 대신한다.
+- 폴더 직속 항목이 많아지면 하위 폴더로 분화한다. 분화 임계는 감사 스크립트가 검출한다.
 
 ## 경계 (하지 말 것)
 
@@ -95,17 +95,16 @@ tags: [규칙, 문서관리]
 
 | 문서 | 용도 | 언제 참조하는가 |
 |------|------|----------------|
-| [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md) | 현재 상태 + 다음 작업 포인터 | 매 세션 시작 시 (최우선) |
-| [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md) | 작업 계층 트리 | 작업 착수 전, 진행 상황 파악 시 |
-| [_docs/_worklog/DONE.md](_docs/_worklog/DONE.md) | 완료 이력 (축약) | 맥락 파악 필요 시 |
-| [_docs/_ontology/INDEX.md](_docs/_ontology/INDEX.md) | 온톨로지 색인 | 도메인 클래스 설계 전, 용어 혼동 시 |
-| [_docs/_knowledge/INDEX.md](_docs/_knowledge/INDEX.md) | 지식 색인 | 새 세션 시작 시, 문제 해결 시 |
-| [_docs/_strategy/INDEX.md](_docs/_strategy/INDEX.md) | 전략 색인 | 새 세션 시작 시, 문제 해결 시 |
-| [AGENTS/INDEX.md](AGENTS/INDEX.md) | 에이전트 지침 색인 | 에이전트 운영 방식 확인 시 |
-| [_docs/_architecture/INDEX.md](_docs/_architecture/INDEX.md) | 설계 명세 색인 | 새 클래스/모듈 생성 시 |
+| [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md) | 작업 계층 트리 (현재 상태 + 다음 작업 포인터) | 매 세션 시작 시 (최우선), 작업 착수 전 |
+| [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md) | 감사, 주기 작업 상태 레지스트리 | 매 세션 시작 시 |
+| [_docs/_ontology/AGENTS.md](_docs/_ontology/AGENTS.md) | 온톨로지 디스크립터 | 도메인 클래스 설계 전, 용어 혼동 시 |
+| [_docs/_knowledge/AGENTS.md](_docs/_knowledge/AGENTS.md) | 지식 디스크립터 | 새 세션 시작 시, 문제 해결 시 |
+| [_docs/_strategy/AGENTS.md](_docs/_strategy/AGENTS.md) | 전략 디스크립터 | 새 세션 시작 시, 문제 해결 시 |
+| [AGENTS/AGENTS.md](AGENTS/AGENTS.md) | 에이전트 지침 디스크립터 | 에이전트 운영 방식 확인 시 |
+| [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md) | 설계 명세 디스크립터 | 새 클래스/모듈 생성 시 |
 | [AGENTS/conventions.md](AGENTS/conventions.md) | 문서 작성 규약, 구조 규약 SSOT | 모든 문서 작성 시 |
 | [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) | 단위 작업 운영 흐름 SSOT | 단위 작업 시작, 종료 시 |
-| [_reference/INDEX.md](_reference/INDEX.md) | raw 자료 인벤토리 + 처리 상태 | 매 세션 시작 시 |
+| [_reference/AGENTS.md](_reference/AGENTS.md) | raw 자료 인벤토리 + 처리 상태 | 매 세션 시작 시 |
 
 ## 핵심 제약
 
