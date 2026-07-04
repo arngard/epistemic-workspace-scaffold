@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-04-18
+date modified: 2026-07-04
 tags: [agents, 문서관리, 조직화]
 ---
 
@@ -18,7 +18,7 @@ tags: [agents, 문서관리, 조직화]
 
 워크스페이스를 처음 세팅할 때 scaffolding 폴더 구조를 만들어, 정보의 종류에 따라 위치가 결정되게 한다. cf. [workspace-and-project-structure.md](workspace-and-project-structure.md)
 
-각 scaffolding 폴더는 색인(INDEX.md)을 두어, 색인만 먼저 읽고 필요한 문서만 선택적으로 여는 방식으로 토큰 소진을 억제한다.
+각 scaffolding 폴더는 디스크립터(AGENTS.md)를 두어, 디스크립터만 먼저 읽고 필요한 문서만 선택적으로 여는 방식으로 토큰 소진을 억제한다. "어떤 문서가 존재하는가"는 파일시스템(자기설명적 파일명)이 SSOT(single source of truth)다.
 
 개별 문서는:
 - 파일명이 내용을 특정할 수 있는 구체적 이름이어야 한다.

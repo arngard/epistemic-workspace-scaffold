@@ -1,0 +1,60 @@
+---
+date created: 2026-04-18
+date modified: 2026-07-04
+tags: [agents]
+---
+
+# 에이전트 지침 디스크립터
+
+> `AGENTS/` 폴더의 로컬 안내. AI 에이전트 운영, 워크스페이스 관리 택틱, 도구 환경 정보를 담는다.
+> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS.md](../AGENTS.md) "폴더 디스크립터 사용 규칙", [conventions.md](conventions.md) "폴더 구조와 디스크립터").
+> 프로젝트 컨텐츠 맥락은 [_knowledge/](../_docs/_knowledge/AGENTS.md)와 [_strategy/](../_docs/_strategy/AGENTS.md), 설계 명세는 [_architecture/](../_docs/_architecture/AGENTS.md) 참조.
+
+## 도구/환경
+
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [tools.md](tools.md) | AI 도구별 자동 참조 파일 경로, 기계 감사 스크립트(tools/audit.py), Claude Code 절차 스킬 래퍼 | 도구 환경 확인, 감사 스크립트 실행 시 |
+
+## 규약과 절차
+
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [conventions.md](conventions.md) | 문서 작성 규약, 구조 규약 SSOT (1관심사, 중복 금지와 외부 SSOT 비복제, 폴더 구조와 디스크립터, 문서 시간성, 출처 표기 범위, 자체 완결성, ASCII 부호, 연쇄 갱신 등) | 모든 문서 작성, 폴더 구조 변경 시 |
+| [ingest-workflow.md](ingest-workflow.md) | 새 사실, 의견, 예측, 결정, 자료가 들어올 때의 표준 시퀀스. contradiction flagging, `_reference/` 처리, 빠뜨림 방지 자체 점검 | 새 정보 ingest 시 |
+| [original-protection-principle.md](original-protection-principle.md) | 원본 보호 원칙 (가역성 우선, 공유 기준선 보호) - 에이전트가 원본을 다룰 때의 안전 기준 | 원본 삭제, 대폭 재편, 머지 판단 시 |
+
+## 작업 수행
+
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [working-principles.md](working-principles.md) | 단위 작업을 대하는 토대 원칙 (넘겨짚지 않기, 단순함, 외과적 변경, 목표 주도, 기억보다 실제 상태) | 단위 작업 착수 시 |
+| [coding-guidelines.md](coding-guidelines.md) | 코드 작업 전용 지침 (성공 기준을 테스트로, 코드 단순함, 코드 외과적 변경) | 코드 생성, 수정 시 |
+
+## Git 운영
+
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 | 브랜치 생성 시 |
+| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 흐름 (진입, 진행, 종료 패턴 분기 및 재귀 정합화) 및 PR 운영 규약 (본문, 검토, 응답) | 단위 작업 시작, 종료, PR 운영 시 |
+
+## 공용 태그
+
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [agent-tag-format.md](agent-tag-format.md) | 코드, 문서에 작업자 간 메모를 남기는 공용 태그 형식 | 공용 태그 작성, 대면 시 |
+
+## 에이전트 역할
+
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [agent-roles.md](agent-roles.md) | 서브에이전트 역할 정의 (epistemic-auditor 등)와 인스턴스 전용 감사자 확장 패턴. 도구 중립 정의. | 서브에이전트 호출, 감사자 확장 시 |
+
+## 워크스페이스 조직화
+
+| 파일 | 설명 | 언제 읽는가 |
+|------|------|-------------|
+| [why-agents-md-not-conventions-md.md](why-agents-md-not-conventions-md.md) | AI 진입점을 AGENTS.md로 하고 CONVENTIONS.md를 쓰지 않는 이유 | 진입점 구조 의문 시 |
+| [workspace-and-project-structure.md](workspace-and-project-structure.md) | 워크스페이스 구조: scaffolding 네이밍, 최상위 폴더 배치, 문서와 코드의 역할 분담 | 폴더 배치, 구현 프로젝트 등록 시 |
+| [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) | _docs/ 하위 폴더 분류 기준 (판별 규칙, 교차 링크) | 문서 카테고리 판별 시 |
+| [why-scaffolding-not-single-file.md](why-scaffolding-not-single-file.md) | 워크스페이스 scaffolding으로 정보를 분류하는 이유 | scaffolding 구조 의문 시 |

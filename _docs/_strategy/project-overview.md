@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-19
-date modified: 2026-06-12
+date modified: 2026-07-04
 tags: [strategy, 프로젝트, 샘플]
 importance: 상
 urgency: 중
@@ -8,9 +8,9 @@ urgency: 중
 
 # (샘플) 프로젝트 수준 결정
 
-> ⚠️ 이 파일은 스캐폴드가 제공하는 튜토리얼 샘플이다. INDEX에 등록된 예시로 두었다.
-> 실제 워크스페이스에서는 이 파일을 삭제하고, 프로젝트 목표, 첫 출시 범위, 대상 고객 등 큰 결정을 각각의 `why-*.md`로 분리해 `_docs/_strategy/` 안에 작성한다. 또는 이 파일을 구체 내용으로 교체하며 주의문을 삭제하고 [INDEX.md](INDEX.md)를 갱신한다.
-> front matter 속성(`importance`/`urgency`)의 등급 판단 기준과 섹션 구조 규약은 [INDEX.md](INDEX.md) "작성 스타일" 참조. 위 예시 값은 샘플용.
+> ⚠️ 이 파일은 스캐폴드가 제공하는 튜토리얼 샘플이다.
+> 실제 워크스페이스에서는 이 파일을 삭제하고, 프로젝트 목표, 첫 출시 범위, 대상 고객 등 큰 결정을 각각의 `why-*.md`로 분리해 `_docs/_strategy/` 안에 작성한다. 또는 이 파일을 구체 내용으로 교체하며 주의문을 삭제한다.
+> front matter 속성(`importance`/`urgency`)의 등급 판단 기준과 섹션 구조 규약은 [AGENTS.md](AGENTS.md) "작성 스타일" 참조. 위 예시 값은 샘플용.
 
 ## 상황
 
