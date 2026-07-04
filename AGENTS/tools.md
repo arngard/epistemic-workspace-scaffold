@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-04
+date modified: 2026-07-05
 tags: [agents, 도구, 환경, IDE]
 ---
 
@@ -25,7 +25,7 @@ tags: [agents, 도구, 환경, IDE]
 
 ## 기계 감사 스크립트
 
-[tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위: front matter 필수 필드(선택 필드 `date closed`는 히스토리 문서 전용), 문서 유형별 분량 임계(지식/전략 노드, 시간 축 문서, 폴더 디스크립터), 현재적 문서의 시간성 혼합 패턴, 날짜 프리픽스 없는 문서의 `date closed`, STATUS 레지스트리 표 외 서술, TASK_TREE 속성 노드 표준 키, 폴더 디스크립터(AGENTS.md) 부재, 폴더 직속 md 파일 수 임계, 문서 간 상대 링크 정합(대소문자, 유니코드 정규화 불일치 포함), 파일명의 크로스 플랫폼 이식성(윈도우 금지 문자, 예약어). epistemic-auditor의 형식 점검을 이관받은 것이며, 의미 판단과 git 맥락 검출은 감사자 몫이다 (cf. [agent-roles.md](agent-roles.md)).
+[tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위: front matter 필수 필드(선택 필드 `date closed`는 히스토리 문서 전용), 문서 유형별 분량 임계(지식/전략 노드, 시간 축 문서, 폴더 디스크립터), 현재적 문서의 시간성 혼합 패턴, 날짜 프리픽스 없는 문서의 `date closed`, STATUS 레지스트리 표 외 서술과 표 스키마/시각 형식, TASK_TREE 속성 노드 표준 키와 완료 노드의 브랜치 속성 잔존, 폴더 디스크립터(AGENTS.md) 부재, 규범 폴더 디스크립터의 파일별 안내 완전성, 폴더 직속 md 파일 수 임계, `_docs/` 4범주 직속 문서의 tags 첫 항목 정합, 실체 0건 폴더(골격 폴더 제외 - 성격 판단은 감사자 몫), 문서 간 상대 링크 정합(대소문자, 유니코드 정규화 불일치 포함), 파일명의 크로스 플랫폼 이식성(윈도우 금지 문자, 예약어). epistemic-auditor의 형식 점검을 이관받은 것이며, 의미 판단과 git 맥락 검출은 감사자 몫이다 (cf. [agent-roles.md](agent-roles.md)).
 
 - 임계값은 보수적 초기값으로 두고 운영하며 조정한다. 스크립트 상단 상수(`SIZE_LIMIT_NODE`, `SIZE_LIMIT_TEMPORAL`, `FOLDER_MD_LIMIT`, `TEMPORAL_MIX_REPEAT`)로 관리한다.
 - 실행: 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (윈도우는 `python` 또는 `py`).
