@@ -44,6 +44,7 @@ import urllib.parse
 from pathlib import Path
 
 REFERENCE_DIR = "_reference"
+IMPLEMENTATION_DIR = "_implementation"
 WORKLOG_DIR = "_docs/_worklog"
 # 도구 전용 파일은 front matter 면제 (cf. agent-roles.md 점검 항목 3,
 # conventions.md "도구 전용 파일 예외"). SKILL.md는 자체 규격(name, description).
@@ -89,6 +90,10 @@ def iter_md_files(root: Path):
 
     _reference/ 내부는 immutable raw 자료라 규약 검사 대상이 아니다
     (디스크립터 AGENTS.md 자체만 예외).
+    _implementation/ 하위 프로젝트 내부(소스 트리)도 대상이 아니다 -
+    소스 폴더 구조는 코드 생태계 관례가 지배한다 (cf. conventions.md
+    "폴더 구조와 디스크립터" _implementation 예외). 직할 AGENTS.md와
+    그 하위 문서 폴더 AGENTS/만 검사한다.
     """
     ref_descriptor = (root / REFERENCE_DIR / DESCRIPTOR_NAME).resolve()
     for path in sorted(root.rglob("*.md")):
@@ -96,6 +101,13 @@ def iter_md_files(root: Path):
         if any(part in EXEMPT_DIRS for part in parts):
             continue
         if parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_descriptor:
+            continue
+        if (
+            len(parts) >= 2
+            and parts[0] == IMPLEMENTATION_DIR
+            and not (len(parts) == 2 and parts[1] == DESCRIPTOR_NAME)
+            and parts[1] != "AGENTS"
+        ):
             continue
         yield path
 
@@ -222,6 +234,9 @@ def content_dirs(root: Path):
     """디스크립터 검사 대상 폴더 순회.
 
     EXEMPT_DIRS(.git, .claude 등 도구 전용)와 그 하위는 제외한다.
+    _implementation/ 하위 프로젝트 내부(소스 트리)는 제외한다 - 직할
+    문서 폴더 AGENTS/만 대상 (cf. conventions.md "폴더 구조와 디스크립터"
+    _implementation 예외).
     루트 자신도 디스크립터(루트 AGENTS.md)를 가진다.
     """
     yield root
@@ -230,6 +245,8 @@ def content_dirs(root: Path):
             continue
         parts = path.relative_to(root).parts
         if any(part in EXEMPT_DIRS for part in parts):
+            continue
+        if len(parts) >= 2 and parts[0] == IMPLEMENTATION_DIR and parts[1] != "AGENTS":
             continue
         yield path
 
