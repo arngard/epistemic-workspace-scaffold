@@ -3,15 +3,21 @@
 
 epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 의미 판단(카테고리 배치 적절성, 워크로그 최신성)은 다루지 않는다 -
-그건 LLM 감사자의 몫으로 남는다.
+그건 LLM 감사자의 몫으로 남는다. git 맥락이 필요한 검출도 다루지 않는다
+(마크 커밋 없는 삭제 등) - 그건 epistemic-auditor의 점검 항목이다.
 
 점검 항목:
-  1. YAML front matter 필수 필드 (date created, date modified, tags)
-  2. 카테고리 INDEX와 실제 파일의 양방향 대조 (sub-INDEX 위임 인정)
-  3. _reference/ 인벤토리와 실제 내용의 양방향 대조
-  4. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
-  5. 파일명의 크로스 플랫폼 이식성 (윈도우 금지 문자, 예약어 등)
-  6. 단일 문서 분량 상한(공백 제외 3,000자) - 경고만
+  1. YAML front matter 필수 필드 (date created, date modified, tags).
+     선택 필드 date closed는 히스토리 문서(날짜 프리픽스) 전용.
+  2. 문서 유형별 분량 임계 (지식/전략 노드, 시간 축 문서, 폴더 디스크립터) - 경고
+  3. 현재적 문서의 시간성 혼합 패턴 (날짜 헤더/불릿 반복) - 경고
+  4. 날짜 프리픽스 없는 문서의 date closed (시간성 혼합 신호) - 위반
+  5. STATUS.md 레지스트리 표 외 서술 누적 - 위반
+  6. TASK_TREE.md 속성 노드 표준 키 위반 - 위반
+  7. 디스크립터(AGENTS.md) 없는 폴더 - 위반
+  8. 폴더 직속 md 파일 수 임계 초과 - 경고 (분화 권고)
+  9. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
+ 10. 파일명의 크로스 플랫폼 이식성 (윈도우 금지 문자, 예약어 등)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tools.md "기계 감사 스크립트".
 
@@ -28,6 +34,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 - 링크 검사는 OS의 파일시스템 특성(대소문자 무시, 유니코드 정규화 무시)에
   기대지 않고 디렉토리 엔트리를 직접 대조한다. 어느 OS에서 실행해도 같은
   결과가 나오는 것이 목표다.
+- git에 의존하지 않는다. 파일시스템 정적 상태만 본다.
 """
 
 import re
@@ -36,13 +43,23 @@ import unicodedata
 import urllib.parse
 from pathlib import Path
 
-CATEGORY_DIRS = ["_docs/_ontology", "_docs/_knowledge", "_docs/_strategy", "_docs/_architecture"]
 REFERENCE_DIR = "_reference"
+WORKLOG_DIR = "_docs/_worklog"
 # 도구 전용 파일은 front matter 면제 (cf. agent-roles.md 점검 항목 3,
 # conventions.md "도구 전용 파일 예외"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "GEMINI.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".gemini", ".github", ".kiro", "node_modules"}
-SIZE_LIMIT = 3000  # 공백 제외 문자 수. "한글 기준 3,000자"의 근사.
+
+# 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (conventions.md
+# "폴더 구조와 디스크립터"). 도구 계층 자동 인식용 명명.
+DESCRIPTOR_NAME = "AGENTS.md"
+
+# --- 임계값 (초기값. 보수적으로 시작해 운영하며 조정) ---
+# 공백 제외 문자 수. "한글 기준" 근사.
+SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
+SIZE_LIMIT_TEMPORAL = 10000   # 시간 축 문서(날짜 프리픽스)는 누적이 본질
+FOLDER_MD_LIMIT = 20          # 폴더 직속 md 파일 수 - 초과 시 분화 권고
+TEMPORAL_MIX_REPEAT = 5       # 현재적 문서 내 날짜 패턴 반복 임계
 
 FRONT_MATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
@@ -52,6 +69,12 @@ WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\x00-\x1f]')
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {
     f"LPT{i}" for i in range(1, 10)
 }
+# 날짜 프리픽스: 파일명이 yyyy-MM-dd로 시작하면 히스토리 문서.
+DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}([-.]|$)")
+# 본문 내 날짜 헤더/불릿 반복 검출 (시간성 혼합 신호).
+DATE_LINE_RE = re.compile(r"^\s*(?:[-*#>]+\s*)*\d{4}-\d{2}-\d{2}\b", re.MULTILINE)
+# TASK_TREE 속성 노드 표준 키. 이 키로 시작하는 불릿만 표준으로 인정.
+TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
 
 violations: list[str] = []
 warnings: list[str] = []
@@ -65,14 +88,14 @@ def iter_md_files(root: Path):
     """규약 검사 대상 .md 순회.
 
     _reference/ 내부는 immutable raw 자료라 규약 검사 대상이 아니다
-    (INDEX.md 자체만 예외). 인벤토리 대조는 check_reference_inventory가 담당.
+    (디스크립터 AGENTS.md 자체만 예외).
     """
-    ref_index = (root / REFERENCE_DIR / "INDEX.md").resolve()
+    ref_descriptor = (root / REFERENCE_DIR / DESCRIPTOR_NAME).resolve()
     for path in sorted(root.rglob("*.md")):
         parts = path.relative_to(root).parts
         if any(part in EXEMPT_DIRS for part in parts):
             continue
-        if parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_index:
+        if parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_descriptor:
             continue
         yield path
 
@@ -80,6 +103,14 @@ def iter_md_files(root: Path):
 def read(path: Path) -> str:
     # 인코딩을 UTF-8로 고정 - 윈도우의 로케일 기본 인코딩(cp949)에 의존하지 않는다.
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+def has_date_prefix(path: Path) -> bool:
+    return bool(DATE_PREFIX_RE.match(path.name))
+
+
+def body_of(path: Path) -> str:
+    return FRONT_MATTER_RE.sub("", read(path))
 
 
 def check_front_matter(root: Path):
@@ -96,6 +127,13 @@ def check_front_matter(root: Path):
         for field in ("date created", "date modified", "tags"):
             if not re.search(rf"^{re.escape(field)}\s*:", body, re.MULTILINE):
                 violations.append(f"[front-matter] {rel}: 필수 필드 누락 - {field}")
+        # date closed는 선택 필드이며 히스토리 문서(날짜 프리픽스) 전용이다.
+        # 프리픽스 없는 현재적 문서에 달리면 시간성 혼합 신호 (proposal 3).
+        if re.search(r"^date closed\s*:", body, re.MULTILINE) and not has_date_prefix(path):
+            violations.append(
+                f"[temporality] {rel}: 날짜 프리픽스 없는 문서에 date closed - "
+                "현재적 문서에는 종결 개념이 없다 (시간성 혼합)"
+            )
 
 
 def links_in(path: Path) -> list[str]:
@@ -180,70 +218,142 @@ def check_links(root: Path):
                 )
 
 
-def registered_targets(index_path: Path) -> set[Path]:
-    """INDEX 문서가 링크로 등록한 파일 경로 집합 (NFC 정규화 문자열 기준)."""
-    targets = set()
-    for raw in links_in(index_path):
-        resolved = resolve_link(index_path, raw)
-        if resolved is not None:
-            targets.add(nfc(str(resolved)))
-    return targets
+def content_dirs(root: Path):
+    """디스크립터 검사 대상 폴더 순회.
 
-
-def check_category_indexes(root: Path):
-    for category in CATEGORY_DIRS:
-        cat_dir = root / category
-        if not cat_dir.is_dir():
+    EXEMPT_DIRS(.git, .claude 등 도구 전용)와 그 하위는 제외한다.
+    루트 자신도 디스크립터(루트 AGENTS.md)를 가진다.
+    """
+    yield root
+    for path in sorted(root.rglob("*")):
+        if not path.is_dir():
             continue
-        index = cat_dir / "INDEX.md"
-        if not index.exists():
-            violations.append(f"[index] {category}/INDEX.md 없음")
+        parts = path.relative_to(root).parts
+        if any(part in EXEMPT_DIRS for part in parts):
             continue
-        # 색인 문서 집합: INDEX.md + 폴더 동반 문서(X.md 옆에 X/ 폴더가 있는
-        # "하위 문서 폴더 규칙" 케이스, 예: lessons.md가 lessons/를 관리).
-        index_docs = set(cat_dir.rglob("INDEX.md"))
-        for path in cat_dir.rglob("*.md"):
-            if path.with_suffix("").is_dir():
-                index_docs.add(path)
-        registered: set[str] = set()
-        for idx in index_docs:
-            registered |= registered_targets(idx)
-        index_keys = {nfc(str(p.resolve())) for p in index_docs}
-        for path in cat_dir.rglob("*.md"):
-            if path == index:
-                continue
-            key = nfc(str(path.resolve()))
-            if key in registered:
-                continue
-            if key in index_keys:
-                violations.append(
-                    f"[index] {path.relative_to(root)}: 부모 INDEX에 미등록 sub-INDEX"
-                )
-            else:
-                violations.append(
-                    f"[index] {path.relative_to(root)}: 어떤 INDEX에도 미등록"
-                )
+        yield path
 
 
-def check_reference_inventory(root: Path):
-    ref_dir = root / REFERENCE_DIR
-    if not ref_dir.is_dir():
-        return
-    index = ref_dir / "INDEX.md"
-    if not index.exists():
-        violations.append(f"[reference] {REFERENCE_DIR}/INDEX.md 없음")
-        return
-    index_text = nfc(read(index))
-    # 인벤토리 단위는 _reference/ 직하 항목(파일 또는 폴더 통째)이다.
-    for path in sorted(ref_dir.iterdir()):
-        if path == index or path.name.startswith("."):
-            continue
-        # 항목 이름이 INDEX 본문에 등장하면 등재로 본다 (NFC 정규화 비교).
-        if nfc(path.name) not in index_text:
-            violations.append(
-                f"[reference] {path.relative_to(root)}: INDEX 미등재 (신규 미처리 자료?)"
+def check_descriptors(root: Path):
+    """모든 폴더가 디스크립터(AGENTS.md)를 갖는지, 폴더 직속 md 수 임계를 검사."""
+    for d in content_dirs(root):
+        rel = d.relative_to(root) if d != root else Path(".")
+        # _reference/ 하위 폴더는 immutable raw 보관이라 디스크립터를 강제하지 않는다.
+        parts = rel.parts
+        in_reference_sub = parts and parts[0] == REFERENCE_DIR and len(parts) > 0 and rel != Path(REFERENCE_DIR)
+        descriptor = d / DESCRIPTOR_NAME
+        if not descriptor.exists() and not in_reference_sub:
+            violations.append(f"[descriptor] {rel}: 폴더 디스크립터(AGENTS.md) 없음")
+        # 폴더 직속(하위 폴더 제외) md 파일 수.
+        direct_md = [
+            p for p in d.iterdir()
+            if p.is_file() and p.suffix == ".md" and p.name not in EXEMPT_FILENAMES
+        ]
+        if len(direct_md) > FOLDER_MD_LIMIT:
+            warnings.append(
+                f"[folder-size] {rel}: 폴더 직속 md {len(direct_md)}개 (> {FOLDER_MD_LIMIT}). "
+                "하위 폴더 분화 권고"
             )
-    # 역방향(INDEX에 있으나 폴더에 없음)은 check_links가 잡는다.
+
+
+def check_size(root: Path):
+    """문서 유형별 분량 임계. 시간 축 문서는 완화된 임계를 쓴다."""
+    for path in iter_md_files(root):
+        body = body_of(path)
+        length = len(re.sub(r"\s", "", body))
+        if has_date_prefix(path):
+            limit = SIZE_LIMIT_TEMPORAL
+        else:
+            limit = SIZE_LIMIT_NODE
+        if length > limit:
+            warnings.append(
+                f"[size] {path.relative_to(root)}: 공백 제외 {length}자 (> {limit}). "
+                "여러 관심사가 섞였는지 사람/LLM 판단 필요"
+            )
+
+
+def check_temporality_mix(root: Path):
+    """현재적 문서(날짜 프리픽스 없음) 본문의 날짜 헤더/불릿 반복을 검출.
+
+    시간순 로그가 현재적 문서에 누적되는 하이브리드화 신호 (proposal 3).
+    워크로그(TASK_TREE, STATUS)는 별도 룰이 있어 제외.
+    """
+    worklog = (root / WORKLOG_DIR).resolve()
+    for path in iter_md_files(root):
+        if has_date_prefix(path):
+            continue
+        if worklog in path.resolve().parents:
+            continue
+        body = body_of(path)
+        # 코드 블록 안 예시 날짜 제외
+        body = re.sub(r"```.*?```", "", body, flags=re.DOTALL)
+        hits = len(DATE_LINE_RE.findall(body))
+        if hits > TEMPORAL_MIX_REPEAT:
+            warnings.append(
+                f"[temporality] {path.relative_to(root)}: 날짜 헤더/불릿 {hits}회 반복 "
+                f"(> {TEMPORAL_MIX_REPEAT}). 시간성 혼합 검토 - 히스토리 문서로 분리 대상인지"
+            )
+
+
+def check_status_registry(root: Path):
+    """STATUS.md가 레지스트리 표 외 서술을 누적하는지 검출 (proposal 2).
+
+    STATUS는 상태 레지스트리다. front matter, 제목, 인용 블록(> 안내),
+    마크다운 표만 허용하고 일반 서술 문단이 있으면 위반.
+    """
+    status = root / WORKLOG_DIR / "STATUS.md"
+    if not status.exists():
+        return
+    body = body_of(status)
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("#"):       # 제목
+            continue
+        if line.startswith(">"):       # 인용 블록(갱신 규칙 안내)
+            continue
+        if line.startswith("|"):       # 표
+            continue
+        violations.append(
+            f"[status] {status.relative_to(root)}: 레지스트리 표 외 서술 발견 - "
+            f'"{line[:40]}". STATUS는 상태 레지스트리이며 진행 서사를 두지 않는다'
+        )
+        break
+
+
+def check_task_tree_attrs(root: Path):
+    """TASK_TREE.md 속성 노드(체크박스 없는 불릿)의 표준 키 위반 검출 (proposal 2).
+
+    작업 노드는 `- [ ]`/`[/]`/`[x]`/`[-]` 형태. 속성 노드는 체크박스 없는
+    불릿이며 표준 키(설명, 상태 상세, 외부 참조, 브랜치)로 시작해야 한다.
+    프리앰블(인용 블록, 코드 블록)은 검사에서 제외.
+    """
+    tree = root / WORKLOG_DIR / "TASK_TREE.md"
+    if not tree.exists():
+        return
+    body = body_of(tree)
+    body = re.sub(r"```.*?```", "", body, flags=re.DOTALL)
+    checkbox_re = re.compile(r"^\s*-\s*\[[ /x\-]\]\s")
+    bullet_re = re.compile(r"^(\s*)-\s+(?!\[[ /x\-]\])(.*)$")
+    for raw_line in body.splitlines():
+        if raw_line.lstrip().startswith(">"):   # 프리앰블 인용 블록
+            continue
+        if checkbox_re.match(raw_line):         # 작업 노드
+            continue
+        m = bullet_re.match(raw_line)
+        if not m:
+            continue
+        content = m.group(2).strip()
+        if content.startswith("cf.") or content.startswith("ref."):
+            continue
+        # 표준 키로 시작하는지 (키 뒤에 콜론/공백/한글 등 자유 서술 허용).
+        if any(content.startswith(k) for k in TASK_TREE_ATTR_KEYS):
+            continue
+        warnings.append(
+            f"[task-tree] {tree.relative_to(root)}: 속성 노드 비표준 키 - "
+            f'"{content[:40]}". 표준 키: {", ".join(TASK_TREE_ATTR_KEYS)}'
+        )
 
 
 def check_filename_portability(root: Path):
@@ -267,17 +377,6 @@ def check_filename_portability(root: Path):
             violations.append(f"[portability] {rel}: 윈도우 예약어 이름 ({stem})")
 
 
-def check_size(root: Path):
-    for path in iter_md_files(root):
-        body = FRONT_MATTER_RE.sub("", read(path))
-        length = len(re.sub(r"\s", "", body))
-        if length > SIZE_LIMIT:
-            warnings.append(
-                f"[size] {path.relative_to(root)}: 공백 제외 {length}자 (> {SIZE_LIMIT}). "
-                "여러 관심사가 섞였는지 사람/LLM 판단 필요"
-            )
-
-
 def main() -> int:
     # 윈도우 콘솔(cp949 등)에서도 한글 출력이 깨지지 않게 UTF-8로 강제
     for stream in (sys.stdout, sys.stderr):
@@ -291,10 +390,12 @@ def main() -> int:
 
     check_front_matter(root)
     check_links(root)
-    check_category_indexes(root)
-    check_reference_inventory(root)
-    check_filename_portability(root)
+    check_descriptors(root)
     check_size(root)
+    check_temporality_mix(root)
+    check_status_registry(root)
+    check_task_tree_attrs(root)
+    check_filename_portability(root)
 
     for line in violations:
         print(f"VIOLATION {line}")
