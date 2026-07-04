@@ -101,7 +101,8 @@ WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 1
     f"LPT{i}" for i in range(1, 10)
 }
 # 날짜 프리픽스: 파일명이 yyyy-MM-dd로 시작하면 히스토리 문서.
-DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}([-.]|$)")
+# 시각 확장(yyyy-MM-ddTHH-mm)도 인정한다 (cf. document-temporality.md).
+DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}([-.T]|$)")
 # 본문 내 날짜 헤더/불릿 반복 검출 (시간성 혼합 신호).
 DATE_LINE_RE = re.compile(r"^\s*(?:[-*#>]+\s*)*\d{4}-\d{2}-\d{2}\b", re.MULTILINE)
 # TASK_TREE 속성 노드 표준 키. 이 키로 시작하는 불릿만 표준으로 인정.
