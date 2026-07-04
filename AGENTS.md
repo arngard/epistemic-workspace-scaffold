@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-04
+date modified: 2026-07-05
 tags: [규칙, 문서관리]
 ---
 
@@ -37,6 +37,7 @@ tags: [규칙, 문서관리]
 - 문서 간 정합성 확인을 항상 수행한다 (특히 cross-reference 되는 섹션 번호).
 - 문서나 주석을 수정한 경우, "문서 작성 스타일" 섹션의 규칙을 위배하는 것이 없는지 검토한다.
 - 폴더를 신설할 때는 그 폴더의 디스크립터(`AGENTS.md`)를 같은 커밋에 동반한다. 규범 폴더의 디스크립터는 파일별 설명과 읽기 트리거를 유지한다 (cf. [AGENTS/conventions.md](AGENTS/conventions.md) "폴더 구조와 디스크립터").
+- 절차 문서나 폴더를 신설할 때는 첫 실체 1건을 같은 단위 작업에 포함한다. 사양만 있고 실체 0건인 상태는 추측으로 채운 결과로 본다.
 - 폴더/파일 이동 또는 리네임은 연쇄 갱신을 요구한다. 절차는 [`AGENTS/conventions.md` "폴더, 파일 이동 시 연쇄 갱신"](AGENTS/conventions.md) 참조.
 
 ## 작업 수행 원칙
@@ -60,7 +61,7 @@ tags: [규칙, 문서관리]
 - 참고 자료/출처 표기는 `cf.` (비교/참고)와 `ref.` (출처/근거)를 사용한다.
 - 약어가 처음 등장할 때는 풀어쓴 원문을 병기한다. 예: `SSOT(single source of truth)`, `ADR(Architecture Decision Record)`. 원문이 외국어이고 한국어 설명이 추가로 필요하면 세미콜론으로 덧붙인다. 예: `KAI(Korea Aerospace Industries; 한국항공우주산업)`. 이후 같은 문서 내에서는 약어만 사용한다.
 - 약어와 줄임말을 구분한다. 약어(acronym; 단어 첫 글자를 모아 만든 형태: SSOT, ADR, API 등)는 허용. **줄임말(truncation; 단어 중간을 잘라낸 형태: feature -> feat, configuration -> config, repository -> repo 등)은 피하고 공식 형태(full form)를 그대로 사용한다.** 줄임말 남발은 입문자 진입 비용을 높이고 검색, 일치성을 떨어뜨린다. 일반 도메인에 완전히 정착해 공식 형태처럼 통용되는 경우(예: `docs` 폴더명, `dev` 환경명)는 예외다. 그 경우 본 워크스페이스에서 표준 사용 형태를 명시한다.
-- 모든 .md 파일에 YAML front matter를 붙인다. 필수 필드: `date created`, `date modified`, `tags`. 날짜 형식은 `yyyy-MM-dd`. `tags`의 첫 항목은 소속 카테고리.
+- 모든 .md 파일에 YAML front matter를 붙인다. 필수 필드: `date created`, `date modified`, `tags`. 날짜 형식은 `yyyy-MM-dd`. `tags`의 첫 항목은 소속 카테고리. `_docs/` 4범주 직속 문서는 폴더명에서 언더스코어를 뗀 값(ontology, knowledge, strategy, architecture)을 쓰며 감사 스크립트가 검사한다. 하위 폴더 문서에는 강제하지 않는다.
 - **추측으로 문서를 채우지 않는다.** 논의되지 않은 내용을 확정된 것처럼 적지 않는다.
 - 사실과 의견, 의견의 주체를 분명히 구분한다. 근거 있는 사실, 작성자 본인의 판단, 타인/외부의 판단은 서술 형태를 달리한다. 의견에는 주체를 명시한다 (예: "`@아릉`의 판단", "Klaviyo 팀의 설계", "AI 제안"). 의견을 사실인 양 서술하거나 주체를 흐리면 이후 결정의 근거 추적이 깨진다.
 
@@ -97,7 +98,7 @@ tags: [규칙, 문서관리]
 |------|------|----------------|
 | [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md) | 작업 계층 트리 (현재 상태 + 다음 작업 포인터) | 매 세션 시작 시 (최우선), 작업 착수 전 |
 | [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md) | 감사, 주기 작업 상태 레지스트리 | 매 세션 시작 시 |
-| [_docs/_ontology/AGENTS.md](_docs/_ontology/AGENTS.md) | 온톨로지 디스크립터 | 도메인 클래스 설계 전, 용어 혼동 시 |
+| [_docs/_ontology/AGENTS.md](_docs/_ontology/AGENTS.md) | 온톨로지 디스크립터 | 새 용어 도입 전, 도메인 클래스 설계 전, 용어 혼동 시 |
 | [_docs/_knowledge/AGENTS.md](_docs/_knowledge/AGENTS.md) | 지식 디스크립터 | 새 세션 시작 시, 문제 해결 시 |
 | [_docs/_strategy/AGENTS.md](_docs/_strategy/AGENTS.md) | 전략 디스크립터 | 새 세션 시작 시, 문제 해결 시 |
 | [AGENTS/AGENTS.md](AGENTS/AGENTS.md) | 에이전트 지침 디스크립터 | 에이전트 운영 방식 확인 시 |
