@@ -8,7 +8,7 @@ tags: [architecture]
 
 > "우리가 어떻게 만들겠다" - 최종 설계의 스니펫. 현재 상태의 도면.
 > 설계의 맥락은 [_knowledge/](../_knowledge/AGENTS.md)와 [_strategy/](../_strategy/AGENTS.md) 참조.
-> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS/conventions.md](../../AGENTS/conventions.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
+> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
 
 ## 작성 스타일
 
@@ -23,5 +23,5 @@ tags: [architecture]
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
 | [core-constraints.md](core-constraints.md) | 설계 원칙 및 핵심 제약. 스캐폴드 상태 - 제약 목록 작성 필요 | 설계 결정, 구현 착수 전 |
-| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [AGENTS/conventions.md](../../AGENTS/conventions.md) | 코드 작성, 빌드 설정 시 |
+| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [AGENTS/](../../AGENTS/AGENTS.md) 참조 | 코드 작성, 빌드 설정 시 |
 | [sample-spec.md](sample-spec.md) | 설계 명세 문서의 위치와 형식을 보여주는 튜토리얼용 샘플. 실제 작성 시 삭제하거나 교체한다 | 첫 명세 작성 시 |

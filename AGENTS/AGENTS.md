@@ -1,13 +1,13 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-04
+date modified: 2026-07-05
 tags: [agents]
 ---
 
 # 에이전트 지침 디스크립터
 
 > `AGENTS/` 폴더의 로컬 안내. AI 에이전트 운영, 워크스페이스 관리 택틱, 도구 환경 정보를 담는다.
-> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS.md](../AGENTS.md) "폴더 디스크립터 사용 규칙", [conventions.md](conventions.md) "폴더 구조와 디스크립터").
+> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS.md](../AGENTS.md) "폴더 디스크립터 사용 규칙", [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터").
 > 프로젝트 컨텐츠 맥락은 [_knowledge/](../_docs/_knowledge/AGENTS.md)와 [_strategy/](../_docs/_strategy/AGENTS.md), 설계 명세는 [_architecture/](../_docs/_architecture/AGENTS.md) 참조.
 
 ## 도구/환경
@@ -20,7 +20,10 @@ tags: [agents]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [conventions.md](conventions.md) | 문서 작성 규약, 구조 규약 SSOT (1관심사, 중복 금지와 외부 SSOT 비복제, 폴더 구조와 디스크립터, 문서 시간성, 출처 표기 범위, 자체 완결성, ASCII 부호, 연쇄 갱신 등) | 모든 문서 작성, 폴더 구조 변경 시 |
+| [document-units.md](document-units.md) | 문서 단위와 SSOT 규약 - 1관심사, 분량 보조 지표, 중복 금지와 외부 SSOT 비복제, 이름과 식별자의 안정성 | 문서 신설, 분할, 배치 판단 시 |
+| [folder-structure.md](folder-structure.md) | 폴더 구조 규약 - 폴더 분화, 디스크립터, 규범성 분기, 이동 시 연쇄 갱신 | 폴더 구조 변경, 디스크립터 작성 시 |
+| [document-temporality.md](document-temporality.md) | 문서 시간성 규약 - 히스토리/현재적 구분, 혼합 금지, date closed 종결 신호 | 날짜 프리픽스 문서 작성, 수정, 문서 폐기 시 |
+| [writing-style.md](writing-style.md) | 일반 문서 작성 스타일 - 코드 블록 절제, 표준 표현, 출처와 주체 표기, 자체 완결성, 태그 중복 회피, 도구 전용 파일 예외, ASCII 부호 | 모든 문서 작성 시 |
 | [ingest-workflow.md](ingest-workflow.md) | 새 사실, 의견, 예측, 결정, 자료가 들어올 때의 표준 시퀀스. contradiction flagging, `_reference/` 처리, 빠뜨림 방지 자체 점검 | 새 정보 ingest 시 |
 | [original-protection-principle.md](original-protection-principle.md) | 원본 보호 원칙 (가역성 우선, 공유 기준선 보호) - 에이전트가 원본을 다룰 때의 안전 기준 | 원본 삭제, 대폭 재편, 머지 판단 시 |
 
