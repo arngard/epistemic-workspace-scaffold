@@ -48,25 +48,20 @@ tags: [worklog]
 > ```
 
 - [/] 워크스페이스 초기 세팅
-  - 이 단계의 모든 "선정/작성" 작업은 인간 입력 없이 채울 수 없다. AI는 각 작업 전에 필요한 정보를 인간에게 인터뷰하여 확보한다. 추측으로 채우지 않는다. cf. [AGENTS.md](../../AGENTS.md) "문서 작성 스타일".
+  - 설명: 이 단계의 모든 "선정/작성" 작업은 인간 입력 없이 채울 수 없다. AI는 각 작업 전에 필요한 정보를 인간에게 인터뷰하여 확보한다. 추측으로 채우지 않는다. cf. [AGENTS.md](../../AGENTS.md) "문서 작성 스타일".
   - [ ] 워크스페이스 폴더 이름을 프로젝트에 맞게 변경
-    - AI는 워크스페이스 부모 디렉토리를 직접 리네임할 수 없다 (현재 작업 디렉토리가 바뀌어 세션 상태가 깨짐). 인간에게 이름을 받은 뒤, 인간이 터미널에서 직접 리네임하고 에디터/세션을 재시작하도록 안내한다. 이미 원하는 이름으로 되어 있으면 이 작업을 `[x]`로 전환하고 다음으로 진행한다.
+    - 설명: AI는 워크스페이스 부모 디렉토리를 직접 리네임할 수 없다 (현재 작업 디렉토리가 바뀌어 세션 상태가 깨짐). 인간에게 이름을 받은 뒤, 인간이 터미널에서 직접 리네임하고 에디터/세션을 재시작하도록 안내한다. 이미 원하는 이름으로 되어 있으면 이 작업을 `[x]`로 전환하고 다음으로 진행한다.
   - [ ] 모든 `.md` 파일의 `date created` / `date modified`를 오늘 날짜로 일괄 업데이트
-    - 스캐폴드에는 생성 시점의 날짜가 기재되어 있다. 복제 직후 전체를 현재 날짜로 갱신한다.
+    - 설명: 스캐폴드에는 생성 시점의 날짜가 기재되어 있다. 복제 직후 전체를 현재 날짜로 갱신한다.
   - [ ] 프로젝트 수준 상위 결정 기록
-    - 프로젝트 목표, 첫 출시 핵심 목표와 스펙, 향후 확장, 대상 고객과 사용자 등 큰 결정을 [_docs/_strategy/](../_strategy/INDEX.md) 아래 `why-*.md` 문서들로 분리 작성한다.
-    - 샘플 `project-overview.md`는 참고 후 삭제하거나 실제 내용으로 교체한다.
-    - `_docs/_strategy/INDEX.md`를 갱신한다.
+    - 설명: 프로젝트 목표, 첫 출시 핵심 목표와 스펙, 향후 확장, 대상 고객과 사용자 등 큰 결정을 [_docs/_strategy/](../_strategy/AGENTS.md) 아래 `why-*.md` 문서들로 분리 작성한다. 샘플 `project-overview.md`는 참고 후 삭제하거나 실제 내용으로 교체한다.
   - [ ] 도메인 온톨로지 정의
-    - 의미가 갈릴 수 있는 핵심 용어를 식별하고 [_docs/_ontology/](../_ontology/INDEX.md)에 정의한다.
-    - 튜토리얼용 `sample-term.md`를 삭제하고 실제 용어 정의 파일로 교체한 뒤 INDEX를 갱신한다.
+    - 설명: 의미가 갈릴 수 있는 핵심 용어를 식별하고 [_docs/_ontology/](../_ontology/AGENTS.md)에 정의한다. 튜토리얼용 `sample-term.md`를 삭제하고 실제 용어 정의 파일로 교체한다.
   - [ ] 핵심 제약 목록 작성
-    - [_docs/_architecture/core-constraints.md](../_architecture/core-constraints.md)의 "제약 목록" 섹션을 작성한다.
-    - 각 제약은 상세 문서와 링크로 연결한다. 작성 완료 후 문서 상단의 `⚠️ 스캐폴드 상태` 주의문을 삭제한다.
+    - 설명: [_docs/_architecture/core-constraints.md](../_architecture/core-constraints.md)의 "제약 목록" 섹션을 작성한다. 각 제약은 상세 문서와 링크로 연결한다. 작성 완료 후 문서 상단의 `⚠️ 스캐폴드 상태` 주의문을 삭제한다.
   - [ ] 코딩 규약 확장
-    - [_docs/_architecture/conventions.md](../_architecture/conventions.md)에 언어/빌드, 패키지 구조, 네이밍, 가시성, 의존성, 테스트 등 프로젝트 고유 규약을 추가한다.
-    - 작성 완료 후 문서 상단의 `⚠️ 스캐폴드 상태` 주의문을 삭제한다.
+    - 설명: [_docs/_architecture/conventions.md](../_architecture/conventions.md)에 언어/빌드, 패키지 구조, 네이밍, 가시성, 의존성, 테스트 등 프로젝트 고유 규약을 추가한다. 작성 완료 후 문서 상단의 `⚠️ 스캐폴드 상태` 주의문을 삭제한다.
   - [ ] 남은 튜토리얼 샘플 제거
-    - [_docs/_knowledge/sample-fact.md](../_knowledge/sample-fact.md), [_docs/_architecture/sample-spec.md](../_architecture/sample-spec.md), [_docs/_strategy/sample-decision.md](../_strategy/sample-decision.md)를 실제 문서로 교체하거나 삭제하고 각 INDEX를 갱신한다.
+    - 설명: [_docs/_knowledge/sample-fact.md](../_knowledge/sample-fact.md), [_docs/_architecture/sample-spec.md](../_architecture/sample-spec.md), [_docs/_strategy/sample-decision.md](../_strategy/sample-decision.md)를 실제 문서로 교체하거나 삭제한다.
   - [ ] 구현 프로젝트 등록
-    - 실제 소스 코드 프로젝트를 [_implementation/](../../_implementation/INDEX.md)에 추가하고 INDEX의 표에 등록한다.
+    - 설명: 실제 소스 코드 프로젝트를 [_implementation/](../../_implementation/AGENTS.md)에 프로젝트별 폴더로 추가한다.
