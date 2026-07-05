@@ -29,6 +29,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  16. 하위 문서 없는 동명 문서-폴더 쌍 - 경고
      (동명 쌍은 하위 문서 묶음 관계의 예약 신호. md가 든 동명 쌍의
       실제 관계 판단은 감사자 몫)
+ 17. 마크다운 링크 표시텍스트-대상 정합 - 위반
+     (파일명 형태 표시텍스트가 대상 basename 또는 대상 전체와 일치해야 함.
+      자연어 문구, 타이틀은 제외. 폐지 파일명 잔재 오도를 검출)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -94,6 +97,8 @@ TEMPORAL_MIX_REPEAT = 5       # 현재적 문서 내 날짜 패턴 반복 임계
 
 FRONT_MATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+# 표시텍스트와 대상을 함께 캡처 - 표시텍스트 정합 검사용.
+LINK_TEXT_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+)\)")
 # URL 스킴은 2글자 이상으로 판별 - 윈도우 드라이브 문자(C: 등) 오인 방지
 SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]+:")
 WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\x00-\x1f]')
@@ -289,6 +294,68 @@ def check_links(root: Path):
                 warnings.append(
                     f"[link] {rel}: 유니코드 정규화 불일치 링크 (OS 간 상이 위험) -> {raw}"
                 )
+
+
+def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: str) -> bool:
+    """파일명 형태의 링크 표시텍스트가 실존 대상을 가리키는지 판정.
+
+    실존을 정확히 가리키는 세 관례를 정당으로 인정한다 (writing-style.md
+    "마크다운 링크 표시텍스트", 사용자 결정 2026-07-05 "실존 기반 인정").
+      1. 대상 파일명(basename) 일치 - [AGENTS.md](daily/AGENTS.md).
+      2. 루트 기준 또는 source 상대로 표시텍스트 경로가 실존 -
+         [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md).
+      3. 폴더 표기(/로 끝남)의 폴더명이 대상 경로 성분에 존재 -
+         [_knowledge/](../_knowledge/AGENTS.md).
+    셋 다 아니면 부재 파일을 지칭하는 오도로 본다 (daily.md, _strategy/INDEX.md).
+    """
+    disp_norm = disp.rstrip("/")
+    disp_base = disp_norm.rsplit("/", 1)[-1]
+    target_base = target_path.rstrip("/").rsplit("/", 1)[-1]
+    if disp_base == target_base:
+        return True
+    for base in (root, source.parent):
+        try:
+            if (base / disp_norm).resolve().exists():
+                return True
+        except OSError:
+            pass
+    if disp.endswith("/") and disp_base in target_path.split("/"):
+        return True
+    return False
+
+
+def check_link_text(root: Path):
+    """마크다운 링크 표시텍스트가 실존하지 않는 파일을 지칭하는지 검사.
+
+    링크 대상은 check_links가 실존을 검사하지만 표시텍스트는 그 검사 밖이라,
+    폐지된 파일명이나 옛 경로가 표시텍스트로 남으면 링크가 깨지지 않은 채
+    독자를 없는 파일로 오도한다 (예: [_strategy/INDEX.md](../AGENTS.md)는 대상이
+    실존해 링크는 성립하나 표시텍스트 _strategy/INDEX.md는 부재 파일). 본 검사가
+    그 사각을 닫는다. 파일명 형태(공백 없이 .md로 끝나거나 / 포함)의 표시텍스트만
+    보며, 자연어 문구와 타이틀은 공백을 포함해 자연 제외된다.
+    """
+    for path in iter_md_files(root):
+        rel = path.relative_to(root)
+        text = FRONT_MATTER_RE.sub("", read(path))
+        text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+        text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+        text = re.sub(r"`[^`\n]*`", "", text)  # 인라인 코드 - 규약 설명의 예시 링크 오탐 방지
+        for disp, target in LINK_TEXT_RE.findall(text):
+            disp_clean = disp.strip()
+            if not disp_clean or " " in disp_clean:
+                continue  # 빈 표시텍스트 또는 자연어 문구/타이틀
+            if not (disp_clean.endswith(".md") or "/" in disp_clean):
+                continue  # 파일명 형태가 아님 (일반 텍스트)
+            if SCHEME_RE.match(target):
+                continue  # 외부 URL (https: 등)
+            target_path = target.split("#", 1)[0]
+            if not target_path:
+                continue  # 순수 앵커 링크 (#절)
+            if link_text_points_to_real(root, path, disp_clean, target_path):
+                continue
+            violations.append(
+                f"[link-text] {rel}: 표시텍스트가 실존하지 않는 대상을 지칭 -> [{disp}]({target})"
+            )
 
 
 def content_dirs(root: Path):
@@ -681,6 +748,7 @@ def main() -> int:
 
     check_front_matter(root)
     check_links(root)
+    check_link_text(root)
     check_descriptors(root)
     check_size(root)
     check_temporality_mix(root)
