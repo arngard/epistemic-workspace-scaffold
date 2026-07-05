@@ -7,8 +7,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 (마크 커밋 없는 삭제 등) - 그건 epistemic-auditor의 점검 항목이다.
 
 점검 항목:
-  1. YAML front matter 필수 필드 (date created, date modified, tags).
-     선택 필드 date closed는 히스토리 문서(날짜 프리픽스) 전용.
+  1. YAML front matter 필수 필드 (date created, date modified, tags)와 날짜
+     필드 값 형식(yyyy-MM-dd). 선택 필드 date closed는 히스토리 문서 전용.
   2. 문서 유형별 분량 임계 (지식/전략 노드, 시간 축 문서, 폴더 디스크립터) - 경고
   3. 현재적 문서의 시간성 혼합 패턴 (날짜 헤더/불릿 반복) - 경고
   4. 날짜 프리픽스 없는 문서의 date closed (시간성 혼합 신호) - 위반
@@ -32,6 +32,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  17. 마크다운 링크 표시텍스트-대상 정합 - 위반
      (파일명 형태 표시텍스트가 대상 basename 또는 대상 전체와 일치해야 함.
       자연어 문구, 타이틀은 제외. 폐지 파일명 잔재 오도를 검출)
+ 18. 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 - 경고
+     (importance, urgency. cf. _strategy/AGENTS.md. 하위 폴더/디스크립터 제외)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -122,6 +124,13 @@ WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\x00-\x1f]')
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {
     f"LPT{i}" for i in range(1, 10)
 }
+# front matter 날짜 필드 값 형식 (yyyy-MM-dd). 값 무검증으로 스키마가 우회되던
+# 것을 조인다 (제노 1.1/3.1).
+DATE_VALUE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 (cf. _strategy/AGENTS.md
+# "Front matter 속성"). 하위 폴더 문서와 디스크립터에는 강제하지 않는다.
+STRATEGY_DIR = "_docs/_strategy"
+STRATEGY_FIELDS = ("importance", "urgency")
 # 날짜 프리픽스: 파일명이 yyyy-MM-dd로 시작하면 히스토리 문서.
 # 시각 확장(yyyy-MM-ddTHH-mm)도 인정한다 (cf. document-temporality.md).
 DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}([-.T]|$)")
@@ -130,7 +139,10 @@ DATE_LINE_RE = re.compile(r"^\s*(?:[-*#>]+\s*)*\d{4}-\d{2}-\d{2}\b", re.MULTILIN
 # TASK_TREE 속성 노드 표준 키. 이 키로 시작하는 불릿만 표준으로 인정.
 TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
 # STATUS 레지스트리 표의 시각 표기와 표준 헤더. 미수행 placeholder는 허용.
-STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
+# 시각은 KST 기준이며 존 표기는 생략하는 것이 관례다. 관례를 어기고 " KST"를
+# 덧붙인 자식 기재도 깨지지 않게 접미를 선택적으로 허용한다 (델타 D-1 - 규약과
+# 정규식의 자체 모순 해소).
+STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( KST)?$")
 STATUS_HEADER_CELLS = ["이름", "마지막 수행", "주기/트리거"]
 STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
 
@@ -271,6 +283,15 @@ def check_front_matter(root: Path) -> list[Finding]:
         for field in ("date created", "date modified", "tags"):
             if not re.search(rf"^{re.escape(field)}\s*:", body, re.MULTILINE):
                 out.append(Finding(VIOLATION, "front-matter", rel, f"필수 필드 누락 - {field}"))
+        # 날짜 필드 값 형식 검증 (제노 1.1/3.1) - 필드 존재만 보고 값을 안 봐서
+        # 스키마가 우회되던 것을 막는다. 필드가 있을 때만 값을 검사한다.
+        for field in ("date created", "date modified", "date closed"):
+            vm = re.search(rf"^{re.escape(field)}\s*:\s*(\S.*?)\s*$", body, re.MULTILINE)
+            if vm and not DATE_VALUE_RE.match(vm.group(1)):
+                out.append(Finding(
+                    VIOLATION, "front-matter", rel,
+                    f'{field} 값 형식 오류 - yyyy-MM-dd 기대, 실제 "{vm.group(1)}"',
+                ))
         # date closed는 선택 필드이며 히스토리 문서(날짜 프리픽스) 전용이다.
         # 프리픽스 없는 현재적 문서에 달리면 시간성 혼합 신호 (proposal 3).
         if re.search(r"^date closed\s*:", body, re.MULTILINE) and not has_date_prefix(path):
@@ -576,8 +597,12 @@ def check_task_tree_attrs(root: Path) -> list[Finding]:
         content = m.group(2).strip()
         if content.startswith("cf.") or content.startswith("ref."):
             continue
-        # 표준 키로 시작하는지 (키 뒤에 콜론/공백/한글 등 자유 서술 허용).
-        if any(content.startswith(k) for k in TASK_TREE_ATTR_KEYS):
+        # 표준 키로 시작하는지. 키 뒤에 구분자(콜론/공백)나 끝이 와야 한다 -
+        # 단순 startswith면 "설명서" 같은 접두 오검출이 생긴다 (제노 1.5).
+        if any(
+            content == k or (content.startswith(k) and content[len(k):len(k) + 1] in (":", " ", "\t"))
+            for k in TASK_TREE_ATTR_KEYS
+        ):
             continue
         out.append(Finding(
             WARNING, "task-tree", rel,
@@ -714,8 +739,39 @@ def check_status_schema(root: Path) -> list[Finding]:
             continue
         out.append(Finding(
             WARNING, "status", rel,
-            f'마지막 수행 시각 형식 위반 - "{value}". yyyy-MM-dd HH:mm:ss KST 표기',
+            f'마지막 수행 시각 형식 위반 - "{value}". yyyy-MM-dd HH:mm:ss (KST 기준, 존 표기 생략)',
         ))
+    return out
+
+
+def check_strategy_fields(root: Path) -> list[Finding]:
+    """전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 검사 (경고).
+
+    _strategy/AGENTS.md가 일반 필수 필드 외에 importance/urgency를 요구하나
+    audit이 이를 안 봐서 스키마가 강제되지 않던 것을 보완한다 (제노 1.4).
+    하위 폴더 문서와 디스크립터에는 강제하지 않는다. 경고 수준으로 두는 것은
+    자식/메타 레포의 채택 여부가 정책 결정이기 때문 - 상향(위반) 여부는 사용자
+    결정.
+    """
+    out: list[Finding] = []
+    d = root / STRATEGY_DIR
+    if not d.is_dir():
+        return out
+    for p in sorted(d.iterdir()):
+        if not (p.is_file() and p.suffix == ".md"):
+            continue
+        if p.name == DESCRIPTOR_NAME or p.name in EXEMPT_FILENAMES:
+            continue
+        m = FRONT_MATTER_RE.match(read(p))
+        if not m:
+            continue  # front matter 부재는 check_front_matter가 잡는다
+        body = m.group(1)
+        for field in STRATEGY_FIELDS:
+            if not re.search(rf"^{re.escape(field)}\s*:", body, re.MULTILINE):
+                out.append(Finding(
+                    WARNING, "strategy", str(p.relative_to(root)),
+                    f"전략 문서 추가 필수 속성 누락 - {field} (cf. _strategy/AGENTS.md)",
+                ))
     return out
 
 
@@ -843,6 +899,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_temporality_mix(root)
     findings += check_status_registry(root)
     findings += check_status_schema(root)
+    findings += check_strategy_fields(root)
     findings += check_task_tree_attrs(root)
     findings += check_task_tree_completed_branch(root)
     findings += check_normative_guides(root)
