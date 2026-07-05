@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-05
+date modified: 2026-07-06
 tags: [agents, 도구, 환경, IDE]
 ---
 
@@ -31,7 +31,7 @@ tags: [agents, 도구, 환경, IDE]
 - 실행: 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (윈도우는 `python` 또는 `py`).
 - 의존성: Python 3.8+ 표준 라이브러리만. 특정 AI 도구, OS(operating system)에 의존하지 않는다. git에도 의존하지 않는다 - git 맥락 검출은 epistemic-auditor가 담당한다. 사람, 어느 AI 도구의 협업자든 동일하게 실행 가능.
 - 자동 실행: GitHub Actions([.github/workflows/epistemic-audit.yml](../.github/workflows/epistemic-audit.yml))가 push, pull request 시점에 실행한다. 새 세션 시작 시의 실행 의무는 [AGENTS.md](../AGENTS.md) "새 세션 시작 시" 참조.
-- 종료 코드: 위반이 있으면 1, 경고(분량 임계 등)만 있으면 0.
+- 종료 코드: 위반 없음(경고만 있거나 없음) 0, 위반 있음 1, 사용법 오류(인자가 디렉토리가 아님) 2.
 
 ## Claude Code 절차 스킬 래퍼
 
