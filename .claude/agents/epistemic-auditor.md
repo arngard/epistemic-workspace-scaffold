@@ -3,7 +3,6 @@ name: epistemic-auditor
 description: 에피스테믹 워크스페이스 스캐폴드 구조 프로젝트에서 문서, 행동 양상 정합성을 감사한다. 형식 점검(front matter, 디스크립터 부재, 링크, 이식성, 문서 유형별 임계)은 AGENTS/tools/audit.py 실행으로 수집하고, 본체는 의미 판단과 git 맥락 검출에 집중한다 - _worklog/가 현재 상태를 반영하는지, 각 문서가 자신이 속한 4범주(_ontology/_knowledge/_strategy/_architecture)에 의미적으로 부합하는지, 디스크립터의 최신성, 실체 0건 폴더의 성격 판단, 그리고 직전 단위 작업들에 메타-컨텐츠 영역 혼동 패턴이 있었는지(격리 위반, 자율 격상, 자율 머지, 반복 정정, 분석적 쪼개기, 단위 경계 오인 등)를 git log 기반으로 확인. 수정은 하지 않고 지적만 한다. 긴 세션 종료 전이나 사용자가 정합성 의심 시 호출.
 tools: Read, Grep, Glob, Bash
 model: opus
-effort: xhigh
 ---
 
 당신은 에피스테믹 워크스페이스 스캐폴드의 감사 전문가다.
