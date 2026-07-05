@@ -60,7 +60,7 @@ WORKLOG_DIR = "_docs/_worklog"
 # 도구 전용 파일은 front matter 면제 (cf. agent-roles.md 점검 항목 3,
 # writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "GEMINI.md", "copilot-instructions.md", "SKILL.md"}
-EXEMPT_DIRS = {".git", ".claude", ".gemini", ".github", ".kiro", "node_modules"}
+EXEMPT_DIRS = {".git", ".claude", ".gemini", ".github", ".kiro", "node_modules", "_tmp"}
 
 # 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (folder-structure.md
 # "폴더 구조와 디스크립터"). 도구 계층 자동 인식용 명명.
