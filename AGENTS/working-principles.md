@@ -32,7 +32,7 @@ cf. [ingest-workflow.md](ingest-workflow.md) "AI가 단정하지 않는다", [AG
 - 무관한 데드코드는 요청이 없으면 지우지 말고 언급한다. 내 변경이 만든 고아만 정리한다.
 - 검사 기준: 바뀐 모든 줄이 요청에 직결되는가.
 
-cf. [original-protection-principle.md](original-protection-principle.md) 원본 보호 원칙 — 되돌릴 수 없는 변경을 삼가는 가역성 원리와 부합한다.
+cf. [original-protection-principle.md](original-protection-principle.md) 원본 보호 원칙 - 되돌릴 수 없는 변경을 삼가는 가역성 원리와 부합한다.
 
 ## 4. 목표 주도 실행
 

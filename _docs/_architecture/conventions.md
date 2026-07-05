@@ -10,6 +10,8 @@ tags: [architecture, 규칙, 네이밍, 코딩규약]
 
 워크스페이스 공통의 문서 작성 규약과 구조 규약은 [AGENTS/](../../AGENTS/AGENTS.md) 산하 규약 문서(document-units, folder-structure, document-temporality, writing-style) 참조.
 
+> [주의] 스캐폴드 상태 - 프로젝트 고유 규약을 추가하고, 완료 후 본 주의문을 삭제한다.
+
 ## Git 규약
 
 ref. [AGENTS/branch-strategy.md](../../AGENTS/branch-strategy.md).
