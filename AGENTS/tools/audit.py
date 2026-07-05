@@ -9,7 +9,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 점검 항목:
   1. YAML front matter 필수 필드 (date created, date modified, tags)와 날짜
      필드 값 형식(yyyy-MM-dd). 선택 필드 date closed는 히스토리 문서 전용.
-  2. 문서 유형별 분량 임계 (지식/전략 노드, 시간 축 문서, 폴더 디스크립터) - 경고
+  2. 문서 유형별 분량 임계 (지식/전략 노드, 히스토리 문서, 폴더 디스크립터) - 경고
   3. 현재적 문서의 시간성 혼합 패턴 (날짜 헤더/불릿 반복) - 경고
   4. 날짜 프리픽스 없는 문서의 date closed (시간성 혼합 신호) - 위반
   5. STATUS.md 레지스트리 표 외 서술 누적 - 위반
@@ -106,7 +106,7 @@ CATEGORY_TAG_DIRS = {
 # --- 임계값 (초기값. 보수적으로 시작해 운영하며 조정) ---
 # 공백 제외 문자 수. "한글 기준" 근사.
 SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
-SIZE_LIMIT_TEMPORAL = 10000   # 시간 축 문서(날짜 프리픽스)는 누적이 본질
+SIZE_LIMIT_TEMPORAL = 10000   # 히스토리 문서(날짜 프리픽스)는 누적이 본질
 FOLDER_MD_LIMIT = 20          # 폴더 직속 md 파일 수 - 초과 시 분화 권고
 TEMPORAL_MIX_REPEAT = 5       # 현재적 문서 내 날짜 패턴 반복 임계
 # 정규식 스캔 대상 파일 읽기 상한(문자 수). DOTALL 정규식이 초대형 입력에서
@@ -498,7 +498,7 @@ def check_descriptors(root: Path) -> list[Finding]:
 
 
 def check_size(root: Path) -> list[Finding]:
-    """문서 유형별 분량 임계. 시간 축 문서는 완화된 임계를 쓴다."""
+    """문서 유형별 분량 임계. 히스토리 문서는 완화된 임계를 쓴다."""
     out: list[Finding] = []
     for path in iter_md_files(root):
         body = body_of(path)
