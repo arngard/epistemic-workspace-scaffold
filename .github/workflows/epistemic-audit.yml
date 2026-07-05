@@ -8,10 +8,26 @@ on:
   push:
     branches: [main]
 
+# 감사는 읽기 전용이다. 기본 토큰 권한 상속 대신 최소 권한만 명시한다.
+permissions:
+  contents: read
+
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # 파이썬 인터프리터를 명시적으로 확보한다. tool-environment.md의 크로스
+      # 플랫폼 실행 안내(python/py)와 정합 - 러너 기본 python3에 암묵 의존하지 않는다.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
       - name: Run mechanical audit
-        run: python3 AGENTS/tools/audit.py .
+        shell: bash
+        run: |
+          # 감사 결과를 job summary로 노출한다 - 초록 체크만으로는 경고가 안 보인다.
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          python AGENTS/tools/audit.py . | tee -a "$GITHUB_STEP_SUMMARY"
+          status=${PIPESTATUS[0]}
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
