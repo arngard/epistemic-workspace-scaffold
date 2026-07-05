@@ -1,12 +1,12 @@
 ---
 date created: 2026-07-05
-date modified: 2026-07-05
+date modified: 2026-07-06
 tags: [agents, 규칙, 문서관리]
 ---
 
 # 일반 문서 작성 스타일
 
-문장, 서술 수준의 작성 규약. 진입자가 첫 화면에서 봐야 할 핵심(평서문, 서식 절제, 마크다운 링크, cf./ref., 약어와 줄임말, front matter, 응답 언어, 추측 금지, 사실/의견 분리)은 [AGENTS.md "문서 작성 스타일"](../AGENTS.md)에서 보고, 본 문서는 그 외 규약의 본문이다.
+문장, 서술 수준의 작성 규약. 진입자가 첫 화면에서 봐야 할 핵심(평어체, 서식 절제, 마크다운 링크, cf./ref., 약어와 줄임말, front matter, 응답 언어, 추측 금지, 사실/의견 분리)은 [AGENTS.md "문서 작성 스타일"](../AGENTS.md)에서 보고, 본 문서는 그 외 규약의 본문이다.
 
 문서의 배치와 분할은 [document-units.md](document-units.md)와 [folder-structure.md](folder-structure.md), 문서 시간성은 [document-temporality.md](document-temporality.md) 참조.
 

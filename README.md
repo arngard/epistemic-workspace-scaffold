@@ -16,7 +16,7 @@ tags: [소개]
 
 이 스캐폴드는 언어 이해(verbal comprehension) 능력이 작업 성과를 크게 좌우한다고 본다. 좋은 결과는 좋은 이해에서 나오고 좋은 이해는 잘 정리된 맥락 문서에서 나온다는 것이 그 전제다. 암묵적 지식과 메타적 인지를 제대로 기록해두지 않으면 취지나 방향성이 구체적 단계의 설계에 전달되지 않는다. 실제 작업자(인간이든 AI든)가 "이 일을 왜 하는지" 모른 채 움직이게 되고, 이것이 낭비적인 이터레이션으로 이어진다. 그런데 글쓰기 능력은 사람마다 편차가 매우 크다.
 
-이 스캐폴드는 그러한 문제를 구조로 보완하려는 시도다. 시스템을 층위로 잘라 설명한다는 발상의 예시는 Zachman Framework, Domain-Driven Design, Architecture Decision Record, 아리스토텔레스의 네 원인, Popper의 세 세계 등이 있겠다. 이 스캐폴드에서는 AI와의 협업이라는 맥락에 맞춰 설계 문서를 네 범주로 분류한다.
+이 스캐폴드는 그러한 문제를 구조로 보완하려는 시도다. 시스템을 층위로 잘라 설명한다는 발상의 예시는 Zachman Framework, Domain-Driven Design, Architecture Decision Record, 아리스토텔레스의 네 원인, Popper의 세 세계 등이 있다. 이 스캐폴드에서는 AI와의 협업이라는 맥락에 맞춰 설계 문서를 네 범주로 분류한다.
 
 - Ontology: 무엇이 존재하는가
 - Knowledge: 세상이 어떠한가
@@ -30,11 +30,11 @@ tags: [소개]
 ```
 (workspace-root)/
 ├── _docs/             <- 코드로 표현할 수 없는 지식
-│   ├── _worklog/          <- 작업 상태, 이력
 │   ├── _ontology/         <- 도메인 개념
 │   ├── _knowledge/        <- 외부 사실
 │   ├── _strategy/         <- 결정과 근거
-│   └── _architecture/     <- 설계 명세
+│   ├── _architecture/     <- 설계 명세
+│   └── _worklog/          <- 작업 상태, 이력
 ├── _reference/        <- 사용자가 dump한 raw 자료의 immutable 보관 영역
 └── _implementation/   <- 구현체 코드
     ├── backend/

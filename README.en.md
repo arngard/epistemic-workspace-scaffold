@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-04
+date modified: 2026-07-06
 tags: [소개]
 ---
 
@@ -14,7 +14,7 @@ A workspace scaffold that partitions documentation by epistemic category. Keeps 
 
 In human-AI collaboration, it is common to jump into the code-generation-and-revision cycle without first documenting the expected outcomes. But starting this way, you'll end up revising the code toward those expectations through trial and error anyway - and that process is not lean but a waste of tokens. Writing the expectations up front saves iteration time and tokens. Getting meaning across and spending tokens well are the same problem.
 
-Ultimately, verbal comprehension appears to be decisive for work outcomes. Good outcomes come from good understanding, and good understanding comes from well-organized context documentation. When tacit knowledge and meta-cognition are not properly recorded, the intent and direction don't propagate to the implementation-level design. Actual workers - human or AI - end up moving without a clear sense of why, and this leads to wasteful iterations. Yet writing ability varies widely between individuals.
+This scaffold holds that verbal comprehension is a major determinant of work outcomes. Its premise is that good outcomes come from good understanding, and good understanding comes from well-organized context documentation. When tacit knowledge and meta-cognition are not properly recorded, the intent and direction don't propagate to the implementation-level design. Actual workers - human or AI - end up moving without a clear sense of why, and this leads to wasteful iterations. Yet writing ability varies widely between individuals.
 
 This scaffold is an attempt to address that gap through structure. Examples of describing a system by slicing it into layers include the Zachman Framework, Domain-Driven Design, Architecture Decision Records, Aristotle's Four Causes, and Popper's Three Worlds. Tailored to the context of collaboration with AI, this scaffold classifies design documents into four categories.
 
@@ -30,11 +30,11 @@ If harness engineering is the approach of drawing fences at the boundary between
 ```
 (workspace-root)/
 ├── _docs/             <- Knowledge not expressible in code
-│   ├── _worklog/          <- Work status, history
 │   ├── _ontology/         <- Domain concepts
 │   ├── _knowledge/        <- External facts
 │   ├── _strategy/         <- Decisions and rationale
-│   └── _architecture/     <- Design specifications
+│   ├── _architecture/     <- Design specifications
+│   └── _worklog/          <- Work status, history
 ├── _reference/        <- Immutable raw materials dumped by the user
 └── _implementation/   <- Implementation code
     ├── backend/
@@ -57,7 +57,7 @@ First, obtain the scaffold. There are three ways.
 - Plain copy: Clone it or copy via GitHub template to start an independent repository.
 - Clone and connect upstream: Clone the scaffold and add the original as an `upstream` remote repository, so you can pull later scaffold improvements with `git fetch upstream && git merge upstream/main`.
 
-The upstream-connected approach suits keeping up with the parent's later improvements. A one-time copy via fork or plain copy is enough if you will use it independently.
+The upstream-connected approach suits keeping up with the parent's later improvements. A one-time copy via fork or plain copy is enough if you will use it independently. Because switching between the three approaches later is cumbersome, the adopter is advised to record the chosen approach and its rationale as a decision document (the why-*.md format under `_docs/_strategy/`).
 
 After obtaining it, proceed:
 
