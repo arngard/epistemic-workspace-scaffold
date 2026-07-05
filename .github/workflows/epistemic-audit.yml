@@ -8,6 +8,10 @@ on:
   push:
     branches: [main]
 
+# 감사는 읽기 전용이다. 기본 토큰 권한 상속 대신 최소 권한만 명시한다.
+permissions:
+  contents: read
+
 jobs:
   audit:
     runs-on: ubuntu-latest

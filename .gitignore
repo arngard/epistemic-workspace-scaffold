@@ -6,7 +6,7 @@
 ._*
 
 # Custom folder icons
-Icon
+Icon
 
 # Volume root files
 .DocumentRevisions-V100
@@ -45,3 +45,20 @@ $RECYCLE.BIN/
 
 # NFS temporary files
 .nfs*
+
+### 시크릿, 자격 증명
+# 안전 기본값: 자격 증명이 실수로 커밋되지 않도록 흔한 패턴을 미리 무시한다.
+# 이 워크스페이스는 문서 중심이라 정상 시 대상 파일이 없지만, 자식 인스턴스나
+# 도구 유입 시 유출을 막는 방어선으로 둔다.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa
+id_ed25519
+credentials
+secrets.*
+.secrets/
