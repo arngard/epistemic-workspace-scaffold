@@ -45,7 +45,7 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 
 ## 문서 변경
 
-관심사의 규약 문서를 먼저 갱신하고 정합성(cross-reference)을 확인한다. 폴더나 절차를 신설하면 디스크립터와 첫 실체 1건을 같은 단위 작업에 동반하고, 이동, 리네임은 연쇄 갱신한다. 날짜 프리픽스 문서는 수정 전 종결(`date closed`) 여부를 확인한다. 모듈, 의존성 변경은 [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md), 구조 규약은 [AGENTS/folder-structure.md](AGENTS/folder-structure.md), 문서 시간성은 [AGENTS/document-temporality.md](AGENTS/document-temporality.md).
+관심사의 규약 문서를 먼저 갱신하고 정합성(cross-reference)을 확인한다. 폴더나 절차를 신설하면 디스크립터와 첫 실체 1건을 같은 단위 작업에 동반하고, 이동, 리네임은 연쇄 갱신한다. 날짜 프리픽스 문서는 수정 전 종결(`date closed`) 여부를 확인한다. 문서 단위와 SSOT(신설, 1관심사, 분량)는 [AGENTS/document-units.md](AGENTS/document-units.md), 구조 규약은 [AGENTS/folder-structure.md](AGENTS/folder-structure.md), 문서 시간성은 [AGENTS/document-temporality.md](AGENTS/document-temporality.md), 모듈, 의존성 변경은 [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md).
 
 ## 문서 작성 스타일
 
