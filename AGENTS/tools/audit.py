@@ -9,7 +9,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 점검 항목:
   1. YAML front matter 필수 필드 (date created, date modified, tags)와 날짜
      필드 값 형식(yyyy-MM-dd). 선택 필드 date closed는 히스토리 문서 전용.
-  2. 문서 유형별 분량 임계 (지식/전략 노드, 히스토리 문서, 폴더 디스크립터) - 경고
+  2. 문서 유형별 분량 임계 (일반 노드, 히스토리 문서, 진입층/폴더 디스크립터) - 경고
   3. 현재적 문서의 시간성 혼합 패턴 (날짜 헤더/불릿 반복) - 경고
   4. 날짜 프리픽스 없는 문서의 date closed (시간성 혼합 신호) - 위반
   5. STATUS.md 레지스트리 표 외 서술 누적 - 위반
@@ -34,6 +34,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       자연어 문구, 타이틀은 제외. 폐지 파일명 잔재 오도를 검출)
  18. 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 - 경고
      (importance, urgency. cf. _strategy/AGENTS.md. 하위 폴더/디스크립터 제외)
+ 19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
+     (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -107,6 +109,10 @@ CATEGORY_TAG_DIRS = {
 # 공백 제외 문자 수. "한글 기준" 근사.
 SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
 SIZE_LIMIT_TEMPORAL = 10000   # 히스토리 문서(날짜 프리픽스)는 누적이 본질
+# 진입층(루트 AGENTS.md)과 폴더 디스크립터(AGENTS.md)는 구조적으로 길어진다 -
+# 진입층은 정체성/게이트/트리거 색인을 한 파일에 담는 색인이고, 디스크립터는
+# 파일별 안내 표가 폴더 직속 항목 수에 비례한다 (cf. document-units.md "분량 보조 지표").
+SIZE_LIMIT_DESCRIPTOR = 5000  # 진입층/폴더 디스크립터(AGENTS.md) 완화 임계
 FOLDER_MD_LIMIT = 25          # 폴더 직속 md 파일 수 - 초과 시 분화 권고
 TEMPORAL_MIX_REPEAT = 5       # 현재적 문서 내 날짜 패턴 반복 임계
 # 정규식 스캔 대상 파일 읽기 상한(문자 수). DOTALL 정규식이 초대형 입력에서
@@ -118,6 +124,12 @@ FRONT_MATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 # 표시텍스트와 대상을 함께 캡처 - 표시텍스트 정합 검사용.
 LINK_TEXT_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+)\)")
+# 로컬 .md 링크 바로 뒤에 인용된 섹션명 - 섹션 참조 검사용.
+# 관례는 URL 앵커(#) 대신 링크 뒤 인용 섹션명이나, 앵커 표기도 관대히 받는다.
+SECTION_REF_RE = re.compile(r'\]\(([^)\s]+\.md(?:#[^)\s]*)?)\)\s*"([^"\n]+)"')
+# 헤딩 추출과 번호 접두(N. ) 정규화 - 참조는 접두를 생략하는 관례라 대조 전 제거.
+HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)\s*$", re.MULTILINE)
+ENUM_PREFIX_RE = re.compile(r"^\d+\.\s+")
 # URL 스킴은 2글자 이상으로 판별 - 윈도우 드라이브 문자(C: 등) 오인 방지
 SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]+:")
 WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\x00-\x1f]')
@@ -451,6 +463,65 @@ def check_link_text(root: Path) -> list[Finding]:
     return out
 
 
+def normalize_heading(text: str) -> str:
+    """헤딩/섹션명 대조용 정규화.
+
+    NFC, 번호 접두(N. ) 제거, 백틱 제거(섹션명이 인라인 코드로 경로를 감쌀 수
+    있어 대조 전 제거), 연속 공백 축약. 헤딩과 참조 양측에 같은 정규화를 적용해
+    표기 차이를 흡수한다.
+    """
+    s = ENUM_PREFIX_RE.sub("", nfc(text).strip())
+    s = s.replace("`", "")
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def headings_of(path: Path) -> "set[str]":
+    """대상 파일의 헤딩 집합(정규화). 코드 펜스 안 예시 헤딩은 제외."""
+    body = re.sub(r"```.*?```", "", body_of(path), flags=re.DOTALL)
+    return {normalize_heading(h) for h in HEADING_RE.findall(body)}
+
+
+def check_section_refs(root: Path) -> list[Finding]:
+    """로컬 .md 링크 뒤 인용 섹션명이 대상 파일 헤딩에 실존하는지 검사 (경고).
+
+    링크의 파일 실존은 check_links가 보지만 인용 섹션명은 그 검사 밖이라, 섹션이
+    개명/삭제되면 링크는 성립한 채 없는 섹션을 가리킨다 (dangling 섹션 참조). 본
+    검사가 그 사각을 닫는다. 헤딩의 번호 접두(N. )는 참조가 생략하는 관례라
+    정규화 후 대조한다. 대상 파일 부재는 check_links 소관이라 여기서 건너뛴다.
+    오탐 위험(섹션 아닌 인용문) 때문에 경고 수준으로 둔다.
+    """
+    out: list[Finding] = []
+    heading_cache: "dict[Path, set[str] | None]" = {}
+    for path in iter_md_files(root):
+        rel = str(path.relative_to(root))
+        text = FRONT_MATTER_RE.sub("", read(path))
+        # 코드 펜스만 제거한다. 인라인 코드는 남긴다 - 섹션명이 경로를 백틱으로
+        # 감쌀 수 있어(예: "`_reference/` 폴더 처리") 제거하면 섹션명이 훼손된다.
+        # 백틱 자체는 normalize_heading이 양측에서 대칭 제거한다.
+        text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+        for target, section in SECTION_REF_RE.findall(text):
+            resolved = resolve_link(path, target)
+            if resolved is None:
+                continue
+            if classify_target(root, resolved) in ("missing", "outside"):
+                continue  # 대상 부재는 check_links가 위반으로 잡는다
+            if resolved not in heading_cache:
+                try:
+                    heading_cache[resolved] = (
+                        headings_of(resolved) if resolved.exists() else None
+                    )
+                except OSError:
+                    heading_cache[resolved] = None
+            hs = heading_cache[resolved]
+            if hs is None or normalize_heading(section) in hs:
+                continue
+            out.append(Finding(
+                WARNING, "section-ref", rel,
+                f'인용 섹션명이 대상 헤딩에 없음 -> ({target}) "{section}"',
+            ))
+    return out
+
+
 def content_dirs(root: Path):
     """디스크립터 검사 대상 폴더 순회.
 
@@ -498,12 +569,21 @@ def check_descriptors(root: Path) -> list[Finding]:
 
 
 def check_size(root: Path) -> list[Finding]:
-    """문서 유형별 분량 임계. 히스토리 문서는 완화된 임계를 쓴다."""
+    """문서 유형별 분량 임계.
+
+    히스토리 문서(날짜 프리픽스)는 시간순 누적이 본질이라 완화, 진입층/디스크립터
+    (AGENTS.md)는 색인/파일별 안내 표라 완화, 그 외 일반 노드는 기본 임계.
+    """
     out: list[Finding] = []
     for path in iter_md_files(root):
         body = body_of(path)
         length = len(re.sub(r"\s", "", body))
-        limit = SIZE_LIMIT_TEMPORAL if has_date_prefix(path) else SIZE_LIMIT_NODE
+        if has_date_prefix(path):
+            limit = SIZE_LIMIT_TEMPORAL
+        elif path.name == DESCRIPTOR_NAME:
+            limit = SIZE_LIMIT_DESCRIPTOR
+        else:
+            limit = SIZE_LIMIT_NODE
         if length > limit:
             out.append(Finding(
                 WARNING, "size", str(path.relative_to(root)),
@@ -894,6 +974,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_front_matter(root)
     findings += check_links(root)
     findings += check_link_text(root)
+    findings += check_section_refs(root)
     findings += check_descriptors(root)
     findings += check_size(root)
     findings += check_temporality_mix(root)

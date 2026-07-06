@@ -17,7 +17,7 @@ tags: [agents, 작업원칙]
 - 더 단순한 방법이 있으면 제안한다. 근거가 있으면 반대 의견을 낸다.
 - 사용자 결정 영역은 자율로 확정하지 않는다. 의향 옵션을 제시하고 결정을 받는다.
 
-cf. [ingest-workflow.md](ingest-workflow.md) "AI가 단정하지 않는다", [AGENTS.md](../AGENTS.md) 문서 작성 스타일의 사실, 의견, 주체 구분.
+cf. [ingest-workflow.md](ingest-workflow.md) "표준 시퀀스"(충돌 검사에서 AI가 단정하지 않는다), [AGENTS.md](../AGENTS.md) 문서 작성 스타일의 사실, 의견, 주체 구분.
 
 ## 2. 단순함 우선
 
