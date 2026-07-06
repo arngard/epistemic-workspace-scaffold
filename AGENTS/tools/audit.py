@@ -107,7 +107,7 @@ CATEGORY_TAG_DIRS = {
 # 공백 제외 문자 수. "한글 기준" 근사.
 SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
 SIZE_LIMIT_TEMPORAL = 10000   # 히스토리 문서(날짜 프리픽스)는 누적이 본질
-FOLDER_MD_LIMIT = 20          # 폴더 직속 md 파일 수 - 초과 시 분화 권고
+FOLDER_MD_LIMIT = 25          # 폴더 직속 md 파일 수 - 초과 시 분화 권고
 TEMPORAL_MIX_REPEAT = 5       # 현재적 문서 내 날짜 패턴 반복 임계
 # 정규식 스캔 대상 파일 읽기 상한(문자 수). DOTALL 정규식이 초대형 입력에서
 # 과도한 백트래킹/메모리를 쓰지 않도록 상한을 둔다. 규약 문서는 이 값을 한참
