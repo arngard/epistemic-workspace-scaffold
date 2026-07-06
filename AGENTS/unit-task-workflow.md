@@ -55,7 +55,7 @@ tags: [agents, 워크스페이스, 운영]
 
 - TASK_TREE의 진행 중(`[/]`) 노드와 브랜치 속성이 작업 컨텍스트의 1차 입구. 브랜치 속성이 어느 작업 브랜치로 진입할지를 가리킨다.
 - git log + 작업 브랜치 위치로 어디까지 진행됐는지 확인. 시작점 커밋 이후 커밋들을 훑어 진행 양상 복원.
-- 작업 브랜치에 열린 PR이 있으면(`gh pr list --head <branch>`) 그 PR의 리뷰 상태가 현재 단계 - [pr-workflow.md](pr-workflow.md)의 능동 리뷰 확인 흐름으로 복귀.
+- 작업 브랜치에 열린 PR이 있으면(`gh pr list --head <branch>`) 그 PR의 리뷰 상태가 현재 단계 - [active-review-loop.md](pr-workflow/active-review-loop.md)의 능동 리뷰 확인 흐름으로 복귀.
 - 마지막 커밋과 TASK_TREE 노드 상태가 어긋나면 그 사이에 끊김이 있던 것 - 정정 후 이어간다.
 
 ## 다른 세션 작업과의 격리
