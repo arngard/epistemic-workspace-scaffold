@@ -8,7 +8,7 @@ tags: [knowledge]
 
 > "세상이 어떤가" - 외부 사실, 환경 정보, 벤치마크 분석.
 > 우리의 결정과 그 근거는 [_strategy/](../_strategy/AGENTS.md) 참조. 최종 설계 명세는 [_architecture/](../_architecture/AGENTS.md) 참조.
-> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (cf. [AGENTS.md](../../AGENTS.md) "폴더 디스크립터 사용 규칙").
+> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (cf. [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터").
 
 ## 작성 스타일
 

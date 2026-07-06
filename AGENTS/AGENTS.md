@@ -7,7 +7,7 @@ tags: [agents]
 # 에이전트 지침 디스크립터
 
 > `AGENTS/` 폴더의 로컬 안내. AI 에이전트 운영, 워크스페이스 관리 택틱, 도구 환경 정보를 담는다.
-> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS.md](../AGENTS.md) "폴더 디스크립터 사용 규칙", [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터").
+> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터").
 > 프로젝트 컨텐츠 맥락은 [_knowledge/](../_docs/_knowledge/AGENTS.md)와 [_strategy/](../_docs/_strategy/AGENTS.md), 설계 명세는 [_architecture/](../_docs/_architecture/AGENTS.md) 참조.
 
 ## 도구/환경

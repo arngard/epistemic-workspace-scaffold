@@ -30,7 +30,7 @@ tags: [agents, 도구, 환경, IDE]
 - 임계값은 보수적 초기값으로 두고 운영하며 조정한다. 스크립트 상단 상수(`SIZE_LIMIT_NODE`, `SIZE_LIMIT_TEMPORAL`, `FOLDER_MD_LIMIT`, `TEMPORAL_MIX_REPEAT`)로 관리한다.
 - 실행: 워크스페이스 루트에서 `python3 AGENTS/tools/audit.py .` (윈도우는 `python` 또는 `py`).
 - 의존성: Python 3.8+ 표준 라이브러리만. 특정 AI 도구, OS(operating system)에 의존하지 않는다. git에도 의존하지 않는다 - git 맥락 검출은 epistemic-auditor가 담당한다. 사람, 어느 AI 도구의 협업자든 동일하게 실행 가능.
-- 자동 실행: GitHub Actions([.github/workflows/epistemic-audit.yml](../.github/workflows/epistemic-audit.yml))가 push, pull request 시점에 실행한다. 새 세션 시작 시의 실행 의무는 [AGENTS.md](../AGENTS.md) "새 세션 시작 시" 참조.
+- 자동 실행: GitHub Actions([.github/workflows/epistemic-audit.yml](../.github/workflows/epistemic-audit.yml))가 push, pull request 시점에 실행한다. 새 세션 시작 시의 실행 의무는 [AGENTS.md](../AGENTS.md) "세션 시작" 참조.
 - 종료 코드: 위반 없음(경고만 있거나 없음) 0, 위반 있음 1, 사용법 오류(인자가 디렉토리가 아님) 2.
 - 강제력: 위반(violation)은 CI를 실패시킨다(exit 1). 경고(warning)는 통과시킨다(exit 0) - 사람/LLM 판단이 필요한 신호라 기계적으로 차단하지 않는다. 그래서 경고는 방치하면 무한 누적될 수 있다. 감사 시 경고를 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)해 미결 경고가 쌓이지 않게 한다.
 
