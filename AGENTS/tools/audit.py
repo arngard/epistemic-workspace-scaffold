@@ -36,6 +36,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      (importance, urgency. cf. _strategy/AGENTS.md. 하위 폴더/디스크립터 제외)
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
      (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
+ 20. 비ASCII 문장 부호 (em dash, 화살표, 가운뎃점, 말줄임표, 둥근 따옴표) - 경고
+     (백틱/코드펜스 예시와 고정폭 box-drawing 트리는 제외.
+      cf. AGENTS/writing-style/ascii-punctuation.md)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -157,6 +160,20 @@ TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
 STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( KST)?$")
 STATUS_HEADER_CELLS = ["이름", "마지막 수행", "주기/트리거"]
 STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
+# 비ASCII 문장 부호 검출 대상과 ASCII 대체 힌트 (cf. writing-style/ascii-punctuation.md).
+# 코드 펜스, 인라인 코드는 검사 전 제거하므로 규칙 자체의 백틱 예시, 코드,
+# 고정폭 box-drawing 트리는 검출에서 빠진다.
+NON_ASCII_PUNCT = {
+    "—": "em dash - 부연은 ' - ', 정의는 ': ', 분리는 '. '",
+    "→": "화살표 - 흐름/상태 변화는 '->'",
+    "←": "화살표 - 흐름/상태 변화는 '<-'",
+    "·": "가운뎃점 - 나열은 ', ', 양자택일은 '/'",
+    "…": "말줄임표 - '...' 또는 '등'",
+    "“": "둥근 여는 큰따옴표 - ASCII 큰따옴표 사용",
+    "”": "둥근 닫는 큰따옴표 - ASCII 큰따옴표 사용",
+    "‘": "둥근 여는 작은따옴표 - ASCII 작은따옴표 사용",
+    "’": "둥근 닫는 작은따옴표 - ASCII 작은따옴표 사용",
+}
 
 VIOLATION = "violation"
 WARNING = "warning"
@@ -964,6 +981,32 @@ def check_filename_portability(root: Path) -> list[Finding]:
     return out
 
 
+def check_ascii_punctuation(root: Path) -> list[Finding]:
+    """문서 본문의 비ASCII 문장 부호를 검출한다 (경고).
+
+    writing-style/ascii-punctuation.md가 ASCII 우선 표기를 규정하나 audit이
+    강제하지 않던 것을 보완한다 (이아리스 B-2). 코드 펜스, 인라인 코드, HTML
+    주석은 검사 전 제거하므로 규칙 자체의 백틱 예시와 코드, 고정폭 box-drawing
+    트리는 제외된다. 직접 인용(사용자/외부 텍스트)은 정적으로 판별할 수 없어
+    경고 수준으로 둔다 - 위반 격상은 규약 SSOT 소유자 결정.
+
+    파일당 문자 종류별 1건만 보고한다 (같은 문자 반복은 소음이라 접는다).
+    """
+    out: list[Finding] = []
+    for path in iter_md_files(root):
+        rel = str(path.relative_to(root))
+        text = FRONT_MATTER_RE.sub("", read(path))
+        text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+        text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+        text = re.sub(r"`[^`\n]*`", "", text)
+        for ch, hint in NON_ASCII_PUNCT.items():
+            if ch in text:
+                out.append(Finding(
+                    WARNING, "ascii-punct", rel,
+                    f"비ASCII 문장 부호 '{ch}' (U+{ord(ch):04X}) - {hint}",
+                ))
+    return out
+
 def run_audit(root: Path) -> list[Finding]:
     """모든 검사를 순서대로 실행해 Finding 리스트를 모은다.
 
@@ -988,6 +1031,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_empty_folders(root)
     findings += check_name_collision(root)
     findings += check_filename_portability(root)
+    findings += check_ascii_punctuation(root)
     return findings
 
 
