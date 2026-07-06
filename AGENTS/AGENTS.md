@@ -34,12 +34,14 @@ tags: [agents]
 | [working-principles.md](working-principles.md) | 단위 작업을 대하는 토대 원칙 (넘겨짚지 않기, 단순함, 외과적 변경, 목표 주도, 기억보다 실제 상태) | 단위 작업 착수 시 |
 | [coding-guidelines.md](coding-guidelines.md) | 코드 작업 전용 지침 (성공 기준을 테스트로, 코드 단순함, 코드 외과적 변경) | 코드 생성, 수정 시 |
 
-## Git 운영
+## 단위 작업, 워크플로우, Git
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
+| [unit-task.md](unit-task.md) | 단위 작업과 워크플로우의 개념 - 원자 단위 ↔ 트리 노드(중위 노드 포함, 중첩), 워크플로우의 재귀와 조립 | 단위 작업 개념 확인, 워크플로우 조립 판단 시 |
+| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 프레임 (진입/진행/종료, 머지 타입 분기, 서브모듈 재귀 정합화, 끊김 재진입, 세션 격리) | 단위 작업 시작, 종료 시 |
+| [pr-workflow.md](pr-workflow.md) | 종료 머지의 PR 타입에 조립되는 워크플로우 (본문, 자기 검토, 리뷰 응답, 능동 확인, 머지) | PR 생성, PR 검토 대응 시 |
 | [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 | 브랜치 생성 시 |
-| [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 흐름 (진입, 진행, 종료 패턴 분기 및 재귀 정합화) 및 PR 운영 규약 (본문, 검토, 응답) | 단위 작업 시작, 종료, PR 운영 시 |
 
 ## 공용 태그
 

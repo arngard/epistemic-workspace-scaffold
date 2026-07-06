@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-05
+date modified: 2026-07-06
 tags: [규칙, 문서관리]
 ---
 
@@ -24,7 +24,7 @@ tags: [규칙, 문서관리]
 
 ## 단위 작업 시작/종료 시 (필수)
 
-단위 작업의 시작, 진행, 종료 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md) 참조. 진입, 진행, 종료(머지 패턴 분기[직접 머지/PR 흐름] + 재귀 정합화), PR 운영, 끊김 재진입의 SSOT.
+단위 작업의 개념(원자 단위 ↔ 트리 노드, 재귀, 조립)은 [AGENTS/unit-task.md](AGENTS/unit-task.md), 운영 프레임(진입/진행/종료, 머지 타입 분기[직접 머지/PR 타입], 재귀 정합화, 끊김 재진입)은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md), PR 타입에 조립되는 상세는 [AGENTS/pr-workflow.md](AGENTS/pr-workflow.md) 참조.
 
 본 진입점에서 강조하는 의무 한 줄: **단위 작업 시작과 종료 시 TASK_TREE 갱신 + 사용자 검토 통과 후 main 머지**. 완료 이력은 git 이력이 담당하며 별도 이력 파일을 두지 않는다. AI 자율 머지 회피. 근거 원리는 [원본 보호 원칙](AGENTS/original-protection-principle.md)이다.
 
@@ -82,7 +82,7 @@ tags: [규칙, 문서관리]
 - `_docs/` 파일을 사람 확인 없이 삭제하거나 대폭 재편하지 않는다.
 - 코드나 문서 영역에 공용 태그(`[to:@AGENT: ...]`)가 달려 있으면 그 내용을 하나의 프롬프트와 동등하게 취급하여 먼저 읽고 반영한다. 형식은 [AGENTS/agent-tag-format.md](AGENTS/agent-tag-format.md) 참조. 태그가 없다고 해당 영역을 임의로 수정해도 된다는 뜻은 아니다.
 - Git 커밋, 푸시를 명시적 요청 없이 수행하지 않는다. 요청된 범위만 정확히 수행한다: "커밋"을 요청받으면 커밋까지, "푸시"를 요청받으면 푸시까지. 범위를 임의로 확장하거나 축소하지 않는다. 푸시 전에 사용자가 커밋 내용을 확인할 수 있어야 한다.
-- PR에 달린 인라인 리뷰 코멘트(사용자, 다른 개발자, 자동 리뷰 봇)에 응답할 때는 **그 코멘트의 스레드 reply**로 단다. 호출 형태, 정정 절차, PR 본문 형식, 속성 할당, 명시적 멘션, AI 시그니처 등 PR 운영 전반 규약은 [AGENTS/unit-task-workflow.md "PR 운영"](AGENTS/unit-task-workflow.md#pr-운영) 참조.
+- PR에 달린 인라인 리뷰 코멘트(사용자, 다른 개발자, 자동 리뷰 봇)에 응답할 때는 **그 코멘트의 스레드 reply**로 단다. 호출 형태, 정정 절차, PR 본문 형식, 속성 할당, 명시적 멘션, AI 시그니처 등 PR 운영 전반 규약은 [AGENTS/pr-workflow.md](AGENTS/pr-workflow.md) 참조.
 
 ## 응답 언어
 

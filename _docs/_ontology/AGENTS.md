@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-05
+date modified: 2026-07-06
 tags: [ontology]
 ---
 
@@ -33,4 +33,4 @@ tags: [ontology]
 
 ## 스캐폴드 샘플
 
-`sample-term.md`는 용어 정의 문서의 위치와 형식을 보여주는 튜토리얼용 샘플이다. 실제 작성 시 삭제하거나 교체한다. `unit-task.md`는 본 스캐폴드가 계속 참조하는 실제 정의(단위 작업)이므로 유지한다.
+`sample-term.md`는 용어 정의 문서의 위치와 형식을 보여주는 튜토리얼용 샘플이다. 실제 작성 시 삭제하거나 교체한다. 본 폴더는 워크스페이스 자기 도메인의 용어를 담는다 - 작업 방법론 개념(단위 작업, 워크플로우 등)은 도메인이 아니라 메타이므로 [AGENTS/unit-task.md](../../AGENTS/unit-task.md) 등 AGENTS/에 둔다.

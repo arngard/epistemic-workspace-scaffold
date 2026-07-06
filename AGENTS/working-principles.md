@@ -40,7 +40,7 @@ cf. [original-protection-principle.md](original-protection-principle.md) 원본 
 - 큰 목표는 도달점과 기준을 구체화하기 어렵다. 그래서 평면적 작업 목록이 아니라 작업 트리로 다룬다. 재귀적으로 더 작은 목표로 세분해, 명확한 기준을 가진 단위로 점진 달성한다.
 - 본 규율은 거시와 미시 양쪽에 적용된다. 스캐폴드가 존재하는 것 자체가 거시 수준에서 "왜"를 보존하지만(고차원적 정보 유실 방지), 같은 규율이 커밋 하나, 단위 작업 하나 수준에도 적용된다.
 
-cf. [unit-task.md](../_docs/_ontology/unit-task.md)(단위 작업 정의와 재귀 쪼개짐), [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)(작업 트리 본체), [unit-task-workflow.md](unit-task-workflow.md)(운영 흐름).
+cf. [unit-task.md](unit-task.md)(단위 작업 정의와 재귀 쪼개짐), [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)(작업 트리 본체), [unit-task-workflow.md](unit-task-workflow.md)(운영 흐름).
 
 ## 5. 기억보다 실제 상태
 
