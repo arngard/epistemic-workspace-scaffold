@@ -8,22 +8,14 @@ tags: [소개]
 
 # Epistemic Workspace Scaffold
 
-문서를 인식론적 범주로 나누는 워크스페이스 골격. 인간과 AI가 함께 일할 때 상위 의도, 근거가 유실되지 않게 한다.
-
-## 이 워크스페이스가 풀려는 문제
-
-인간과 AI 협업에서, 결과에 대한 기대를 먼저 문서로 표현하지 않은 채 코드 생성-수정 사이클부터 돌리는 경우가 많다. 그러나 이렇게 시작하면 시행착오 끝에 어차피 기대치를 향해 코드를 수정해 가게 되며, 이 과정은 lean한 것이 아니라 토큰 낭비다. 처음부터 기대하는 바를 기록하고 시작하는 편이 이터레이션 시간과 토큰을 아낀다. 의미 전달 문제와 토큰 경제 문제는 별개가 아니다.
-
-이 스캐폴드는 언어 이해(verbal comprehension) 능력이 작업 성과를 크게 좌우한다고 본다. 좋은 결과는 좋은 이해에서 나오고 좋은 이해는 잘 정리된 맥락 문서에서 나온다는 것이 그 전제다. 암묵적 지식과 메타적 인지를 제대로 기록해두지 않으면 취지나 방향성이 구체적 단계의 설계에 전달되지 않는다. 실제 작업자(인간이든 AI든)가 "이 일을 왜 하는지" 모른 채 움직이게 되고, 이것이 낭비적인 이터레이션으로 이어진다. 그런데 글쓰기 능력은 사람마다 편차가 매우 크다.
-
-이 스캐폴드는 그러한 문제를 구조로 보완하려는 시도다. 시스템을 층위로 잘라 설명한다는 발상의 예시는 Zachman Framework, Domain-Driven Design, Architecture Decision Record, 아리스토텔레스의 네 원인, Popper의 세 세계 등이 있다. 이 스캐폴드에서는 AI와의 협업이라는 맥락에 맞춰 설계 문서를 네 범주로 분류한다.
+문서를 인식론적 범주로 나누는 워크스페이스 골격. 인간과 AI가 함께 일할 때 상위 의도와 근거가 유실되지 않게 한다. 설계 문서를 네 범주로 분류한다.
 
 - Ontology: 무엇이 존재하는가
 - Knowledge: 세상이 어떠한가
 - Strategy: 왜 이렇게 결정했는가
 - Architecture: 어떻게 만드는가
 
-정상과 비정상의 경계에 울타리를 쳐서 문제를 막으려는 접근이 하네스 엔지니어링이라면, 이 스캐폴드는 반대 방향이다. 명시적 기대를 한정함으로써 자유 영역을 오히려 더 명확하게 작업자에게 위임하고, 그들이 올바른 목표를 추구하도록 돕겠다는 의도로 고안했다. 고차원적 맥락까지 빠뜨리지 않고 문서에 담아두고, 필요한 부분만 효율적으로 꺼내볼 수 있는 프레임워크를 목표로 한다.
+왜 이렇게 하는가는 [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md), 운영 지침과 원칙은 단일 진입점 [AGENTS.md](AGENTS.md)를 본다.
 
 ## 디렉토리 구조
 
@@ -41,31 +33,14 @@ tags: [소개]
     └── web/
 ```
 
-## 주요 원칙
-
-- 추측과 확정을 구분한다: 논의되지 않은 내용을 확정된 것처럼 쓰지 않는다. AI 에이전트는 필요한 정보가 부족하면 임의로 채우지 말고 인간에게 질문해 확보한다.
-- 작은 문서 + 폴더 디스크립터: 각 폴더의 AGENTS.md 안내만 먼저 읽고 필요한 것만 연다. 토큰도 절약되고, 사람이 읽기에도 덜 부담스럽다.
-- 중복 금지 / SSOT(single source of truth): 같은 사실은 한 곳에만 두고 다른 문서는 링크로 연결한다.
-- 단일 진입점 AGENTS.md: Claude, Gemini, Copilot, Kiro 등 도구별 자동 참조 파일은 포인터만 담고, 지침 본체는 AGENTS.md 하나다.
-- 문서와 코드의 분업: `_docs/`는 코드로 표현할 수 없는 것만 담는다. 인터페이스, 타입, 에러 계약은 코드 자체가 명세다.
-
 ## 사용법
 
-먼저 이 스캐폴드를 가져온다. 세 가지 방식이 있다.
+스캐폴드를 가져오는 방식은 셋이다. GitHub fork, 단순 복사(clone 또는 template), clone 후 원본을 `upstream` 원격으로 연결(부모 개선을 계속 받으려면 이 방식 - `git fetch upstream && git merge upstream/main`). 채택 방식은 이후 전환이 번거로우니 고른 방식과 이유를 결정 문서로 남기기를 권한다.
 
-- GitHub fork: 스캐폴드 저장소를 fork해 자신의 저장소로 둔다.
-- 단순 복사: clone하거나 GitHub template으로 복사해 독립 저장소로 시작한다.
-- clone 후 upstream 연결: 스캐폴드를 clone하고 원본을 `upstream` 원격 저장소(remote)로 등록하면, 이후 스캐폴드 개선을 `git fetch upstream && git merge upstream/main`으로 받을 수 있다.
-
-부모의 후속 개선을 계속 반영하려면 upstream 연결 방식이 적합하다. 한 번 복제해 독립적으로 쓸 것이라면 fork나 단순 복사로 충분하다. 세 방식은 이후 전환이 번거로운 선택이므로, 채택하는 쪽에서 고른 방식과 그 이유를 결정 문서로 남기기를 권한다 (`_docs/_strategy/`의 why-*.md 형식).
-
-가져온 뒤에는 다음을 진행한다.
-
-1. 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾼다.
-2. `_docs/_worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따라 진행한다.
-3. 필요에 따라 AGENTS.md를 프로젝트 요구에 맞게 조정한다.
+가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `_docs/_worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md를 프로젝트 요구에 맞게 조정한다.
 
 ## 더 읽을 거리
 
+- [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - 설계 철학과 근거
 - [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - 구조 근거
 - [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - `_docs/` 분류 기준
