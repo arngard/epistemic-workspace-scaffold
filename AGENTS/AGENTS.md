@@ -40,7 +40,8 @@ tags: [agents]
 |------|------|-------------|
 | [unit-task.md](unit-task.md) | 단위 작업과 워크플로우의 개념 - 원자 단위 ↔ 트리 노드(중위 노드 포함, 중첩), 워크플로우의 재귀와 조립 | 단위 작업 개념 확인, 워크플로우 조립 판단 시 |
 | [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 프레임 (진입/진행/종료, 머지 타입 분기, 서브모듈 재귀 정합화, 끊김 재진입, 세션 격리) | 단위 작업 시작, 종료 시 |
-| [pr-workflow.md](pr-workflow.md) | 종료 머지의 PR 타입에 조립되는 워크플로우 (본문, 자기 검토, 리뷰 응답, 능동 확인, 머지) | PR 생성, PR 검토 대응 시 |
+| [pr-workflow.md](pr-workflow.md) | 종료 머지의 PR 타입에 조립되는 워크플로우 (PR 생성: 본문, 자기 검토, 속성). 리뷰 응답, 능동 확인은 [pr-workflow/](pr-workflow/AGENTS.md) 하위 | PR 생성, PR 검토 대응 시 |
+| [external-communication.md](external-communication.md) | 외부 협업 소통 규약 (명시적 멘션, AI 시그니처) - PR 밖 이슈, 댓글 등에도 적용 | 외부 협업 시스템에 글 쓸 때 |
 | [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 | 브랜치 생성 시 |
 
 ## 공용 태그
