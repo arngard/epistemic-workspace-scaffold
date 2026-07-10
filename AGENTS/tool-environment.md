@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-07
+date modified: 2026-07-10
 tags: [agents, 도구, 환경, IDE]
 ---
 
@@ -36,4 +36,4 @@ tags: [agents, 도구, 환경, IDE]
 
 ## Claude Code 절차 스킬 래퍼
 
-`.claude/skills/` 하위의 각 SKILL.md(ingest, unit-task-start, unit-task-finish)는 절차 문서를 해당 시점에 로드하는 씬 래퍼다. 절차 내용을 복사하지 않고 트리거 조건과 SSOT(single source of truth) 링크만 담는다 - 복사하면 SSOT 위배 + drift. 다른 도구 사용자는 SSOT 절차 문서를 직접 읽으면 동일 효과를 얻는다.
+`.claude/skills/` 하위의 각 SKILL.md(ingest, unit-task-start, unit-task-finish, pr-create, pr-respond)는 절차 문서를 해당 시점에 로드하는 씬 래퍼다. 절차 내용을 복사하지 않고 트리거 조건과 SSOT(single source of truth) 링크만 담는다 - 복사하면 SSOT 위배 + drift. 다른 도구 사용자는 SSOT 절차 문서를 직접 읽으면 동일 효과를 얻는다.
