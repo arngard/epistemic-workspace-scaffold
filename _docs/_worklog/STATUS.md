@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-10
+date modified: 2026-07-15
 tags: [worklog]
 ---
 
@@ -18,4 +18,4 @@ tags: [worklog]
 | 이름 | 마지막 수행 | 주기/트리거 |
 |------|------------|-------------|
 | 형식 감사 (`audit.py`) | (아직 없음) | 새 세션 시작 시, push/PR |
-| 에피스테믹 의미 감사 (epistemic-auditor) | (아직 없음) | 감사 클린 커밋(trailer `Semantic-Audit: clean`) 이후 새 커밋이 있고 마지막 수행 23시간 초과 시(클린 커밋이 이력에 없으면 그 자체로 성립), 긴 세션 종료 전, 큰 변경 후 |
+| 에피스테믹 의미 감사 (epistemic-auditor) | (아직 없음) | 감사 클린 커밋(trailer `Semantic-Audit: clean`) 이후 새 커밋이 있고 마지막 수행 47시간 초과 시(클린 커밋이 이력에 없으면 그 자체로 성립), 긴 세션 종료 전, 큰 변경 후 |
