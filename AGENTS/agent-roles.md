@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-19
-date modified: 2026-07-10
+date modified: 2026-07-26
 tags: [agents, 역할]
 ---
 
@@ -72,11 +72,9 @@ tags: [agents, 역할]
 - Claude Code: [`.claude/agents/epistemic-auditor.md`](../.claude/agents/epistemic-auditor.md).
 - 기타 도구: 미구현. 필요 시 [tool-environment.md](tool-environment.md) 참고해 추가한다.
 
-## 인스턴스 전용 감사자 확장
+## 인스턴스 전용 감사자
 
-스캐폴드를 적용한 인스턴스가 자기 도메인 고유 정책(예: 출처 표기 강화, 도메인 데이터 정합, 누적 왜곡 점검)을 감사하려면, epistemic-auditor를 수정하지 않고 인스턴스 전용 감사자를 별도 역할로 둔다.
+스캐폴드를 적용한 인스턴스가 자기 도메인 고유 정책(예: 출처 표기 강화, 도메인 데이터 정합, 누적 왜곡 점검)을 감사하려면, epistemic-auditor를 수정하지 않고 인스턴스 전용 감사자를 별도 역할로 둔다. 특수화 방식은 [instance-specialization.md](instance-specialization.md) "특수화 방식"을 따른다.
 
-- 부모 불수정: epistemic-auditor의 정의(도구 중립 정의와 도구별 구현 모두)는 부모 공통 자산이다. 인스턴스가 그 본문을 고치면 upstream 머지마다 충돌하고 부모 개선을 받기 어려워진다.
-- 포함 관계: 인스턴스 감사자는 epistemic-auditor를 super로 포함해 호출한다. 한 번의 호출로 스캐폴드 공통 정합성과 인스턴스 고유 점검이 함께 수행된다.
-- 역할 분담: epistemic-auditor는 스캐폴드 공통 정합성만 본다. 인스턴스 고유 정책의 점검 항목은 인스턴스 감사자 정의에만 둔다.
-- 등재와 라우팅: 인스턴스 감사자도 본 문서에 역할을 정의하고 도구별 구현 위치를 명시한다. 진입점 AGENTS.md의 감사 트리거에 라우팅 조건(어떤 상황이면 인스턴스 감사자를 대신 호출하는지)을 밝히되, 스캐폴드에서 계승된 문장 자체는 수정하지 않고 하위 항목으로 라우팅을 더한다 - upstream 머지 시 충돌 면적을 최소화한다.
+- 포함 호출: 인스턴스 감사자는 epistemic-auditor를 super로 포함해 호출한다. 한 번의 호출로 스캐폴드 공통 정합성과 인스턴스 고유 점검이 함께 수행된다.
+- 등재: 인스턴스 감사자도 본 문서에 역할을 정의하고 도구별 구현 위치를 명시한다.
