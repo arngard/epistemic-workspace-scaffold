@@ -14,12 +14,16 @@ def check_descriptors(root: Path) -> list[Finding]:
     out: list[Finding] = []
     for d in content_dirs(root):
         rel = d.relative_to(root) if d != root else Path(".")
-        # _reference/ 하위 폴더는 immutable raw 보관이라 디스크립터를 강제하지 않는다.
+        # _reference/ 하위 폴더는 immutable raw 보관이라 규약 검사 대상이 아니다.
+        # 디스크립터도 강제하지 않고, 분화 권고도 하지 않는다 - 원본을 재편하지
+        # 않는 것이 원칙이라 "하위 폴더 분화"는 그 안에서 실행 불가능한 권고다.
         parts = rel.parts
         in_reference_sub = parts and parts[0] == REFERENCE_DIR and len(parts) > 0 and rel != Path(REFERENCE_DIR)
         descriptor = d / DESCRIPTOR_NAME
         if not descriptor.exists() and not in_reference_sub:
             out.append(Finding(VIOLATION, "descriptor", str(rel), "폴더 디스크립터(AGENTS.md) 없음"))
+        if in_reference_sub:
+            continue
         # 폴더 직속(하위 폴더 제외) md 파일 수.
         direct_md = [
             p for p in d.iterdir()
@@ -58,6 +62,42 @@ def check_normative_guides(root: Path) -> list[Finding]:
             out.append(Finding(
                 WARNING, "normative", rel,
                 f"디스크립터 파일별 안내에 미등재 - {p.name}. 규범 폴더는 파일별 설명과 읽기 트리거를 유지한다",
+            ))
+    return out
+
+
+def check_scaffold_state_markers(root: Path) -> list[Finding]:
+    """디스크립터의 "스캐폴드 상태" 안내와 대상 파일의 실제 마커를 대조 (경고).
+
+    인스턴스가 플레이스홀더 문서를 실제 내용으로 채운 뒤 디스크립터 안내를
+    갱신하지 않으면, 진입로가 그 문서의 부재를 알려 규범 확인을 건너뛸 근거가
+    된다. 반대로 대상에서 마커만 지우고 플레이스홀더를 남긴 경우도 같은 신호로
+    잡힌다. 어느 쪽이 낡았는지의 판단은 사람/LLM 몫이다.
+    """
+    out: list[Finding] = []
+    for d in content_dirs(root):
+        descriptor = d / DESCRIPTOR_NAME
+        if not descriptor.exists():
+            continue
+        rel = str(descriptor.relative_to(root))
+        for line in body_of(descriptor).splitlines():
+            if SCAFFOLD_STATE_MARKER not in line:
+                continue
+            match = LINK_RE.search(line)
+            if not match:
+                continue
+            target = urllib.parse.unquote(match.group(1)).split("#", 1)[0]
+            if not target.endswith(".md") or SCHEME_RE.match(target):
+                continue
+            path = (d / target).resolve()
+            if path == descriptor.resolve() or not path.is_file():
+                continue  # 자기 참조와 대상 부재(항목 9 소관)는 건너뛴다
+            if SCAFFOLD_STATE_MARKER in body_of(path):
+                continue
+            out.append(Finding(
+                WARNING, "scaffold-state", rel,
+                f'안내는 "{SCAFFOLD_STATE_MARKER}"라 하는데 대상에 마커가 없음 - {target}. '
+                "채워졌으면 안내를 갱신하고, 아직 플레이스홀더면 대상의 마커를 유지한다",
             ))
     return out
 

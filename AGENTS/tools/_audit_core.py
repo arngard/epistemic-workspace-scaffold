@@ -25,6 +25,10 @@ EXEMPT_DIRS = {".git", ".claude", ".gemini", ".github", ".kiro", "node_modules",
 # "폴더 구조와 디스크립터"). 도구 계층 자동 인식용 명명.
 DESCRIPTOR_NAME = "AGENTS.md"
 
+# 아직 실제 내용으로 채워지지 않은 스캐폴드 출고 상태를 알리는 마커. 디스크립터
+# 안내와 대상 파일 양쪽에 같은 문구가 있어야 정합이다.
+SCAFFOLD_STATE_MARKER = "스캐폴드 상태"
+
 # 골격 기본 규범 폴더 (folder-structure.md "폴더 구조와 디스크립터"). 하위 폴더도
 # 규범 폴더로 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
 NORMATIVE_DIRS = ("AGENTS", "_docs/_architecture")
