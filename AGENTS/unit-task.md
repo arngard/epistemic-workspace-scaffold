@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-10
-date modified: 2026-07-06
+date modified: 2026-07-26
 tags: [agents, 단위 작업]
 ---
 
@@ -18,6 +18,10 @@ tags: [agents, 단위 작업]
 
 - 커밋, 브랜치 단위가 아니라 의미 단위다. 직후에 바로 이어지는 정정 커밋은 별도 단위 작업이 아니라 앞 작업과 같은 단위 작업의 일부다 - 의미가 정정 전후로 같은 한 묶음이기 때문.
 - 앞뒤 트리 갱신: 착수 직전에 해당 노드를 `[/]`로, 완료 직후에 `[x]`로 바꾼다. 이 두 갱신이 단위 작업의 시작과 끝을 표시한다.
+
+### 크기 결정과 브랜치 소유
+
+어느 크기의 노드를 한 단위 작업으로 잡는가가 곧 브랜치를 소유하는 노드를 정한다. 단위 작업으로 잡은 그 노드가 브랜치를 소유해 main에 한 번 머지되고, 그 아래 자식들은 같은 브랜치 안의 커밋으로 재귀 수행된다(TBD(to be determined) 기준 브랜치 1개). 반대로 자식들을 각각 별도 단위 작업으로 쪼개기로 하면 그 자식들이 각자 브랜치를 갖는 별개 단위 작업이 되어 각자 main에 머지된다. 정해진 깊이는 없고, 어느 단위를 한 번의 머지로 완결할 것인가의 의미 판단이다.
 
 ## 워크플로우
 
@@ -45,7 +49,9 @@ tags: [agents, 단위 작업]
 
 ## 관련 문서
 
-- [unit-task-workflow.md](unit-task-workflow.md): 위 프레임의 운영 절차 (진입 준비, 브랜치, 진행 커밋, 종료 머지, 단발 경계, 끊김 재진입, 세션 격리).
+- [unit-task-workflow.md](unit-task-workflow.md): 위 프레임의 운영 절차 (진입 준비, 브랜치, 진행 커밋, 종료 머지, 단발 경계).
+- [session-boundaries.md](session-boundaries.md): 세션 경계의 재진입과 다른 세션 산출물 격리.
+- [submodule-pointer-sync.md](submodule-pointer-sync.md): 종료 흐름에 조립되는 서브모듈 pointer 재귀 정합화.
 - [pr-workflow.md](pr-workflow.md): PR 조립 모듈 (생성, 검토 대응, 머지, 후속).
 - [ingest-workflow.md](ingest-workflow.md): 새 정보 유입 조립 모듈.
 - [branch-strategy.md](branch-strategy.md): 브랜치 네이밍과 운영 모델.
