@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-10
+date modified: 2026-07-26
 tags: [규칙, 문서관리]
 ---
 
@@ -14,7 +14,7 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 
 에피스테믹 워크스페이스다. 코드로 표현할 수 없는 지식을 인식론적 4범주로 나눠 상위 의도와 근거가 유실되지 않게 한다: `_docs/_ontology`(무엇이 존재하는가), `_knowledge`(우리 결정과 무관한 외부 사실, 환경), `_strategy`(우리가 왜 그렇게 결정했는가), `_architecture`(어떻게 만드는가). 근거는 [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md).
 
-이 파일은 스캐폴드 template이다. 인스턴스(자식 워크스페이스)는 이 규범을 upstream으로 상속하고 본 절을 자기 도메인 정체성으로 특수화한다.
+이 파일은 스캐폴드 template이다. 인스턴스(자식 워크스페이스)는 이 규범을 upstream으로 상속하고 본 절을 자기 도메인 정체성으로 특수화한다. 상속 자산의 변경과 특수화는 [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md)를 따른다 - 계승된 자산을 제자리에서 고치기 전에 상류 반영과 도메인 특수화를 분기해 사용자에게 짚는다.
 
 ## 비협상 게이트
 
