@@ -6,7 +6,7 @@ tags: [agents, 워크스페이스, 운영]
 
 # 단위 작업 운영 흐름
 
-단위 작업 하나를 진입-진행-종료로 수행하는 일반 프레임이다. 단위 작업과 워크플로우의 개념(원자 단위 ↔ 트리 노드, 중첩, 재귀, 조립)은 [unit-task.md](unit-task.md) 참조. 본 문서는 그 프레임의 운영 절차를 다룬다.
+단위 작업 하나를 진입-진행-종료로 수행하는 일반 프레임이다. 단위 작업과 워크플로우의 개념(원자 단위 ↔ 트리 노드, 중첩, 재귀, 조립)은 [unit-task.md](unit-task.md), 토대 원칙은 [working-principles.md](working-principles.md) 참조. 본 문서는 그 프레임의 운영 절차를 다룬다. 세션 경계의 재진입과 격리는 [session-boundaries.md](session-boundaries.md).
 
 다음 중 하나에 해당하면 단위 작업으로 다룬다: 자료 N건 묶음 ingest, 메타 결정이나 정책 변경, 큰 마이그레이션이나 구조 재편, 도메인 모듈 신설, 한 세션을 넘어갈 가능성이 큰 작업. 단발 한 줄 수정은 단위 작업이 아니다(아래 "단발 작업과의 경계"). 모호하면 단위 작업 흐름이 안전하다 - 끊겼을 때 회복 비용이 작다.
 
@@ -14,7 +14,7 @@ tags: [agents, 워크스페이스, 운영]
 
 순서를 지킨다.
 
-1. 작업 트리 점검, 노드 결정 + 관련 절차 문서 재독: [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)에서 어느 노드에 대한 작업인지 정한다(없으면 신설). 그 노드를 통째로 한 단위 작업으로 잡을지, 자식들을 별도 단위 작업으로 쪼갤지 결정한다 - 이 결정(어느 크기의 단위로 잡는가)이 곧 브랜치 소유 노드를 정한다. 단위 작업으로 잡은 그 노드가 브랜치를 소유해 main에 한 번 머지되고, 그 아래 자식들은 같은 브랜치 안의 커밋으로 재귀 수행된다(TBD(to be determined) 기준 브랜치 1개). 반대로 자식들을 각각 별도 단위 작업으로 쪼개기로 하면 그 자식들이 각자 브랜치를 갖는 별개 단위 작업이 되어 각자 main에 머지된다. 정해진 깊이는 없고, 어느 단위를 한 번의 머지로 완결할 것인가의 의미 판단이다. 노드 결정 직후 본 단위 작업 영역에 해당하는 절차 문서(ingest-workflow, how-to-separate-docs-folders, document-units, writing-style, folder-structure, document-temporality, instance-specialization, 자식 도메인 절차 등)를 처음부터 다시 읽는다 - 자기 기억으로 세부 규약을 단언하다 소소한 위반이 누적되는 것을 막는 1차 가드레일이다. 변경 대상 문서를 이미 같은 단위에서 손대는 경우(예: writing-style을 고치는 작업)는 그 문서 재독이 면제된다.
+1. 작업 트리 점검, 노드 결정 + 관련 절차 문서 재독: [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)에서 어느 노드에 대한 작업인지 정한다(없으면 신설). 그 노드를 통째로 한 단위 작업으로 잡을지, 자식들을 별도 단위 작업으로 쪼갤지 결정한다 - 이 결정이 곧 브랜치 소유 노드를 정한다 (cf. [unit-task.md](unit-task.md) "크기 결정과 브랜치 소유"). 노드 결정 직후 본 단위 작업 영역에 해당하는 절차 문서(ingest-workflow, how-to-separate-docs-folders, document-units, writing-style, folder-structure, document-temporality, instance-specialization, 자식 도메인 절차 등)를 처음부터 다시 읽는다 - 자기 기억으로 세부 규약을 단언하다 소소한 위반이 누적되는 것을 막는 1차 가드레일이다. 변경 대상 문서를 이미 같은 단위에서 손대는 경우(예: writing-style을 고치는 작업)는 그 문서 재독이 면제된다.
 2. 작업 브랜치 생성 (cf. [branch-strategy.md](branch-strategy.md)): `<type>/YYMMDD-<짧은-설명>`. 단위 작업마다 격리된 커밋 라인을 확보한다. 기본 종료가 PR 타입이라 main 트리와 동시 작업이 필요하면 워크트리(`git worktree add`)로 공간을 분리한다.
 3. 워크로그 등재: 해당 노드를 `[/]`로 표시하고 브랜치 속성에 작업 브랜치를 기재한다. 다음 세션 진입자가 컨텍스트를 복원하는 1차 입구다.
 4. 시작점 커밋: 워크로그 등재를 담은 커밋으로 시작점을 마킹한다(`--allow-empty`라도).
@@ -43,30 +43,8 @@ tags: [agents, 워크스페이스, 운영]
    - 브랜치 관리자 타입(직접 머지): `git checkout main && git merge <branch> --no-ff && git push origin main && git branch -d <branch>`. `--no-ff`로 단위 작업 머지 커밋을 명시적으로 남긴다. 메시지는 `Merge <branch>: <요약>` 형식으로, 무엇을 왜 바꿨는지만 적는다 - 승인, 검토 통과 여부는 커밋 텍스트에 남기지 않는다(검토는 3단계의 상호작용으로 처리되는 절차이지 커밋에 기록할 상태가 아니다).
    - 환경 안전망이 main 푸시를 차단하면(일부 harness의 "main 직접 푸시 금지") 우회 편법을 자율로 쓰지 않는다. 차단 사실을 보고하고 처리 결정을 요청한다.
    - 잔존 점검: 머지, 푸시, 브랜치 삭제 후 `git worktree list`(작업 워크트리 잔존)와 `git branch -a`(로컬/원격 브랜치 잔존, `git fetch --prune` 동반)를 확인한다. 잔존이 있으면 본 단위 작업의 후속으로 즉시 정리한다.
-5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): 본 레포가 다른 레포의 서브모듈이면 상위 레포에서 서브모듈 pointer를 본 단위 작업 종료 시점 main HEAD로 갱신한다(`git -C <상위> add <서브모듈> && commit && push`). 상위 레포가 다시 더 상위의 서브모듈이면 같은 절차를 재귀 반복한다 - "본인이 변경되면 본인을 가리키는 상위까지 위로 흐른다"의 단방향 재귀. 검증: 정합화 트리 모든 노드에서 `git submodule status`의 `+` 없음 + `git diff --submodule` 비어 있음.
+5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): 본 레포가 다른 레포의 서브모듈이면 [submodule-pointer-sync.md](submodule-pointer-sync.md)를 조립한다.
 
 ## 단발 작업과의 경계
 
-자료 1건, 메타 정정 한 줄, 오탈자 수정 같은 단발 작업은 본 흐름을 적용하지 않고 main 직접 커밋으로도 된다. 모호하면 단위 작업 흐름이 안전. 판별: 변경이 한 커밋에 자연스럽게 담기는가, 한 세션에 끝나는가, TASK_TREE에 자식 노드 여럿이 등재될 만한가. 한 답이 단위 작업 쪽이면 본 흐름을 따른다.
-
-## 끊김, 재진입
-
-세션이 끊긴 뒤 재진입할 때:
-
-- TASK_TREE의 진행 중(`[/]`) 노드와 브랜치 속성이 작업 컨텍스트의 1차 입구. 브랜치 속성이 어느 작업 브랜치로 진입할지를 가리킨다.
-- git log + 작업 브랜치 위치로 어디까지 진행됐는지 확인. 시작점 커밋 이후 커밋들을 훑어 진행 양상 복원.
-- 작업 브랜치에 열린 PR이 있으면(`gh pr list --head <branch>`) 그 PR의 리뷰 상태가 현재 단계 - [active-review-loop.md](pr-workflow/active-review-loop.md)의 능동 리뷰 확인 흐름으로 복귀.
-- 마지막 커밋과 TASK_TREE 노드 상태가 어긋나면 그 사이에 끊김이 있던 것 - 정정 후 이어간다.
-
-## 다른 세션 작업과의 격리
-
-본 세션이 발견한 다른 세션의 산출물(작업 브랜치, 워크트리, 열린 PR, 이슈 등)은 본 세션의 작업 대상이 아니면 건드리지 않는다. 머지, 삭제, force-push, 브랜치 정리는 그 세션 자체에서 처리하거나 사용자의 명시 지시가 있을 때만 한다 - 다른 세션의 컨텍스트를 모르는 상태의 자율 정리는 의도치 않은 작업 손실로 이어진다. 잔존 점검의 정리 대상은 본 세션이 만든 산출물에 한정한다.
-
-## 관련 문서
-
-- [unit-task.md](unit-task.md) - 단위 작업과 워크플로우의 개념(원자 단위, 트리 노드, 재귀, 조립).
-- [pr-workflow.md](pr-workflow.md) - 종료 머지의 PR 타입에 조립되는 모듈.
-- [ingest-workflow.md](ingest-workflow.md) - 새 정보 유입에 조립되는 모듈.
-- [working-principles.md](working-principles.md) - 작업 수행 토대 원칙.
-- [branch-strategy.md](branch-strategy.md) - 트렁크 기반 개발, 브랜치 네이밍.
-- [`_docs/_worklog/TASK_TREE.md`](../_docs/_worklog/TASK_TREE.md), [`STATUS.md`](../_docs/_worklog/STATUS.md) - 워크로그 본체와 갱신 규칙.
+자료 1건, 메타 정정 한 줄, 오탈자 수정 같은 단발 작업은 본 흐름을 적용하지 않고 main 직접 커밋으로도 된다. 판별: 변경이 한 커밋에 자연스럽게 담기는가, 한 세션에 끝나는가, TASK_TREE에 자식 노드 여럿이 등재될 만한가. 한 답이 단위 작업 쪽이면 본 흐름을 따른다.
