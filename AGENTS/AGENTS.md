@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-26
+date modified: 2026-07-28
 tags: [agents]
 ---
 
@@ -20,7 +20,7 @@ tags: [agents]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [document-units.md](document-units.md) | 문서 단위와 SSOT 규약 - 1관심사, 분량 보조 지표, 중복 금지와 외부 SSOT 비복제, 이름과 식별자의 안정성 | 문서 신설, 분할, 배치 판단 시 |
+| [document-units.md](document-units.md) | 문서 단위와 SSOT 규약 - 1관심사, 분량 보조 지표, 수평 확장의 하위 문서 분할, 중복 금지와 외부 SSOT 비복제, 이름과 식별자의 안정성 | 문서 신설, 분할, 배치 판단 시 |
 | [folder-structure.md](folder-structure.md) | 폴더 구조 규약 - 폴더 분화, 디스크립터, 규범성 분기, 이동 시 연쇄 갱신 | 폴더 구조 변경, 디스크립터 작성 시 |
 | [document-temporality.md](document-temporality.md) | 문서 시간성 규약 - 히스토리/현재적 구분, 혼합 금지, date closed 종결 신호 | 날짜 프리픽스 문서 작성, 수정, 문서 폐기 시 |
 | [writing-style.md](writing-style.md) | 일반 문서 작성 스타일 - 코드 블록 절제, 표준 표현, 출처와 주체 표기, 자체 완결성, 태그 중복 회피, 도구 전용 파일 예외. 하위 문서로 마크다운 링크 표시텍스트, ASCII 부호 규약 | 모든 문서 작성 시 |
