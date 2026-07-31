@@ -72,7 +72,7 @@ tags: [agents, 단위 작업]
 
 ## 관련 문서
 
-- [unit-task-workflow.md](unit-task-workflow.md): 위 프레임의 운영 절차 (진입 준비, 브랜치, 진행 커밋, 종료 머지, 절차 축약).
+- [unit-task-workflow.md](unit-task-workflow.md): 위 프레임의 운영 절차 (진입 준비, 브랜치, 진행 커밋, 종료 머지). 절차 축약은 그 하위 문서 [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md).
 - [session-boundaries.md](session-boundaries.md): 세션 경계의 재진입과 다른 세션 산출물 격리.
 - [submodule-pointer-sync.md](submodule-pointer-sync.md): 종료 흐름에 조립되는 서브모듈 pointer 재귀 정합화.
 - [pr-workflow.md](pr-workflow.md): PR 조립 모듈 (생성, 검토 대응, 머지, 후속).
