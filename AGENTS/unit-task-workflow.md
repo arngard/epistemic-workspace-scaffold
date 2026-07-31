@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-07-26
+date modified: 2026-07-29
 tags: [agents, 워크스페이스, 운영]
 ---
 
@@ -8,7 +8,7 @@ tags: [agents, 워크스페이스, 운영]
 
 단위 작업 하나를 진입-진행-종료로 수행하는 일반 프레임이다. 단위 작업이 무엇인가(의미적 분절, 표현과의 층위, 중첩, 프로젝션)와 워크플로우 조립은 [unit-task.md](unit-task.md), 토대 원칙은 [working-principles.md](working-principles.md) 참조. 본 문서는 그 프레임의 운영 절차를 다룬다. 세션 경계의 재진입과 격리는 [session-boundaries.md](session-boundaries.md).
 
-자료 N건 묶음 ingest, 메타 결정이나 정책 변경, 큰 마이그레이션이나 구조 재편, 도메인 모듈 신설, 한 세션을 넘어갈 가능성이 큰 작업은 본 흐름을 그대로 밟는다. 그보다 작은 변경도 단위 작업이지만 절차를 축약할 수 있다(아래 "절차 축약"). 모호하면 축약하지 않는 쪽이 안전하다 - 끊겼을 때 회복 비용이 작다.
+자료 N건 묶음 ingest, 메타 결정이나 정책 변경, 큰 마이그레이션이나 구조 재편, 도메인 모듈 신설, 한 세션을 넘어갈 가능성이 큰 작업은 본 흐름을 그대로 밟는다. 그보다 작은 변경도 단위 작업이지만 절차를 축약할 수 있다 (cf. [unit-task-workflow/procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md)). 모호하면 축약하지 않는 쪽이 안전하다 - 끊겼을 때 회복 비용이 작다.
 
 ## 진입 흐름
 
@@ -45,15 +45,8 @@ tags: [agents, 워크스페이스, 운영]
    - 잔존 점검: 머지, 푸시, 브랜치 삭제 후 `git worktree list`(작업 워크트리 잔존)와 `git branch -a`(로컬/원격 브랜치 잔존, `git fetch --prune` 동반)를 확인한다. 잔존이 있으면 본 단위 작업의 후속으로 즉시 정리한다.
 5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): 본 레포가 다른 레포의 서브모듈이면 [submodule-pointer-sync.md](submodule-pointer-sync.md)를 조립한다.
 
-## 절차 축약
+## 하위 문서
 
-자료 1건, 메타 정정 한 줄, 오탈자 수정 같은 작은 변경도 의미적으로 분절되면 단위 작업이다. 범주에서 빠지는 것이 아니라 브랜치 생성과 워크로그 등재를 건너뛰고 커밋 하나로 끝내는 형태로 절차만 줄인다.
+분량이 크고 자체 완결적인 세부 절차는 [unit-task-workflow/](unit-task-workflow/AGENTS.md) 하위 문서로 둔다.
 
-조건은 결과 동등성이다 (cf. [unit-task.md](unit-task.md) "프로젝션 - 표현과 절차의 평탄화"). 아래를 하나라도 만족하지 못하면 축약하지 않는다.
-
-- 변경이 한 커밋에 자연스럽게 담긴다.
-- 한 세션에 끝난다.
-- 작업 트리에 자식 노드 여럿이 등재될 만하지 않다.
-- 되돌릴 때 그 커밋 하나만 되돌리면 된다.
-
-main 직접 커밋 여부는 별개 판단이다. 진입층이 이를 비협상 게이트로 막는 워크스페이스에서는 축약하더라도 브랜치를 거친다.
+- [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md): 절차 축약의 조건, 착수 시점 판정, 브랜치와 등재의 형태 일관성.
