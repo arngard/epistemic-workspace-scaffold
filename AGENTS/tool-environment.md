@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-10
+date modified: 2026-08-02
 tags: [agents, 도구, 환경, IDE]
 ---
 
@@ -14,7 +14,7 @@ tags: [agents, 도구, 환경, IDE]
 |------|------------|------|
 | Claude Code | [CLAUDE.md](../CLAUDE.md) | Anthropic CLI/IDE. 세션 시작 시 자동 로드. |
 | GitHub Copilot | [.github/copilot-instructions.md](../.github/copilot-instructions.md) | VS Code/JetBrains Copilot이 자동 로드. |
-| Gemini (Android Studio) | [.gemini/styleguide.md](../.gemini/styleguide.md) | Android Studio 통합 Gemini가 자동 로드. |
+| Antigravity | 없음 | `agy` CLI가 루트 [AGENTS.md](../AGENTS.md)를 직접 자동 로드한다. 별도 진입점 파일을 두지 않는다. |
 | Kiro | `.kiro/` 디렉토리 | AWS의 VS Code 기반 AI IDE. spec-driven development 지원. 디렉토리 세팅은 도구 자체가 수행. |
 | Cursor | `.cursor/rules/` 또는 `.cursorrules` | 현 스캐폴드는 진입점을 포함하지 않는다. Cursor를 사용하는 경우 별도 설정한다. |
 
