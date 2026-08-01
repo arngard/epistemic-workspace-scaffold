@@ -6,7 +6,7 @@ tags: [규칙, 문서관리]
 
 # AI Agent 지침
 
-> 이 파일은 모든 AI 도구(Claude, Kiro, Gemini, Copilot 등)가 이 프로젝트를 다룰 때의 기본 지침이다. 각 도구의 진입점 파일(CLAUDE.md, .kiro/, .gemini/ 등)은 이 파일을 가리킨다.
+> 이 파일은 모든 AI 도구(Claude, Kiro, Antigravity, Copilot 등)가 이 프로젝트를 다룰 때의 기본 지침이다. 각 도구의 진입점 파일(CLAUDE.md, .kiro/ 등)은 이 파일을 가리킨다.
 
 always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리거 색인을 담는다. 세부 규약은 산하 SSOT(single source of truth) 문서에 두되, 어떤 규칙이 존재하는지는 여기서 이름으로 짚어 에이전트가 그 규칙을 인지하고 찾아보게 한다. 본 파일은 작게 유지한다.
 

@@ -49,7 +49,7 @@ tags: [agents, 규칙, 문서관리]
 
 ## 도구 전용 설정 파일 예외
 
-도구 전용 설정 파일(`.claude/`, `.gemini/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. AGENTS.md "문서 작성 스타일"의 공통 필수 필드(`date created`, `date modified`, `tags`)를 본 파일들에 강제하지 않는다.
+도구 전용 설정 파일(`.claude/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. AGENTS.md "문서 작성 스타일"의 공통 필수 필드(`date created`, `date modified`, `tags`)를 본 파일들에 강제하지 않는다.
 
 ## 하위 문서
 

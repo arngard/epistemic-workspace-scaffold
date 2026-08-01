@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-07-06
+date modified: 2026-08-02
 tags: [agents, 워크플로우, git]
 ---
 
@@ -10,7 +10,7 @@ PR에 달린 리뷰 코멘트에 응답하는 방식. [pr-workflow.md](../pr-wor
 
 ## 응답 위치: 스레드 reply
 
-PR에 달린 인라인 리뷰 코멘트(사용자 본인, 다른 개발자, 자동 리뷰 봇: Gemini Code Assist 등)에 응답할 때는 그 코멘트의 스레드 reply로 단다. PR 본체에 새 issue-level 코멘트를 다는 방식(`gh pr comment`)은 리뷰 스레드와 별개의 평면에 놓여 두 평면의 문맥이 섞이고 이후 추적이 어려워진다.
+PR에 달린 인라인 리뷰 코멘트에 응답할 때는 작성자가 누구든 그 코멘트의 스레드 reply로 단다. PR 본체에 새 issue-level 코멘트를 다는 방식(`gh pr comment`)은 리뷰 스레드와 별개의 평면에 놓여 두 평면의 문맥이 섞이고 이후 추적이 어려워진다.
 
 도구별 호출 형태:
 
@@ -22,8 +22,6 @@ PR에 달린 인라인 리뷰 코멘트(사용자 본인, 다른 개발자, 자�
 잘못 단 경우 정정: 잘못된 코멘트 ID 조회(`gh api repos/<owner>/<repo>/issues/<num>/comments`) 후 삭제(`gh api repos/<owner>/<repo>/issues/comments/<id> -X DELETE`), 그 뒤 스레드 reply로 재발행. 인라인 리뷰 코멘트 ID는 별도 엔드포인트 - `gh api repos/<owner>/<repo>/pulls/<num>/comments` 또는 코멘트 URL 끝 `#discussion_r<숫자>`.
 
 파괴적 원격 조작(`-X DELETE` 등)은 AI가 이번 작업에서 스스로 만든 산출물에만 적용한다. 위 삭제도 방금 잘못 단 자기 코멘트를 지우는 경우로 한정한다. 사용자, 다른 개발자, 봇이 단 코멘트나 다른 원격 리소스는 지우지 않는다 - 정정이 필요하면 사용자에게 짚어 확인받는다 (cf. [original-protection-principle.md](../original-protection-principle.md) 가역성 원리).
-
-본 정책은 자동 리뷰 봇 응답에도 똑같이 적용 - 봇 코멘트라도 사용자가 같은 PR을 나중에 다시 볼 때 스레드 문맥이 깨져 있으면 디버깅 비용이 커진다.
 
 ## 스레드 안 토론은 그 스레드가 SSOT
 
