@@ -13,7 +13,7 @@ model: opus
 
 ## 점검 항목
 
-형식 점검의 결정론적 항목(구체 목록은 `AGENTS/tool-environment.md` "기계 감사 스크립트"가 SSOT)은 `AGENTS/tools/audit.py`가 담당한다. Bash로 `python3 AGENTS/tools/audit.py .`를 실행해 결과를 수집하고 보고에 그대로 첨부한다. 그 형식 항목들을 손으로 재검사하지 않는다.
+형식 점검의 결정론적 항목(구체 목록은 `AGENTS/tool-environment.md` "기계 감사 스크립트"가 SSOT)은 `AGENTS/tools/audit.py`가 담당한다. Bash로 `python3 AGENTS/tools/audit.py .`(윈도우는 `python` 또는 `py`)를 실행해 결과를 수집하고 보고에 그대로 첨부한다. 그 형식 항목들을 손으로 재검사하지 않는다.
 
 1. _worklog/ 문서의 최신성 (git 상태 대비 의미 판단)
    - STATUS.md 레지스트리의 감사, 주기 작업 행이 실제 수행 이력을 반영하는가
@@ -64,7 +64,7 @@ model: opus
 
 1. `AGENTS.md`의 "필수 참조 문서" 표를 먼저 읽고 프로젝트 구조를 파악한다.
 2. `git log --oneline -20` 등으로 최근 커밋을 확인해 STATUS.md 레지스트리, TASK_TREE.md가 정합한지 비교한다.
-3. Bash로 `python3 AGENTS/tools/audit.py .`를 실행해 형식 점검 결과(front matter, 디스크립터, 링크, 이식성, 유형별 분량, 시간성 혼합, STATUS 서술, TASK_TREE 속성 키)를 수집한다. 형식 항목을 손으로 재검사하지 않는다.
+3. Bash로 `python3 AGENTS/tools/audit.py .`(윈도우는 `python` 또는 `py`)를 실행해 형식 점검 결과(front matter, 디스크립터, 링크, 이식성, 유형별 분량, 시간성 혼합, STATUS 서술, TASK_TREE 속성 키)를 수집한다. 형식 항목을 손으로 재검사하지 않는다.
 4. [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md)를 읽고 4범주 정의를 정확히 확인한 뒤, 각 `_docs/_X/` 폴더의 파일 본문 또는 디스크립터 등록 설명을 훑어 카테고리 부합 여부를 점검한다. 본문 전체를 다 읽지 않아도 좋다. 첫 단락과 디스크립터 등록 설명만으로 의미가 어느 카테고리에 가까운지 판정 가능한 경우가 많다. 판정이 불확실하면 본문을 더 읽고, 그래도 모호하면 [확실하지 않음]으로 처리한다.
 5. git 맥락 검출을 굴린다: TASK_TREE 노드의 마크 커밋 없는 삭제, 비루트 완료 노드 단독 삭제, 브랜치 속성의 실존 대조(`git branch -a`), 영속 노드 `[x]` 환원 미이행, `date closed` 문서의 본문 변경(`git log -p`로 확인, 허용 편집 제외), `[x]` 루트 과다 잔존.
 6. `git log --oneline --merges -30`로 최근 머지 commit들과 그 본문을 확인하고 메타-컨텐츠 영역 혼동을 점검한다: 격리 위반, 자율 격상, 자율 머지, 반복 정정, 분석적 쪼개기, 단위 경계 오인 6개 세부 패턴 (본 단계는 정적 자료 감사와 별개로 굴린다). 세션 transcript는 입력하지 않는다.

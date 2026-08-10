@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-08-02
+date modified: 2026-08-11
 tags: [agents, 도구, 환경, IDE]
 ---
 
@@ -38,7 +38,7 @@ tags: [agents, 도구, 환경, IDE]
 
 [tools/check_semantic_audit.py](tools/check_semantic_audit.py)는 STATUS 레지스트리의 의미 감사 행과 git 이력을 대조해 트리거 조건 충족 여부만 판정한다. 감사를 수행하거나 강제하지 않고 판정 비용을 없애는 보조 도구다 - 조건 판정이 수동이면 어겼을 때 아무 신호가 없어 조건 충족을 놓친다.
 
-- 실행: 워크스페이스 루트에서 `python3 AGENTS/tools/check_semantic_audit.py .`.
+- 실행: 워크스페이스 루트에서 `python3 AGENTS/tools/check_semantic_audit.py .` (윈도우는 `python` 또는 `py`).
 - 종료 코드: 미충족 0, 충족 1, 판정 불가 2(수동 판정으로 넘긴다).
 - audit.py와 달리 git에 의존하므로 별도 스크립트로 둔다. audit.py의 git 비의존 원칙은 유지된다.
 - 임계 시간과 trailer 문구를 스크립트에 하드코딩하지 않고 STATUS 레지스트리의 주기/트리거 셀에서 읽는다 - 그 셀이 임계 조건의 SSOT이고, 인스턴스가 주기를 조정하면 스크립트가 따라간다.

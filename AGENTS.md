@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-08-02
+date modified: 2026-08-11
 tags: [규칙, 문서관리]
 ---
 
@@ -30,8 +30,8 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 ## 세션 시작
 
 1. [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md)(진행 중, 다음 할 일)와 [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)(감사 시각)를 읽는다.
-2. 형식 감사 `python3 AGENTS/tools/audit.py .`를 실행하고, 보고된 위반은 정리하거나 사용자에게 짚는다 (cf. [AGENTS/tool-environment.md](AGENTS/tool-environment.md)).
-3. 의미 감사 트리거를 `python3 AGENTS/tools/check_semantic_audit.py .`로 판정하고, 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [AGENTS/agent-roles.md](AGENTS/agent-roles.md) "호출 시점").
+2. 형식 감사 `python3 AGENTS/tools/audit.py .`를 실행하고, 보고된 위반은 정리하거나 사용자에게 짚는다 (윈도우는 `python` 또는 `py`. cf. [AGENTS/tool-environment.md](AGENTS/tool-environment.md)).
+3. 의미 감사 트리거를 `python3 AGENTS/tools/check_semantic_audit.py .`(윈도우는 위와 같다)로 판정하고, 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [AGENTS/agent-roles.md](AGENTS/agent-roles.md) "호출 시점").
 4. [_reference/AGENTS.md](_reference/AGENTS.md)를 읽고 실제 내용과 대조한다. 미처리 자료는 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md)로 진행한다.
 5. 작업 범위의 `_docs/` 문서(아래 트리거 색인)를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md)를 따른다.
 
