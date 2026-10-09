@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-08-11
+date modified: 2026-10-10
 tags: [규칙, 문서관리]
 ---
 
@@ -29,11 +29,7 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 
 ## 세션 시작
 
-1. [_docs/_worklog/TASK_TREE.md](_docs/_worklog/TASK_TREE.md)(진행 중, 다음 할 일)와 [_docs/_worklog/STATUS.md](_docs/_worklog/STATUS.md)(감사 시각)를 읽는다.
-2. 형식 감사 `python3 AGENTS/tools/audit.py .`를 실행하고, 보고된 위반은 정리하거나 사용자에게 짚는다 (윈도우는 `python` 또는 `py`. cf. [AGENTS/tool-environment.md](AGENTS/tool-environment.md)).
-3. 의미 감사 트리거를 `python3 AGENTS/tools/check_semantic_audit.py .`(윈도우는 위와 같다)로 판정하고, 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [AGENTS/agent-roles.md](AGENTS/agent-roles.md) "호출 시점").
-4. [_reference/AGENTS.md](_reference/AGENTS.md)를 읽고 실제 내용과 대조한다. 미처리 자료는 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md)로 진행한다.
-5. 작업 범위의 `_docs/` 문서(아래 트리거 색인)를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [AGENTS/ingest-workflow.md](AGENTS/ingest-workflow.md)를 따른다.
+워크로그(TASK_TREE, STATUS) 확인, 형식 감사, 의미 감사 트리거 판정, `_reference/` 대조, 작업 범위 `_docs/` 문서 재독을 순서대로 밟는다. 각 단계의 명령과 판정 기준은 [AGENTS/session-boundaries.md](AGENTS/session-boundaries.md) "세션 시작". 인스턴스 고유 절차는 이 표준 절차를 완주한 뒤 이어 따른다.
 
 ## 단위 작업
 
@@ -52,7 +48,7 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 소통의 기본 규약이라 여기에 이름으로 둔다. 세부와 예외는 [AGENTS/writing-style.md](AGENTS/writing-style.md).
 
 - 담백한 평서문을 쓰고 과장된 수사를 배제한다. 볼드, 이탤릭, 이모지 등 서식 강조는 강한 경고, 금지, 주의에만 쓴다(남발하면 진짜 강조의 진정성을 잃는다).
-- 정확한 개념어로 쓰되 겉멋 든 용어나 불필요한 외래어로 치장하지 않는다. 정확한 용어 선택과 담백한 평서문은 서로 다른 층위의 요구라 충돌하지 않으며, 정확함으로 착각한 치장 어휘는 둘 다를 위반한다. 세부는 [AGENTS/writing-style.md](AGENTS/writing-style.md) "정확한 개념어와 담백한 문체".
+- 정확한 개념어로 쓰되 겉멋 든 용어나 불필요한 외래어로 치장하지 않는다. 세부는 [AGENTS/writing-style.md](AGENTS/writing-style.md) "정확한 개념어와 담백한 문체".
 - 문서 간 참조는 마크다운 링크로, 출처는 `cf.`(참고)와 `ref.`(근거)로 표기한다.
 - 약어는 첫 등장 시 원문을 병기한다(예: `SSOT(single source of truth)`). 줄임말(truncation; feature -> feat, configuration -> config, repository -> repo 등)은 피하고 공식 형태를 쓴다.
 - 모든 .md에 YAML front matter를 붙인다: `date created`, `date modified`, `tags`(첫 항목은 카테고리, `_docs/` 4범주 직속은 감사 스크립트가 검사).

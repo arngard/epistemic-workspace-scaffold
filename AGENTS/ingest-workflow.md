@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-03
-date modified: 2026-08-08
+date modified: 2026-10-10
 tags: [agents, 절차, ingest]
 ---
 
@@ -87,7 +87,7 @@ tags: [agents, 절차, ingest]
 
 ## 참고
 
-- [AGENTS.md](../AGENTS.md) "세션 시작" - 본 워크플로의 트리거 위치
+- [session-boundaries.md](session-boundaries.md) "세션 시작" - 본 워크플로의 트리거 위치
 - [AGENTS.md](../AGENTS.md) "문서 작성 스타일" - 사실/의견 주체 분리 원칙
 - [AGENTS/how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) - 카테고리 판별 규칙
 - [`_reference/AGENTS.md`](../_reference/AGENTS.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태
