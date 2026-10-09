@@ -10,7 +10,7 @@ audit.py는 git에 의존하지 않는다는 원칙을 지키려고 별도 스�
 
 임계 시간과 trailer 문구는 STATUS 레지스트리의 주기/트리거 셀에서 읽는다.
 그 셀이 임계 조건의 SSOT이므로 스크립트에 하드코딩하지 않는다 - 인스턴스가
-주기를 조정하면 스크립트가 따라간다 (cf. AGENTS/agent-roles.md "호출 시점").
+주기를 조정하면 스크립트가 따라간다 (cf. AGENTS/agent-roles/epistemic-auditor.md "호출 시점").
 
 시각 비교는 KST(UTC+9) 고정으로 한다. STATUS 시각이 KST 표기이므로 실행
 머신의 로컬 시간대에 의존하지 않는다.

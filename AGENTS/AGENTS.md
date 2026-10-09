@@ -57,7 +57,7 @@ tags: [agents]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [agent-roles.md](agent-roles.md) | 서브에이전트 역할 정의 (모델 선택, epistemic-auditor)와 인스턴스 전용 감사자를 두는 방식. 도구 중립 정의. | 서브에이전트 호출, 감사자 확장 시 |
+| [agent-roles.md](agent-roles.md) | 서브에이전트 역할 공통 규칙(모델 선택, 인스턴스 전용 감사자)과 역할 목록. 역할별 정의는 [agent-roles/](agent-roles/AGENTS.md) 하위 | 서브에이전트 호출, 감사자 확장 시 |
 
 ## 워크스페이스 조직화
 

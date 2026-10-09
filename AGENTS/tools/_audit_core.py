@@ -16,8 +16,7 @@ from pathlib import Path
 REFERENCE_DIR = "_reference"
 IMPLEMENTATION_DIR = "_implementation"
 WORKLOG_DIR = "_docs/_worklog"
-# 도구 전용 파일은 front matter 면제 (cf. agent-roles.md 점검 항목 3,
-# writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
+# 도구 전용 파일은 front matter 면제 (cf. writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "GEMINI.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", "_tmp", "__pycache__"}
 
