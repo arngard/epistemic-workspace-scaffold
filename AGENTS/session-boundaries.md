@@ -1,12 +1,22 @@
 ---
 date created: 2026-07-26
-date modified: 2026-07-26
+date modified: 2026-10-10
 tags: [agents, 워크스페이스, 운영]
 ---
 
-# 세션 경계의 재진입과 격리
+# 세션 경계의 진입, 재진입과 격리
 
-세션이 끊긴 뒤 자기 작업을 이어받을 때와, 다른 세션의 산출물을 마주쳤을 때의 규약. 세션 경계에서 발견한 산출물이 내 것이면 복원하고 남의 것이면 건드리지 않는다는 한 판단의 양면이다. 단위 작업 1건의 진입-진행-종료 절차 자체는 [unit-task-workflow.md](unit-task-workflow.md).
+새 세션을 시작할 때, 세션이 끊긴 뒤 자기 작업을 이어받을 때, 다른 세션의 산출물을 마주쳤을 때의 규약. 세션 경계에서 발견한 산출물이 내 것이면 복원하고 남의 것이면 건드리지 않는다는 한 판단의 양면이다. 단위 작업 1건의 진입-진행-종료 절차 자체는 [unit-task-workflow.md](unit-task-workflow.md).
+
+## 세션 시작
+
+새 세션은 아래를 순서대로 밟는다. 인스턴스 고유 절차는 이 표준 절차를 완주한 뒤 이어 따른다 (cf. [instance-specialization.md](instance-specialization.md) "특수화 방식").
+
+1. [_docs/_worklog/TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)(진행 중, 다음 할 일)와 [_docs/_worklog/STATUS.md](../_docs/_worklog/STATUS.md)(감사 시각)를 읽는다.
+2. 형식 감사 `python3 AGENTS/tools/audit.py .`를 실행하고, 보고된 위반은 정리하거나 사용자에게 짚는다 (윈도우는 `python` 또는 `py`. cf. [tool-environment.md](tool-environment.md)).
+3. 의미 감사 트리거를 `python3 AGENTS/tools/check_semantic_audit.py .`(윈도우는 위와 같다)로 판정하고, 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [agent-roles.md](agent-roles.md) "호출 시점").
+4. [_reference/AGENTS.md](../_reference/AGENTS.md)를 읽고 실제 내용과 대조한다. 미처리 자료는 [ingest-workflow.md](ingest-workflow.md)로 진행한다.
+5. 작업 범위의 `_docs/` 문서([../AGENTS.md](../AGENTS.md) 트리거 색인)를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [ingest-workflow.md](ingest-workflow.md)를 따른다.
 
 ## 끊김, 재진입
 
