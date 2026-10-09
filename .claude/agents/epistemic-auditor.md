@@ -29,7 +29,7 @@ model: opus
    - 현재적 문서의 근거 보존 예외로 남긴 근거 요지가 경위 서사로 비대해지지 않았는가 (cf. [AGENTS/document-temporality.md](../../AGENTS/document-temporality.md) "시간성 혼합 금지")
 3. git 맥락 검출 (스크립트 미담당, git 비의존 원칙상 audit.py에 넣지 않음)
    - TASK_TREE 루트/1-depth 노드가 마크 커밋(`[x]`/`[-]`) 없이 삭제된 사례
-   - 루트/1-depth 아닌 완료 노드가 단독 삭제된 사례
+   - 루트가 아닌 완료 노드가 단독 삭제된 사례 - 조상 루트와 함께 제거되거나 완료된 중위 노드의 하위로 정리된 경우는 제외한다
    - TASK_TREE 브랜치 속성이 가리키는 브랜치가 실존하는가 (`git branch -a` 대조) - 이미 정리된 브랜치를 가리키는 잔존 속성은 끊김 재진입을 오도한다
    - 영속 노드의 완료 마크(`[x]`)가 커밋 이력에 남았는데 HEAD에서 `[ ]`로 환원되지 않은 사례
    - `date closed` 값이 있는 히스토리 문서의 본문이 그 이후 변경된 사례(동결 위반 - 후속 문서 링크 추가와 정합 유지 수정[링크 경로 정정, 규약 변경에 따른 front matter 갱신]은 허용, cf. [AGENTS/document-temporality.md](../../AGENTS/document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
