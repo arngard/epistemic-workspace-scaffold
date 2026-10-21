@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-06
+date modified: 2026-10-21
 tags: [소개]
 ---
 
@@ -28,16 +28,17 @@ For the rationale, see [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-
 │   ├── _architecture/     <- Design specifications
 │   └── _worklog/          <- Work status, history
 ├── _reference/        <- Immutable raw materials dumped by the user
-└── _implementation/   <- Implementation code
-    ├── backend/
-    └── web/
+├── AGENTS/            <- Agent operating norms (entry point: AGENTS.md)
+└── _implementation/   <- Implementation projects (one subfolder per project)
+    ├── <project-A>/
+    └── <project-B>/
 ```
 
 ## How to use
 
 There are three ways to obtain the scaffold: GitHub fork, plain copy (clone or template), or clone and connect the original as an `upstream` remote (choose this to keep pulling parent improvements - `git fetch upstream && git merge upstream/main`). Switching between these later is cumbersome, so record the chosen approach and its rationale as a decision document.
 
-After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `_docs/_worklog/TASK_TREE.md`, and adjust AGENTS.md to your project's requirements.
+After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `_docs/_worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md).
 
 ## Further reading
 

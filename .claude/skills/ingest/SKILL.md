@@ -9,4 +9,4 @@ description: 워크스페이스에 새 정보가 들어올 때 사용한다. 사
 
 1. 위 SSOT 문서를 지금 읽는다. 기억으로 단언하지 않는다.
 2. "표준 시퀀스" 각 단계를 순서대로 적용한다. 건너뛰지 않는다.
-3. `_reference/` 자료라면 같은 문서의 "`_reference/` 폴더 처리" 절을 적용한다.
+3. `_reference/` 자료라면 [AGENTS/ingest-workflow/reference-folder.md](../../../AGENTS/ingest-workflow/reference-folder.md)를 적용한다.

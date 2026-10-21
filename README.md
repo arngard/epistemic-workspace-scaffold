@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-07-06
+date modified: 2026-10-21
 tags: [소개]
 ---
 
@@ -28,16 +28,17 @@ tags: [소개]
 │   ├── _architecture/     <- 설계 명세
 │   └── _worklog/          <- 작업 상태, 이력
 ├── _reference/        <- 사용자가 dump한 raw 자료의 immutable 보관 영역
-└── _implementation/   <- 구현체 코드
-    ├── backend/
-    └── web/
+├── AGENTS/            <- 에이전트 운영 규범 (진입점은 AGENTS.md)
+└── _implementation/   <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
+    ├── <project-A>/
+    └── <project-B>/
 ```
 
 ## 사용법
 
 스캐폴드를 가져오는 방식은 셋이다. GitHub fork, 단순 복사(clone 또는 template), clone 후 원본을 `upstream` 원격으로 연결(부모 개선을 계속 받으려면 이 방식 - `git fetch upstream && git merge upstream/main`). 채택 방식은 이후 전환이 번거로우니 고른 방식과 이유를 결정 문서로 남기기를 권한다.
 
-가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `_docs/_worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md를 프로젝트 요구에 맞게 조정한다.
+가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `_docs/_worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md)를 따른다.
 
 ## 더 읽을 거리
 

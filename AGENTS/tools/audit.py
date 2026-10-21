@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""에피스테믹 워크스페이스 기계 감사 (Layer 0, 도구 중립).
+"""에피스테믹 워크스페이스 기계 감사 (도구 중립).
 
 epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 의미 판단(카테고리 배치 적절성, 워크로그 최신성)은 다루지 않는다 -
@@ -48,6 +48,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       사람/LLM 판단)
  22. 날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더 - 경고
      (규약은 띄어쓰기. _reference/ 하위 제외. 하이픈 구분자도 프리픽스로는 인정)
+ 23. 링크 대상에 공백이 든 로컬 파일, 폴더 링크 - 위반
+     (공백은 %20으로 쓴다. 대상이 확장자나 / 로 끝나는 것만 본다. 링크 제목
+      문법과 외부 URL은 제외)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -86,7 +89,7 @@ from pathlib import Path
 
 from _audit_core import Finding, VIOLATION, WARNING
 from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags_category
-from audit_links import check_links, check_link_text, check_section_refs
+from audit_links import check_links, check_link_text, check_section_refs, check_link_whitespace
 from audit_structure import (
     check_descriptors, check_normative_guides, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
@@ -108,6 +111,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings: list[Finding] = []
     findings += check_front_matter(root)
     findings += check_links(root)
+    findings += check_link_whitespace(root)
     findings += check_link_text(root)
     findings += check_section_refs(root)
     findings += check_descriptors(root)
@@ -137,7 +141,7 @@ def main() -> int:
 
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd()
     if not root.is_dir():
-        print(f"오류: 디렉토리가 아님 - {root}", file=sys.stderr)
+        print(f"Error: not a directory. 디렉토리가 아님 - {root}", file=sys.stderr)
         return 2
 
     findings = run_audit(root)

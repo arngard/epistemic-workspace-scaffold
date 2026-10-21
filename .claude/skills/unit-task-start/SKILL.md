@@ -7,6 +7,6 @@ description: 단위 작업(자료 묶음 ingest, 메타 결정이나 정책 변�
 
 이 스킬은 절차를 로드하는 포인터다. 절차 본체(SSOT(single source of truth))는 [AGENTS/unit-task-workflow.md](../../../AGENTS/unit-task-workflow.md).
 
-1. 위 SSOT 문서의 "단위 작업이란"과 "진입 흐름"을 지금 읽는다. 기억으로 단언하지 않는다.
+1. 위 SSOT 문서의 "진입 흐름"과 [AGENTS/unit-task.md](../../../AGENTS/unit-task.md) "단위 작업"을 지금 읽는다. 기억으로 단언하지 않는다.
 2. 진입 흐름의 각 단계(작업 트리 노드 결정 + 관련 절차 문서 재독, 작업 브랜치 생성, 워크로그 등재, 시작점 커밋)를 순서대로 적용한다.
 3. 작업 중에는 같은 문서의 "진행 흐름"을 따른다.
