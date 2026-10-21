@@ -102,18 +102,18 @@ def main() -> int:
 
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd()
     if not root.is_dir():
-        print(f"오류: 디렉토리가 아님 - {root}", file=sys.stderr)
+        print(f"Error: not a directory. 디렉토리가 아님 - {root}", file=sys.stderr)
         return UNDECIDABLE
 
     try:
         last, threshold, trailer = parse_status(root)
     except ValueError as exc:
-        print(f"판정 불가: {exc}. 수동 판정 필요.", file=sys.stderr)
+        print(f"Undecidable: STATUS could not be parsed. 판정 불가: {exc}. 수동 판정 필요.", file=sys.stderr)
         return UNDECIDABLE
 
     code, _ = git(root, "rev-parse", "--git-dir")
     if code != 0:
-        print("판정 불가: git 레포가 아니거나 git을 실행할 수 없음. 수동 판정 필요.", file=sys.stderr)
+        print("Undecidable: git is unavailable. 판정 불가: git 레포가 아니거나 git을 실행할 수 없음. 수동 판정 필요.", file=sys.stderr)
         return UNDECIDABLE
 
     if last is None:

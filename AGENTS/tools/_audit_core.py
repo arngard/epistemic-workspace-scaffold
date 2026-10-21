@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""에피스테믹 워크스페이스 기계 감사 - 공용 인프라 (Layer 0).
+"""에피스테믹 워크스페이스 기계 감사 - 공용 인프라.
 
 Finding 데이터클래스, 상수, 공용 헬퍼(순회/읽기/링크 해석 등)를 담는다.
 검사 함수는 audit_*.py 의미 모듈에, 오케스트레이션과 진입점은 audit.py에 있다.
@@ -17,7 +17,7 @@ REFERENCE_DIR = "_reference"
 IMPLEMENTATION_DIR = "_implementation"
 WORKLOG_DIR = "_docs/_worklog"
 # 도구 전용 파일은 front matter 면제 (cf. writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
-EXEMPT_FILENAMES = {"CLAUDE.md", "GEMINI.md", "copilot-instructions.md", "SKILL.md"}
+EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", "_tmp", "__pycache__"}
 
 # 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (folder-structure.md

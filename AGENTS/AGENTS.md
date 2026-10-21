@@ -24,7 +24,7 @@ tags: [agents]
 | [folder-structure.md](folder-structure.md) | 폴더 구조 규약 - 폴더 분화, 디스크립터, 규범성 분기, 이동 시 연쇄 갱신 | 폴더 구조 변경, 디스크립터 작성 시 |
 | [document-temporality.md](document-temporality.md) | 문서 시간성 규약 - 히스토리/현재적 구분, 혼합 금지, date closed 종결 신호 | 날짜 프리픽스 문서 작성, 수정, 문서 폐기 시 |
 | [writing-style.md](writing-style.md) | 일반 문서 작성 스타일 - 코드 블록 절제, 표준 표현, 출처와 주체 표기, 요약과 축약의 정보 보존, 자체 완결성, 태그 중복 회피, 도구 전용 파일 예외. 하위 문서로 마크다운 링크 표시텍스트, ASCII 부호 규약, 대화 보고 | 모든 문서 작성 시 |
-| [ingest-workflow.md](ingest-workflow.md) | 새 사실, 의견, 예측, 결정, 자료가 들어올 때의 표준 시퀀스. contradiction flagging, `_reference/` 처리, 빠뜨림 방지 자체 점검 | 새 정보 ingest 시 |
+| [ingest-workflow.md](ingest-workflow.md) | 새 사실, 의견, 예측, 결정, 자료가 들어올 때의 표준 시퀀스. contradiction flagging, 빠뜨림 방지 자체 점검. 하위 문서로 `_reference/` 폴더 처리 | 새 정보 ingest 시 |
 | [original-protection-principle.md](original-protection-principle.md) | 원본 보호 원칙 (가역성 우선, 공유 기준선 보호) - 에이전트가 원본을 다룰 때의 안전 기준 | 원본 삭제, 대폭 재편, 머지 판단 시 |
 | [instance-specialization.md](instance-specialization.md) | 상속 자산의 변경과 특수화 - 상류 반영과 인스턴스 특수화의 분기, 특수화 방식(부모 불수정, 표준 포함, 역할 분담, 라우팅 등재) | 계승된 규범, 절차의 변경이나 특수화를 도출했을 때 |
 
@@ -39,7 +39,7 @@ tags: [agents]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [unit-task.md](unit-task.md) | 단위 작업과 워크플로우의 개념 - 의미적 분절이 정의이고 노드, 브랜치, 커밋은 표현, 중첩과 정형 대응, 프로젝션과 축약의 결과 동등성, 절차 단계와의 직교, 워크플로우의 재귀와 조립 | 단위 작업 개념 확인, 단위 크기 판단, 워크플로우 조립 판단 시 |
+| [unit-task.md](unit-task.md) | 단위 작업과 워크플로우의 개념 - 의미적 분절이 정의이고 노드, 브랜치, 커밋은 표현, 중첩과 정형 대응, 프로젝션과 축약의 결과 동등성, 절차 단계와의 직교, 워크플로우의 재귀와 조립. 하위 문서로 단계에 권한을 두는 기준 | 단위 작업 개념 확인, 단위 크기 판단, 워크플로우 조립 판단 시 |
 | [unit-task-workflow.md](unit-task-workflow.md) | 단위 작업 운영 프레임 (진입/진행/종료, 머지 타입 분기). 하위 문서로 절차 축약 | 단위 작업 시작, 종료 시 |
 | [session-boundaries.md](session-boundaries.md) | 세션 경계 규약 - 세션 시작 절차, 끊김 뒤 재진입, 다른 세션 산출물과의 격리 | 새 세션 시작 시, 세션 재진입 시, 다른 세션 산출물을 발견했을 때 |
 | [submodule-pointer-sync.md](submodule-pointer-sync.md) | 서브모듈 커밋 포인트 재귀 정합화 - 상위 레포 pointer 갱신과 검증 | 본 레포가 상위 레포의 서브모듈일 때 단위 작업 종료 시 |
