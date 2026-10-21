@@ -36,7 +36,7 @@ def check_size(root: Path) -> list[Finding]:
 def check_temporality_mix(root: Path) -> list[Finding]:
     """현재적 문서(날짜 프리픽스 없음) 본문의 날짜 헤더/불릿 반복을 검출.
 
-    시간순 로그가 현재적 문서에 누적되는 하이브리드화 신호 (proposal 3).
+    시간순 로그가 현재적 문서에 누적되는 하이브리드화 신호.
     워크로그(TASK_TREE, STATUS)는 별도 룰이 있어 제외.
     """
     out: list[Finding] = []
@@ -62,8 +62,8 @@ def check_temporality_mix(root: Path) -> list[Finding]:
 def check_ascii_punctuation(root: Path) -> list[Finding]:
     """문서 본문의 비ASCII 문장 부호를 검출한다 (경고).
 
-    writing-style/ascii-punctuation.md가 ASCII 우선 표기를 규정하나 audit이
-    강제하지 않던 것을 보완한다 (이아리스 B-2). 코드 펜스, 인라인 코드, HTML
+    writing-style/ascii-punctuation.md가 규정하는 ASCII 우선 표기를 검사한다.
+    코드 펜스, 인라인 코드, HTML
     주석은 검사 전 제거하므로 규칙 자체의 백틱 예시와 코드, 고정폭 box-drawing
     트리는 제외된다. 직접 인용(사용자/외부 텍스트)은 정적으로 판별할 수 없어
     경고 수준으로 둔다 - 위반 격상은 규약 SSOT 소유자 결정.

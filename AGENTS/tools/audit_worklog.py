@@ -10,7 +10,7 @@ from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
 
 
 def check_status_registry(root: Path) -> list[Finding]:
-    """STATUS.md가 레지스트리 표 외 서술을 누적하는지 검출 (proposal 2).
+    """STATUS.md가 레지스트리 표 외 서술을 누적하는지 검출.
 
     STATUS는 상태 레지스트리다. front matter, 제목, 인용 블록(> 안내),
     마크다운 표만 허용하고 일반 서술 문단이 있으면 위반. 첫 1건에서 멈추지 않고
@@ -42,7 +42,7 @@ def check_status_registry(root: Path) -> list[Finding]:
 
 
 def check_task_tree_attrs(root: Path) -> list[Finding]:
-    """TASK_TREE.md 속성 노드(체크박스 없는 불릿)의 표준 키 위반 검출 (proposal 2).
+    """TASK_TREE.md 속성 노드(체크박스 없는 불릿)의 표준 키 위반 검출.
 
     작업 노드는 `- [ ]`/`[/]`/`[x]`/`[-]` 형태. 속성 노드는 체크박스 없는
     불릿이며 표준 키(설명, 상태 상세, 외부 참조, 브랜치)로 시작해야 한다.
@@ -69,7 +69,7 @@ def check_task_tree_attrs(root: Path) -> list[Finding]:
         if content.startswith("cf.") or content.startswith("ref."):
             continue
         # 표준 키로 시작하는지. 키 뒤에 구분자(콜론/공백)나 끝이 와야 한다 -
-        # 단순 startswith면 "설명서" 같은 접두 오검출이 생긴다 (제노 1.5).
+        # 단순 startswith면 "설명서" 같은 접두 오검출이 생긴다.
         if any(
             content == k or (content.startswith(k) and content[len(k):len(k) + 1] in (":", " ", "\t"))
             for k in TASK_TREE_ATTR_KEYS

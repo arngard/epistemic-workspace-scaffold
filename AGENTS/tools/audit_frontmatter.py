@@ -24,8 +24,9 @@ def check_front_matter(root: Path) -> list[Finding]:
         for field in ("date created", "date modified", "tags"):
             if not re.search(rf"^{re.escape(field)}\s*:", body, re.MULTILINE):
                 out.append(Finding(VIOLATION, "front-matter", rel, f"필수 필드 누락 - {field}"))
-        # 날짜 필드 값 형식 검증 (제노 1.1/3.1) - 필드 존재만 보고 값을 안 봐서
-        # 스키마가 우회되던 것을 막는다. 필드가 있을 때만 값을 검사한다.
+        # 날짜 필드 값 형식 검증 - 필드 존재만 보면 잘못된 값이 통과하므로 값도
+        # 검사한다. 필드가 있을 때만 값을 검사한다.
+        dates = {}
         for field in ("date created", "date modified", "date closed"):
             vm = re.search(rf"^{re.escape(field)}\s*:\s*(\S.*?)\s*$", body, re.MULTILINE)
             if vm and not DATE_VALUE_RE.match(vm.group(1)):
@@ -33,8 +34,17 @@ def check_front_matter(root: Path) -> list[Finding]:
                     VIOLATION, "front-matter", rel,
                     f'{field} 값 형식 오류 - yyyy-MM-dd 기대, 실제 "{vm.group(1)}"',
                 ))
+            elif vm:
+                dates[field] = vm.group(1)
+        # 생성일이 수정일보다 늦으면 둘 중 하나가 오기다. yyyy-MM-dd는 문자열
+        # 비교가 날짜 순서와 같다.
+        if dates.get("date created", "") > dates.get("date modified", "9999-99-99"):
+            out.append(Finding(
+                WARNING, "front-matter", rel,
+                f'date created({dates["date created"]})가 date modified({dates["date modified"]})보다 늦음 - 오기 확인',
+            ))
         # date closed는 선택 필드이며 히스토리 문서(날짜 프리픽스) 전용이다.
-        # 프리픽스 없는 현재적 문서에 달리면 시간성 혼합 신호 (proposal 3).
+        # 프리픽스 없는 현재적 문서에 달리면 시간성 혼합 신호.
         if re.search(r"^date closed\s*:", body, re.MULTILINE) and not has_date_prefix(path):
             out.append(Finding(
                 VIOLATION, "temporality", rel,
@@ -46,8 +56,8 @@ def check_front_matter(root: Path) -> list[Finding]:
 def check_strategy_fields(root: Path) -> list[Finding]:
     """전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 검사 (경고).
 
-    _strategy/AGENTS.md가 일반 필수 필드 외에 importance/urgency를 요구하나
-    audit이 이를 안 봐서 스키마가 강제되지 않던 것을 보완한다 (제노 1.4).
+    _strategy/AGENTS.md가 일반 필수 필드 외에 요구하는 importance/urgency를
+    검사한다.
     하위 폴더 문서와 디스크립터에는 강제하지 않는다. 경고 수준으로 두는 것은
     자식/메타 레포의 채택 여부가 정책 결정이기 때문 - 상향(위반) 여부는 사용자
     결정.

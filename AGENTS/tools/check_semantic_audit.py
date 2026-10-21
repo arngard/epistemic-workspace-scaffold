@@ -32,6 +32,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 STATUS_REL = Path("_docs/_worklog/STATUS.md")
+# 의미 감사 행은 이름 칸에 이 글자를 담은 첫 행이다. 이름 칸만 보므로 다른 행의
+# 주기/트리거 서술에 같은 글자가 있어도 오인하지 않는다.
 AUDIT_ROW_KEY = "의미 감사"
 KST = timezone(timedelta(hours=9))
 TIMESTAMP_RE = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
@@ -66,7 +68,8 @@ def parse_status(root: Path) -> tuple["datetime | None", int, str]:
     row = next(
         (
             line for line in path.read_text(encoding="utf-8", errors="replace").splitlines()
-            if line.lstrip().startswith("|") and AUDIT_ROW_KEY in line
+            if line.lstrip().startswith("|")
+            and AUDIT_ROW_KEY in line.strip().strip("|").split("|")[0]
         ),
         None,
     )
