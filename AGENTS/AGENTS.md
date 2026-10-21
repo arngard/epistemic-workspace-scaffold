@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-12
+date modified: 2026-10-21
 tags: [agents]
 ---
 
@@ -23,7 +23,7 @@ tags: [agents]
 | [document-units.md](document-units.md) | 문서 단위와 SSOT 규약 - 1관심사, 분량 보조 지표, 수평 확장의 하위 문서 분할, 중복 금지와 외부 SSOT 비복제, 이름과 식별자의 안정성 | 문서 신설, 분할, 배치 판단 시 |
 | [folder-structure.md](folder-structure.md) | 폴더 구조 규약 - 폴더 분화, 디스크립터, 규범성 분기, 이동 시 연쇄 갱신 | 폴더 구조 변경, 디스크립터 작성 시 |
 | [document-temporality.md](document-temporality.md) | 문서 시간성 규약 - 히스토리/현재적 구분, 혼합 금지, date closed 종결 신호 | 날짜 프리픽스 문서 작성, 수정, 문서 폐기 시 |
-| [writing-style.md](writing-style.md) | 일반 문서 작성 스타일 - 코드 블록 절제, 표준 표현, 출처와 주체 표기, 요약과 축약의 정보 보존, 자체 완결성, 태그 중복 회피, 도구 전용 파일 예외. 하위 문서로 마크다운 링크 표시텍스트, ASCII 부호 규약 | 모든 문서 작성 시 |
+| [writing-style.md](writing-style.md) | 일반 문서 작성 스타일 - 코드 블록 절제, 표준 표현, 출처와 주체 표기, 요약과 축약의 정보 보존, 자체 완결성, 태그 중복 회피, 도구 전용 파일 예외. 하위 문서로 마크다운 링크 표시텍스트, ASCII 부호 규약, 대화 보고 | 모든 문서 작성 시 |
 | [ingest-workflow.md](ingest-workflow.md) | 새 사실, 의견, 예측, 결정, 자료가 들어올 때의 표준 시퀀스. contradiction flagging, `_reference/` 처리, 빠뜨림 방지 자체 점검 | 새 정보 ingest 시 |
 | [original-protection-principle.md](original-protection-principle.md) | 원본 보호 원칙 (가역성 우선, 공유 기준선 보호) - 에이전트가 원본을 다룰 때의 안전 기준 | 원본 삭제, 대폭 재편, 머지 판단 시 |
 | [instance-specialization.md](instance-specialization.md) | 상속 자산의 변경과 특수화 - 상류 반영과 인스턴스 특수화의 분기, 특수화 방식(부모 불수정, 표준 포함, 역할 분담, 라우팅 등재) | 계승된 규범, 절차의 변경이나 특수화를 도출했을 때 |

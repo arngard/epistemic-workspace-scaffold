@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-07-06
+date modified: 2026-10-21
 tags: [agents]
 ---
 
@@ -13,3 +13,4 @@ tags: [agents]
 |------|------|-------------|
 | [markdown-link-display-text.md](markdown-link-display-text.md) | 마크다운 링크 표시텍스트의 정당한 형태 (실존 기반, audit 기계 검사) | 문서 간 링크 작성 시 |
 | [ascii-punctuation.md](ascii-punctuation.md) | 문장 부호 ASCII 우선 표기와 치환, 보존 예외 | 문서 작성, 부호 입력 시 |
+| [conversation-reporting.md](conversation-reporting.md) | 대화 보고의 구성 - 결론 선행, 답을 받아야 하는 질문은 마지막, 요청받은 산출물만, 내부 라벨 금지 | 사용자에게 보고, 답변할 때 |

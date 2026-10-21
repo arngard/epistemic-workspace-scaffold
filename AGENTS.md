@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-10
+date modified: 2026-10-21
 tags: [규칙, 문서관리]
 ---
 
@@ -57,6 +57,10 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 ## 응답 언어
 
 문서, 커밋 메시지, 코드 주석과 in-source 문서는 한국어 평어체, 대화는 한국어 존댓말. 에러 메시지는 첫 문장 영문 + 상세 한국어. 비속어, 욕설, 모욕, 차별 표현은 응답, 문서, 커밋, PR 어디에도 쓰지 않으며, 사용자가 쓰더라도 어휘를 모방하지 않는다.
+
+## 대화 보고
+
+긴 보고는 결론을 앞에 두고, 답을 받아야 하는 질문은 마지막에 모으며, 요청받은 산출물은 산출물만 내놓고, 작업 중 매긴 내부 라벨을 쓰지 않는다. 추론은 추론임을 드러내고, 확인할 수 있는 주장은 확인한 뒤 보고한다. 세부는 [AGENTS/writing-style/conversation-reporting.md](AGENTS/writing-style/conversation-reporting.md), 추론 표시는 [AGENTS/writing-style.md](AGENTS/writing-style.md) "출처와 주체 표기의 범위", 확인 후 보고는 [AGENTS/working-principles.md](AGENTS/working-principles.md) "기억보다 실제 상태".
 
 ## 제품 지침 추출
 
