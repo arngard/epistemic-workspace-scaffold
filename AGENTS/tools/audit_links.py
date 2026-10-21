@@ -35,13 +35,13 @@ def check_links(root: Path) -> list[Finding]:
 # [x](path "title")은 정당하므로 제외한다.
 SPACED_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\n]*\s[^)\n]*)\)")
 LINK_TITLE_RE = re.compile(r"""^\S+\s+(?:"[^"]*"|'[^']*')$""")
-# 문서 링크로 보이는 대상만 검사한다(.md나 / 로 끝남, 앵커 허용). 대괄호 뒤에
-# 괄호 설명을 붙인 일반 문장을 링크로 오인하지 않기 위함이다.
-DOC_TARGET_RE = re.compile(r"(\.md(#.*)?|/)$")
+# 파일이나 폴더 링크로 보이는 대상만 검사한다(확장자나 / 로 끝남, 앵커 허용).
+# 대괄호 뒤에 괄호 설명을 붙인 일반 문장을 링크로 오인하지 않기 위함이다.
+DOC_TARGET_RE = re.compile(r"(\.[A-Za-z0-9]{1,8}(#.*)?|/)$")
 
 
 def check_link_whitespace(root: Path) -> list[Finding]:
-    """링크 대상에 공백이 든 로컬 문서 링크를 검출한다 (위반).
+    """링크 대상에 공백이 든 로컬 파일, 폴더 링크를 검출한다 (위반).
 
     링크 대상의 공백은 %20으로 쓴다 (cf. document-temporality.md). 공백 든
     대상은 링크 해석에서 빠져 실존 검사를 받지 못한다.
@@ -55,6 +55,8 @@ def check_link_whitespace(root: Path) -> list[Finding]:
         text = re.sub(r"`[^`\n]*`", "", text)
         for target in SPACED_LINK_RE.findall(text):
             t = target.strip()
+            if not re.search(r"\s", t):
+                continue  # 대상 앞뒤 공백만 있음 (공백 든 대상이 아님)
             if SCHEME_RE.match(t) or LINK_TITLE_RE.match(t) or not DOC_TARGET_RE.search(t):
                 continue
             out.append(Finding(

@@ -47,8 +47,6 @@ tags: [agents, 절차, ingest]
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 
-## `_reference/` 폴더 처리
-
 `_reference/`에 dump된 자료의 처리 여부 식별, 미처리 항목 처리, 원본 불변 원칙은 [ingest-workflow/reference-folder.md](ingest-workflow/reference-folder.md)를 따른다.
 
 ## 빠뜨림 방지의 명시적 의도
