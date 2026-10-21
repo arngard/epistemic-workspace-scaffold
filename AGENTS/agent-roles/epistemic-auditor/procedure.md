@@ -14,7 +14,7 @@ tags: [agents, 역할, 감사]
 2. 최근 커밋(`git log --oneline -20` 등)과 STATUS 레지스트리, TASK_TREE를 대조해 워크로그 최신성을 본다.
 3. 형식 감사 `python3 AGENTS/tools/audit.py .`(윈도우는 `python` 또는 `py`)를 실행해 결과를 수집한다. 형식 항목을 손으로 재검사하지 않는다.
 4. [how-to-separate-docs-folders.md](../../how-to-separate-docs-folders.md)를 읽고 4범주 정의를 확인한 뒤, 각 `_docs/_X/` 문서의 첫 단락이나 디스크립터 등록 설명으로 카테고리 부합 여부를 본다. 판정이 서지 않으면 본문을 더 읽고, 그래도 모호하면 "확실하지 않음"으로 둔다. 한 문서가 두 범주에 걸치면 같은 문서의 "교차 링크" 절에 따라 주 위치 하나를 정하고 나머지를 링크로 분리할 수 있는지 본다. 분리할 수 없거나 주 위치가 모호하면 "확실하지 않음"으로 보고한다.
-5. git 맥락 검출 항목을 확인한다. 브랜치 속성의 실존은 `git branch -a`로, `date closed` 문서의 본문 변경은 `git log -p`로, `_reference/` 원본의 수정과 삭제는 `git log --diff-filter=MDR --name-status -- _reference/ ":(exclude)_reference/AGENTS.md"`로 본다. 직전 감사 이후 범위만 보면 된다.
+5. git 맥락 검출 항목을 확인한다. 브랜치 속성의 실존은 `git branch -a`로, `date closed` 문서의 본문 변경은 `git log -p`로, `_reference/` 원본의 수정, 삭제, 이동은 `git -c core.quotepath=false log --first-parent --diff-filter=MDR --name-status <직전 클린 커밋>..HEAD -- _reference/ ":(exclude)_reference/AGENTS.md"`로 본다(`--first-parent`는 머지 커밋에서만 가한 수정도 잡는다. 클린 커밋이 아직 없으면 범위 지정 없이 본다). 이동(R 행)은 파생 노드의 링크를 끊으므로 위반으로 보고한다. 머지 커밋이 나오면 `git log <머지>^1..<머지>^2`로 원인 커밋을 찾는다.
 6. 메타-컨텐츠 영역 혼동을 본 레포가 만든 머지와 그 본문으로 점검한다. 상류 원격이 있으면 `git log --first-parent --merges <상류>/main..HEAD`로 상속 이력을 빼고, 없으면 `git log --first-parent --merges -30`으로 최근 머지를 본다. 쓸 만한 단서는 다음과 같다.
    - 커밋 메시지의 "정정", "되돌림", "revert", "롤백", "자율" 같은 키워드 빈도.
    - 머지 커밋마다 대응하는 단위 작업 시작점 커밋(워크로그 등재)이 앞서 있는가. 검토 통과 여부는 커밋에서 판별하지 않는다.
