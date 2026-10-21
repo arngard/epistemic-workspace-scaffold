@@ -32,6 +32,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 STATUS_REL = Path("_docs/_worklog/STATUS.md")
+# 의미 감사 행은 이름 칸에 이 문구를 담은 첫 행이다. 이름 칸만 보므로 다른 행의
+# 주기/트리거 서술에 같은 문구가 있어도 오인하지 않는다.
 AUDIT_ROW_KEY = "의미 감사"
 KST = timezone(timedelta(hours=9))
 TIMESTAMP_RE = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
@@ -66,7 +68,8 @@ def parse_status(root: Path) -> tuple["datetime | None", int, str]:
     row = next(
         (
             line for line in path.read_text(encoding="utf-8", errors="replace").splitlines()
-            if line.lstrip().startswith("|") and AUDIT_ROW_KEY in line
+            if line.lstrip().startswith("|")
+            and AUDIT_ROW_KEY in line.strip().strip("|").split("|")[0]
         ),
         None,
     )
@@ -75,20 +78,20 @@ def parse_status(root: Path) -> tuple["datetime | None", int, str]:
     cells = [c.strip() for c in row.strip().strip("|").split("|")]
     if len(cells) < 3:
         raise ValueError(f"레지스트리 행의 셀이 3개 미만 - {row.strip()}")
-    stamp, trigger = cells[1], cells[2]
+    name, stamp, trigger = cells[0], cells[1], cells[2]
     bare = stamp.replace(" KST", "").strip()
     if bare in PLACEHOLDERS:
         last = None
     elif TIMESTAMP_RE.fullmatch(bare):
         last = datetime.strptime(bare, "%Y-%m-%d %H:%M:%S").replace(tzinfo=KST)
     else:
-        raise ValueError(f"마지막 수행 시각을 읽을 수 없음 - {stamp}")
+        raise ValueError(f"마지막 수행 시각을 읽을 수 없음 - {stamp} (읽은 행: {name})")
     threshold = THRESHOLD_RE.search(trigger)
     if not threshold:
-        raise ValueError(f"주기/트리거 셀에서 임계 시간을 읽을 수 없음 - {trigger}")
+        raise ValueError(f"주기/트리거 셀에서 임계 시간을 읽을 수 없음 - {trigger} (읽은 행: {name})")
     trailer = TRAILER_RE.search(trigger)
     if not trailer:
-        raise ValueError(f"주기/트리거 셀에서 trailer 문구를 읽을 수 없음 - {trigger}")
+        raise ValueError(f"주기/트리거 셀에서 trailer 문구를 읽을 수 없음 - {trigger} (읽은 행: {name})")
     return last, int(threshold.group(1)), trailer.group(1)
 
 

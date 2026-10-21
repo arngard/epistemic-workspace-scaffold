@@ -78,8 +78,8 @@ WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\x00-\x1f]')
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {
     f"LPT{i}" for i in range(1, 10)
 }
-# front matter 날짜 필드 값 형식 (yyyy-MM-dd). 값 무검증으로 스키마가 우회되던
-# 것을 조인다 (제노 1.1/3.1).
+# front matter 날짜 필드 값 형식 (yyyy-MM-dd). 필드 존재만 보면 잘못된 값이
+# 통과하므로 값도 검사한다.
 DATE_VALUE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 (cf. _strategy/AGENTS.md
 # "Front matter 속성"). 하위 폴더 문서와 디스크립터에는 강제하지 않는다.
@@ -94,8 +94,7 @@ DATE_LINE_RE = re.compile(r"^\s*(?:[-*#>]+\s*)*\d{4}-\d{2}-\d{2}\b", re.MULTILIN
 TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
 # STATUS 레지스트리 표의 시각 표기와 표준 헤더. 미수행 placeholder는 허용.
 # 시각은 KST 기준이며 존 표기는 생략하는 것이 관례다. 관례를 어기고 " KST"를
-# 덧붙인 자식 기재도 깨지지 않게 접미를 선택적으로 허용한다 (델타 D-1 - 규약과
-# 정규식의 자체 모순 해소).
+# 덧붙인 자식 기재도 깨지지 않게 접미를 선택적으로 허용한다.
 STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( KST)?$")
 STATUS_HEADER_CELLS = ["이름", "마지막 수행", "주기/트리거"]
 STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
@@ -301,7 +300,7 @@ def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: s
     """파일명 형태의 링크 표시텍스트가 실존 대상을 가리키는지 판정.
 
     실존을 정확히 가리키는 세 관례를 정당으로 인정한다 (writing-style.md
-    "마크다운 링크 표시텍스트", 사용자 결정 2026-07-05 "실존 기반 인정").
+    "마크다운 링크 표시텍스트").
       1. 대상 파일명(basename) 일치 - [AGENTS.md](daily/AGENTS.md).
       2. 루트 기준 또는 source 상대로 표시텍스트 경로가 실존 -
          [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md).

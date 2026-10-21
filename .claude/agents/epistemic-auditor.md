@@ -13,7 +13,7 @@ model: opus
 
 ## 점검 항목
 
-형식 점검의 결정론적 항목(구체 목록은 `AGENTS/tool-environment.md` "기계 감사 스크립트"가 SSOT)은 `AGENTS/tools/audit.py`가 담당한다. Bash로 `python3 AGENTS/tools/audit.py .`(윈도우는 `python` 또는 `py`)를 실행해 결과를 수집하고 보고에 그대로 첨부한다. 그 형식 항목들을 손으로 재검사하지 않는다.
+형식 점검의 결정론적 항목(구체 목록은 `AGENTS/tools/audit.py` 모듈 docstring "점검 항목"이 SSOT, 사용 안내는 `AGENTS/tool-environment.md` "기계 감사 스크립트")은 `AGENTS/tools/audit.py`가 담당한다. Bash로 `python3 AGENTS/tools/audit.py .`(윈도우는 `python` 또는 `py`)를 실행해 결과를 수집하고 보고에 그대로 첨부한다. 그 형식 항목들을 손으로 재검사하지 않는다.
 
 1. _worklog/ 문서의 최신성 (git 상태 대비 의미 판단)
    - STATUS.md 레지스트리의 감사, 주기 작업 행이 실제 수행 이력을 반영하는가

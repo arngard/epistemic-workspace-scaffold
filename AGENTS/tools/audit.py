@@ -9,6 +9,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 점검 항목:
   1. YAML front matter 필수 필드 (date created, date modified, tags)와 날짜
      필드 값 형식(yyyy-MM-dd). 선택 필드 date closed는 히스토리 문서 전용.
+     date created가 date modified보다 늦으면 경고.
   2. 문서 유형별 분량 임계 (일반 노드, 히스토리 문서, 진입층/폴더 디스크립터) - 경고
   3. 현재적 문서의 시간성 혼합 패턴 (날짜 헤더/불릿 반복) - 경고
   4. 날짜 프리픽스 없는 문서의 date closed (시간성 혼합 신호) - 위반
@@ -67,14 +68,14 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 - 순회는 심볼릭 링크를 따르지 않고(루트 밖 탈출/순환 방지) 중첩 git 레포와
   도구 전용 폴더를 가지치기한다.
 
-구조 (2026-07-07 모듈 분할):
+구조:
 - 공용 인프라(Finding, 상수, 순회/읽기/링크 해석 헬퍼)는 _audit_core.py.
 - 검사 함수는 의미별 모듈에 나뉜다: audit_frontmatter(front matter/스키마),
   audit_links(링크/참조), audit_structure(폴더/디스크립터/이식성),
   audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호).
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
-  해석, 인코딩 설정, 출력, 종료 코드를 담당한다. 실행법과 출력은 분할 전과 동일.
+  해석, 인코딩 설정, 출력, 종료 코드를 담당한다.
 """
 
 import sys
