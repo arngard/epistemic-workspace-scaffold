@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-10
-date modified: 2026-10-10
+date modified: 2026-10-21
 tags: [agents]
 ---
 
@@ -11,4 +11,4 @@ tags: [agents]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [epistemic-auditor.md](epistemic-auditor.md) | 문서 정합성 감사자 - 점검 항목, 호출 시점, 제약, 도구별 구현 | 감사자 호출, 감사 판정 기준 확인 시 |
+| [epistemic-auditor.md](epistemic-auditor.md) | 문서 정합성 감사자 - 점검 항목, 호출 시점, 제약, 도구별 구현. 하위 문서로 수행 순서와 보고 형식 | 감사자 호출, 감사 판정 기준 확인 시 |
