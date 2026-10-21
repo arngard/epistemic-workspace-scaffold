@@ -37,9 +37,11 @@ def check_link_text(root: Path) -> list[Finding]:
     폐지된 파일명이나 옛 경로가 표시텍스트로 남으면 링크가 깨지지 않은 채
     독자를 없는 파일로 오도한다 (예: [_strategy/INDEX.md](../AGENTS.md)는 대상이
     실존해 링크는 성립하나 표시텍스트 _strategy/INDEX.md는 부재 파일). 본 검사가
-    그 사각을 닫는다. 파일명 형태의 표시텍스트만 본다 - 공백 없이 .md로 끝나거나
-    / 를 포함한 것, 그리고 날짜 프리픽스로 시작해 .md로 끝나는 것(날짜 문서는
-    파일명에 공백이 든다). 그 밖에 공백이 든 자연어 문구와 타이틀은 제외된다.
+    그 사각을 닫는다. 파일명 형태의 표시텍스트만 본다 - 공백 없이 (.md로 끝나거나
+    / 를 포함한 것), 그리고 경로 성분 중 하나가 날짜 프리픽스로 시작하면서 .md나
+    / 로 끝나는 것(날짜 문서와 폴더는 이름에 공백이 든다). 그 밖에 공백이 든
+    자연어 문구와 타이틀은 제외된다. 표시텍스트와 대상 모두 %20 등을 디코딩해
+    비교한다.
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
@@ -49,13 +51,14 @@ def check_link_text(root: Path) -> list[Finding]:
         text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
         text = re.sub(r"`[^`\n]*`", "", text)  # 인라인 코드 - 규약 설명의 예시 링크 오탐 방지
         for disp, target in LINK_TEXT_RE.findall(text):
-            disp_clean = disp.strip()
+            disp_clean = urllib.parse.unquote(disp.strip())
             if not disp_clean:
                 continue
             if " " in disp_clean and not (
-                DATE_PREFIX_RE.match(disp_clean.rsplit("/", 1)[-1]) and disp_clean.endswith(".md")
+                any(DATE_PREFIX_RE.match(c) for c in disp_clean.split("/"))
+                and (disp_clean.endswith(".md") or disp_clean.endswith("/"))
             ):
-                continue  # 자연어 문구/타이틀 (공백 든 날짜 문서 파일명은 검사)
+                continue  # 자연어 문구/타이틀 (공백 든 날짜 문서, 폴더 이름은 검사)
             if not (disp_clean.endswith(".md") or "/" in disp_clean):
                 continue  # 파일명 형태가 아님 (일반 텍스트)
             if SCHEME_RE.match(target):

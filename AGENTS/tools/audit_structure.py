@@ -165,8 +165,8 @@ def check_date_prefix_separator(root: Path) -> list[Finding]:
 
     규약상 날짜 뒤 제목은 띄어쓰기로 잇는다 (cf. document-temporality.md).
     _reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. _implementation/
-    하위 프로젝트 내부도 문서 규약 대상이 아니므로 직할 AGENTS.md와 AGENTS/만
-    본다 (iter_md_files와 같은 범위).
+    하위 프로젝트 내부도 문서 규약 대상이 아니므로 그 아래에서는 AGENTS/ 하위만
+    본다.
     """
     out: list[Finding] = []
     for path in sorted(root.rglob("*")):
