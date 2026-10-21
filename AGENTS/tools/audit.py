@@ -33,7 +33,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       실제 관계 판단은 감사자 몫)
  17. 마크다운 링크 표시텍스트-대상 정합 - 위반
      (파일명 형태 표시텍스트가 대상 basename 또는 대상 전체와 일치해야 함.
-      자연어 문구, 타이틀은 제외. 폐지 파일명 잔재 오도를 검출)
+      공백 든 자연어 문구, 타이틀은 제외하되 날짜 문서, 폴더 이름은 검사.
+      폐지 파일명 잔재 오도를 검출)
  18. 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 - 경고
      (importance, urgency. cf. _strategy/AGENTS.md. 하위 폴더/디스크립터 제외)
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
@@ -45,6 +46,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      (인스턴스가 플레이스홀더를 실제 내용으로 채우고 안내를 갱신하지 않은
       경우, 또는 대상에서 마커만 지운 경우를 검출. 어느 쪽이 낡았는지는
       사람/LLM 판단)
+ 22. 날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더 - 경고
+     (규약은 띄어쓰기. _reference/ 하위 제외. 하이픈 구분자도 프리픽스로는 인정)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -87,6 +90,7 @@ from audit_links import check_links, check_link_text, check_section_refs
 from audit_structure import (
     check_descriptors, check_normative_guides, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
+    check_date_prefix_separator,
 )
 from audit_worklog import (
     check_status_registry, check_status_schema,
@@ -119,6 +123,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_empty_folders(root)
     findings += check_name_collision(root)
     findings += check_filename_portability(root)
+    findings += check_date_prefix_separator(root)
     findings += check_ascii_punctuation(root)
     findings += check_scaffold_state_markers(root)
     return findings

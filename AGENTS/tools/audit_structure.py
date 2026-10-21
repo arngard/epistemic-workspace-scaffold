@@ -160,6 +160,34 @@ def check_name_collision(root: Path) -> list[Finding]:
     return out
 
 
+def check_date_prefix_separator(root: Path) -> list[Finding]:
+    """날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더를 검출한다 (경고).
+
+    규약상 날짜 뒤 제목은 띄어쓰기로 잇는다 (cf. document-temporality.md).
+    _reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. _implementation/
+    하위 프로젝트 내부도 문서 규약 대상이 아니므로 그 아래에서는 AGENTS/ 하위만
+    본다.
+    """
+    out: list[Finding] = []
+    for path in sorted(root.rglob("*")):
+        if is_excluded(root, path):
+            continue
+        rel_path = path.relative_to(root)
+        parts = rel_path.parts
+        if REFERENCE_DIR in parts:
+            continue
+        if len(parts) >= 2 and parts[0] == IMPLEMENTATION_DIR and parts[1] != "AGENTS":
+            continue
+        if not (path.is_dir() or path.suffix == ".md"):
+            continue
+        if DATE_HYPHEN_SEPARATOR_RE.match(path.name):
+            out.append(Finding(
+                WARNING, "date-prefix", str(rel_path),
+                "날짜 프리픽스 뒤 구분자가 하이픈 - 띄어쓰기로 잇는다 (yyyy-MM-dd <제목>)",
+            ))
+    return out
+
+
 def check_filename_portability(root: Path) -> list[Finding]:
     """윈도우 등 다른 OS에서 clone조차 불가능한 이름을 잡는다."""
     out: list[Finding] = []
