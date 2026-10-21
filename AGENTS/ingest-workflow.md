@@ -47,8 +47,6 @@ tags: [agents, 절차, ingest]
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 
-`_reference/`에 dump된 자료의 처리 여부 식별, 미처리 항목 처리, 원본 불변 원칙은 [ingest-workflow/reference-folder.md](ingest-workflow/reference-folder.md)를 따른다.
-
 ## 빠뜨림 방지의 명시적 의도
 
 본 절차의 표준 시퀀스 9번 "종료 전 빠뜨림 검사"는 의도적인 자체 점검 단계다. 워크스페이스 작업 중에는 디스크립터 갱신, 양방향 링크 한쪽 등 자잘한 작업이 누락되기 쉬우며, 이 절차는 그 누락을 줄이는 것을 명시 목적으로 한다.
