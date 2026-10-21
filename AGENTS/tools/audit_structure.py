@@ -164,14 +164,19 @@ def check_date_prefix_separator(root: Path) -> list[Finding]:
     """날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더를 검출한다 (경고).
 
     규약상 날짜 뒤 제목은 띄어쓰기로 잇는다 (cf. document-temporality.md).
-    _reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다.
+    _reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. _implementation/
+    하위 프로젝트 내부도 문서 규약 대상이 아니므로 직할 AGENTS.md와 AGENTS/만
+    본다 (iter_md_files와 같은 범위).
     """
     out: list[Finding] = []
     for path in sorted(root.rglob("*")):
         if is_excluded(root, path):
             continue
         rel_path = path.relative_to(root)
-        if "_reference" in rel_path.parts:
+        parts = rel_path.parts
+        if REFERENCE_DIR in parts:
+            continue
+        if len(parts) >= 2 and parts[0] == IMPLEMENTATION_DIR and parts[1] != "AGENTS":
             continue
         if not (path.is_dir() or path.suffix == ".md"):
             continue

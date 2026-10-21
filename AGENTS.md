@@ -41,7 +41,7 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 
 ## 문서 변경
 
-관심사의 규약 문서를 먼저 갱신하고 정합성(cross-reference)을 확인한다. 폴더나 절차를 신설하면 디스크립터와 첫 실체 1건을 같은 단위 작업에 동반하고, 이동, 리네임은 연쇄 갱신한다. 날짜 프리픽스 문서는 수정 전 종결(`date closed`) 여부를 확인한다. 문서 단위와 SSOT(신설, 1관심사, 분량)는 [AGENTS/document-units.md](AGENTS/document-units.md), 구조 규약은 [AGENTS/folder-structure.md](AGENTS/folder-structure.md), 문서 시간성은 [AGENTS/document-temporality.md](AGENTS/document-temporality.md), 모듈, 의존성 변경은 [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md).
+관심사의 규약 문서를 먼저 갱신하고 정합성(cross-reference)을 확인한다. 폴더나 절차를 신설하면 디스크립터와 첫 실체 1건을 같은 단위 작업에 동반하고, 이동, 리네임은 연쇄 갱신한다. 날짜 프리픽스 문서는 수정 전 종결(`date closed`) 여부를 확인한다. 문서 단위와 SSOT(신설, 1관심사, 분량)는 [AGENTS/document-units.md](AGENTS/document-units.md), 구조 규약은 [AGENTS/folder-structure.md](AGENTS/folder-structure.md), 문서 시간성은 [AGENTS/document-temporality.md](AGENTS/document-temporality.md), 모듈, 의존성, 운영 절차 변경은 [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md).
 
 ## 문서 작성 스타일
 
@@ -80,7 +80,7 @@ AGENTS 계열이 정전(canonical) SSOT다. 도구별 진입점 파일(CLAUDE.md
 | [AGENTS/writing-style.md](AGENTS/writing-style.md) | 문서 작성 세부 규약 |
 | [_docs/_ontology/AGENTS.md](_docs/_ontology/AGENTS.md) | 새 용어 도입, 도메인 클래스 설계 전 |
 | [_docs/_knowledge/AGENTS.md](_docs/_knowledge/AGENTS.md), [_docs/_strategy/AGENTS.md](_docs/_strategy/AGENTS.md) | 외부 사실, 결정 근거 확인 시 |
-| [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md) | 새 클래스, 모듈 생성 시 |
+| [_docs/_architecture/AGENTS.md](_docs/_architecture/AGENTS.md) | 새 클래스, 모듈 생성 또는 운영 절차 명세 신설 시 |
 
 ## 핵심 제약
 

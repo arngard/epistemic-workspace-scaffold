@@ -23,8 +23,6 @@ tags: [agents, 문서관리, 조직화]
 - 이 내용을 바꾸면 "왜 그렇게 했나"에 대한 설명만 달라지는가 -> `_strategy/`
 - 이 내용을 바꾸면 실제 산출물이나 운영 행동이 달라지는가 -> `_architecture/` (코드 프로젝트면 코드/빌드/배포, 문서 워크스페이스면 운영 절차와 파이프라인이 그 예다)
 
-판별의 축은 워크스페이스에 코드가 있는가가 아니라 그 내용의 역할이다. 설명만 바뀌면 `_strategy/`, 실행이나 산출물이 바뀌면 `_architecture/`다.
-
 ## `AGENTS/`와 `_architecture/`의 경계
 
 둘 다 절차를 담을 수 있으나 축이 다르다. 모든 인스턴스에 동일하게 전파되는 보편 절차 패턴은 `AGENTS/`에, 이 인스턴스의 고유 대상이나 환경에 결부된 절차 명세는 `_docs/_architecture/`에 둔다. 상속받은 `AGENTS/` 절차를 인스턴스에 맞게 늘릴 때의 방식은 [instance-specialization.md](instance-specialization.md)를 따른다.
