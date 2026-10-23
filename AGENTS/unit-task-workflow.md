@@ -38,11 +38,7 @@ tags: [agents, 워크스페이스, 운영]
    - 결정 갈래: OK 머지 / 추가 정정(명시받아 커밋 후 본 단계 반복) / 롤백(브랜치 폐기).
    - 시그널은 명시적이어야 한다. 침묵이나 다음 작업 시작을 OK로 추론하지 않는다. 채팅 내 명시 승인("머지해")과 PR Approve가 등가다.
    - 단발 작업, 오탈자처럼 절차를 축약해 처리하는 작은 변경은 본 단계도 면제한다 (cf. [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md)).
-4. main 머지 - 타입 분기: 두 타입 중 하나로 진행한다. 이 자리가 워크플로우 조립 지점이다. 기본은 PR 타입이며, 브랜치 관리자 타입(직접 머지)은 사용자가 PR 생략을 명시 허용, 지시한 경우에만이다 - "그냥 머지해", "메인 푸시 OK", "PR 생략"처럼 PR 단계 생략 의도가 드러나는 표현. routines, cron 자동 트리거는 PR 타입을 강제한다. 타입 결정이 모호하면 사용자에게 확인하고 AI 자율로 정하지 않는다. 본 4단계가 머지 타입 분기 규칙의 SSOT이며, pr-workflow는 PR 타입으로 확정된 뒤 조립되는 모듈이다.
-   - PR 타입: [pr-workflow.md](pr-workflow.md)를 조립한다(PR 생성, 검토 대응, 능동 확인, 머지, 브랜치 정리).
-   - 브랜치 관리자 타입(직접 머지): `git checkout main && git merge <branch> --no-ff && git push origin main && git branch -d <branch>`. `--no-ff`로 단위 작업 머지 커밋을 명시적으로 남긴다. 메시지는 `Merge <branch>: <요약>` 형식으로, 무엇을 왜 바꿨는지만 적는다 - 승인, 검토 통과 여부는 커밋 텍스트에 남기지 않는다(검토는 3단계의 상호작용으로 처리되는 절차이지 커밋에 기록할 상태가 아니다).
-   - 환경 안전망이 main 푸시를 차단하면(일부 harness의 "main 직접 푸시 금지") 우회 편법을 자율로 쓰지 않는다. 차단 사실을 보고하고 처리 결정을 요청한다.
-   - 잔존 점검: 머지, 푸시, 브랜치 삭제 후 `git worktree list`(작업 워크트리 잔존)와 `git branch -a`(로컬/원격 브랜치 잔존, `git fetch --prune` 동반)를 확인한다. 잔존이 있으면 본 단위 작업의 후속으로 즉시 정리한다.
+4. main 머지 - 타입 분기: PR 타입과 브랜치 관리자 타입(직접 머지) 중 하나로 진행한다. 타입 결정 규칙, 두 타입의 절차, 환경 안전망, 잔존 점검은 [merge-types.md](unit-task-workflow/merge-types.md)를 따른다.
 5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): 본 레포가 다른 레포의 서브모듈이면 [submodule-pointer-sync.md](submodule-pointer-sync.md)를 조립한다.
 
 ## 하위 문서
@@ -50,3 +46,4 @@ tags: [agents, 워크스페이스, 운영]
 분량이 크고 자체 완결적인 세부 절차는 [unit-task-workflow/](unit-task-workflow/AGENTS.md) 하위 문서로 둔다.
 
 - [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md): 절차 축약의 조건, 착수 시점 판정, 브랜치와 등재의 형태 일관성.
+- [merge-types.md](unit-task-workflow/merge-types.md): main 머지의 타입 결정, PR 타입과 브랜치 관리자 타입의 절차, 환경 안전망과 잔존 점검.

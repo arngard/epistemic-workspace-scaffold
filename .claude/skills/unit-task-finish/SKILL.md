@@ -7,7 +7,7 @@ description: 단위 작업을 마무리할 때 사용한다. 마무리 커밋, �
 
 이 스킬은 절차를 로드하는 포인터다. 절차 본체(SSOT(single source of truth))는 [AGENTS/unit-task-workflow.md](../../../AGENTS/unit-task-workflow.md).
 
-1. 위 SSOT 문서의 "종료 흐름"을 지금 읽는다. 기억으로 단언하지 않는다.
+1. 위 SSOT 문서의 "종료 흐름"을 지금 읽는다. 4단계(main 머지)는 하위 문서 [AGENTS/unit-task-workflow/merge-types.md](../../../AGENTS/unit-task-workflow/merge-types.md)까지 읽는다. 기억으로 단언하지 않는다.
 2. 종료 흐름의 각 단계를 순서대로 적용한다. 사용자 검토 통과 없이 머지하지 않는다.
 3. PR 타입으로 진행하면 pr-create 스킬을 조립한다. 생성 후 리뷰, 체크, 충돌 대응은 pr-respond 스킬.
 4. 본 레포가 다른 레포의 서브모듈이면 [AGENTS/submodule-pointer-sync.md](../../../AGENTS/submodule-pointer-sync.md)의 재귀 정합화까지가 한 단위다.

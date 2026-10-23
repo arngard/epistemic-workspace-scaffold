@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-29
-date modified: 2026-07-29
+date modified: 2026-10-23
 tags: [agents]
 ---
 
@@ -12,3 +12,4 @@ tags: [agents]
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
 | [procedure-shrinking.md](procedure-shrinking.md) | 절차 축약 - 결과 동등성 조건 4개, 착수 시점 판정, 브랜치와 등재의 형태 일관성 | 작은 변경에 착수하며 절차를 줄일지 정할 때 |
+| [merge-types.md](merge-types.md) | 머지 타입 분기 - 타입 결정 규칙(SSOT(single source of truth)), PR 타입과 브랜치 관리자 타입의 절차, 환경 안전망, 잔존 점검 | 단위 작업 종료에서 main에 머지할 때 |
