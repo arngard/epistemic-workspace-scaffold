@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-21
+date modified: 2026-10-23
 tags: [소개]
 ---
 
@@ -36,7 +36,12 @@ tags: [소개]
 
 ## 사용법
 
-스캐폴드를 가져오는 방식은 셋이다. GitHub fork, 단순 복사(clone 또는 template), clone 후 원본을 `upstream` 원격으로 연결(부모 개선을 계속 받으려면 이 방식 - `git fetch upstream && git merge upstream/main`). 채택 방식은 이후 전환이 번거로우니 고른 방식과 이유를 결정 문서로 남기기를 권한다.
+스캐폴드를 가져오는 방식은 둘이다.
+
+- 상류와 연결하는 방식: GitHub fork나 clone으로 스캐폴드 이력을 받고, 원본을 `upstream` 원격으로 연결한다. clone이면 `git remote rename origin upstream`으로 원본 원격의 이름을 `upstream`으로 바꾸고 자기 저장소를 `origin`으로 추가한다. fork면 `git remote add upstream https://github.com/arngard/epistemic-workspace-scaffold.git`로 추가한다. 부모의 개선은 `git fetch upstream && git merge upstream/main`으로 받는다.
+- 이력 없이 가져오는 방식: GitHub template으로 저장소를 만들거나 기존 프로젝트에 파일을 복사한다. 스캐폴드 이력을 받지 않으므로 상류 개선을 머지로 받을 수 없다.
+
+스캐폴드 이력을 받았다면 `upstream` 연결은 고를 수 있는 선택지가 아니라 시작 상태다. 감사는 이 연결로 상류 커밋과 자기 커밋을 구분한다. 고른 방식과 이유는 결정 문서로 남긴다.
 
 가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `_docs/_worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md)를 따른다.
 

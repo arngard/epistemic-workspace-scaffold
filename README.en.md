@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-21
+date modified: 2026-10-23
 tags: [소개]
 ---
 
@@ -36,7 +36,12 @@ For the rationale, see [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-
 
 ## How to use
 
-There are three ways to obtain the scaffold: GitHub fork, plain copy (clone or template), or clone and connect the original as an `upstream` remote (choose this to keep pulling parent improvements - `git fetch upstream && git merge upstream/main`). Switching between these later is cumbersome, so record the chosen approach and its rationale as a decision document.
+There are two ways to obtain the scaffold.
+
+- Staying connected to upstream: receive the scaffold history through a GitHub fork or a clone, and connect the original as the `upstream` remote. For a clone, rename the original remote with `git remote rename origin upstream` and add your own repository as `origin`. For a fork, add `git remote add upstream https://github.com/arngard/epistemic-workspace-scaffold.git`. Pull improvements from the parent scaffold with `git fetch upstream && git merge upstream/main`.
+- Without history: create a repository from the GitHub template, or copy the files into an existing project. You do not receive the scaffold history, so you cannot merge upstream improvements.
+
+If you received the scaffold history, the `upstream` connection is not optional; it is the starting state. Audits use it to tell upstream commits from your own. Record the chosen approach and its rationale as a decision document.
 
 After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `_docs/_worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md).
 
