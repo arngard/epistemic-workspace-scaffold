@@ -18,7 +18,7 @@ tags: [agents, 작업원칙]
 - 요청이나 문서에 쓰인 용어, 전제가 부정확하면 그대로 따르지 않고 무엇이 왜 문제인지 짚는다.
 - 사용자 결정 영역은 자율로 확정하지 않는다. 의향 옵션을 제시하고 결정을 받는다.
 
-cf. [ingest-workflow.md](ingest-workflow.md) "표준 시퀀스"(충돌 검사에서 AI가 단정하지 않는다), [AGENTS.md](../AGENTS.md) "비협상 게이트"의 사실, 의견, 주체 구분.
+see: [ingest-workflow.md](ingest-workflow.md) "표준 시퀀스"(충돌 검사에서 AI가 단정하지 않는다), [AGENTS.md](../AGENTS.md) "비협상 게이트"의 사실, 의견, 주체 구분.
 
 ## 2. 단순함 우선
 
@@ -33,7 +33,7 @@ cf. [ingest-workflow.md](ingest-workflow.md) "표준 시퀀스"(충돌 검사에
 - 무관한 데드코드는 요청이 없으면 지우지 말고 언급한다. 내 변경이 만든 고아만 정리한다.
 - 검사 기준: 바뀐 모든 줄이 요청에 직결되는가.
 
-cf. [original-protection-principle.md](original-protection-principle.md) 원본 보호 원칙 - 되돌릴 수 없는 변경을 삼가는 가역성 원리와 부합한다.
+see: [original-protection-principle.md](original-protection-principle.md) 원본 보호 원칙 - 되돌릴 수 없는 변경을 삼가는 가역성 원리와 부합한다.
 
 ## 4. 목표 주도 실행
 
@@ -41,7 +41,7 @@ cf. [original-protection-principle.md](original-protection-principle.md) 원본 
 - 큰 목표는 도달점과 기준을 구체화하기 어렵다. 그래서 평면적 작업 목록이 아니라 작업 트리로 다룬다. 재귀적으로 더 작은 목표로 세분해, 명확한 기준을 가진 단위로 점진 달성한다.
 - 본 규율은 거시와 미시 양쪽에 적용된다. 스캐폴드가 존재하는 것 자체가 거시 수준에서 "왜"를 보존하지만(고차원적 정보 유실 방지), 같은 규율이 커밋 하나, 단위 작업 하나 수준에도 적용된다.
 
-cf. [unit-task.md](unit-task.md)(단위 작업 정의와 재귀 쪼개짐), [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)(작업 트리 본체), [unit-task-workflow.md](unit-task-workflow.md)(운영 흐름).
+see: [unit-task.md](unit-task.md)(단위 작업 정의와 재귀 쪼개짐), [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)(작업 트리 본체), [unit-task-workflow.md](unit-task-workflow.md)(운영 흐름).
 
 ## 5. 기억보다 실제 상태
 
@@ -61,8 +61,8 @@ cf. [unit-task.md](unit-task.md)(단위 작업 정의와 재귀 쪼개짐), [TAS
 
 ## 참고
 
-- [unit-task-workflow.md](unit-task-workflow.md) - 단위 작업 운영 흐름.
-- [coding-guidelines.md](coding-guidelines.md) - 코드 작업 전용 지침.
-- [original-protection-principle.md](original-protection-principle.md) - 원본 보호 원칙.
-- [core-constraints.md](../_docs/_architecture/core-constraints.md) - 설계 원칙(tiebreaker).
-- [ingest-workflow.md](ingest-workflow.md) - 정보 유입 처리.
+- see: [unit-task-workflow.md](unit-task-workflow.md) - 단위 작업 운영 흐름.
+- see: [coding-guidelines.md](coding-guidelines.md) - 코드 작업 전용 지침.
+- see: [original-protection-principle.md](original-protection-principle.md) - 원본 보호 원칙.
+- see: [core-constraints.md](../_docs/_architecture/core-constraints.md) - 설계 원칙(tiebreaker).
+- see: [ingest-workflow.md](ingest-workflow.md) - 정보 유입 처리.

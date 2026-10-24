@@ -6,7 +6,7 @@ tags: [agents, 워크스페이스, 운영]
 
 # 서브모듈 커밋 포인트 재귀 정합화
 
-본 레포가 다른 레포의 서브모듈일 때, 단위 작업 종료 시점에 상위 레포가 가리키는 pointer를 맞추는 절차. 단위 작업 종료 흐름의 마지막 단계로 조립된다 (cf. [unit-task-workflow.md](unit-task-workflow.md) "종료 흐름").
+본 레포가 다른 레포의 서브모듈일 때, 단위 작업 종료 시점에 상위 레포가 가리키는 pointer를 맞추는 절차. 단위 작업 종료 흐름의 마지막 단계로 조립된다 (see: [unit-task-workflow.md](unit-task-workflow.md) "종료 흐름").
 
 ## 언제 적용되는가
 

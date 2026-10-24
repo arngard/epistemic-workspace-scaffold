@@ -47,6 +47,6 @@ tags: [소개]
 
 ## 더 읽을 거리
 
-- [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - 설계 철학과 근거
-- [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - 구조 근거
-- [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - `_docs/` 분류 기준
+- see: [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - 설계 철학과 근거
+- see: [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - 구조 근거
+- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - `_docs/` 분류 기준

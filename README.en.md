@@ -47,6 +47,6 @@ After obtaining it, rename the workspace folder to match your project, follow th
 
 ## Further reading
 
-- [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - Design philosophy and rationale (Korean)
-- [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - Structural rationale
-- [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - Criteria for separating `_docs/` subfolders
+- see: [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - Design philosophy and rationale (Korean)
+- see: [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - Structural rationale
+- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - Criteria for separating `_docs/` subfolders

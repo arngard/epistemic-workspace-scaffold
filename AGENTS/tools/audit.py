@@ -36,12 +36,12 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       공백 든 자연어 문구, 타이틀은 제외하되 날짜 문서, 폴더 이름은 검사.
       폐지 파일명 잔재 오도를 검출)
  18. 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 - 경고
-     (importance, urgency. cf. _strategy/AGENTS.md. 하위 폴더/디스크립터 제외)
+     (importance, urgency. ref: _strategy/AGENTS.md. 하위 폴더/디스크립터 제외)
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
      (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
  20. 비ASCII 문장 부호 (em dash, 화살표, 가운뎃점, 말줄임표, 둥근 따옴표) - 경고
      (백틱/코드펜스 예시와 고정폭 box-drawing 트리는 제외.
-      cf. AGENTS/writing-style/ascii-punctuation.md)
+      ref: AGENTS/writing-style/ascii-punctuation.md)
  21. 디스크립터의 "스캐폴드 상태" 안내와 링크 대상 파일의 마커 대조 - 경고
      (인스턴스가 플레이스홀더를 실제 내용으로 채우고 안내를 갱신하지 않은
       경우, 또는 대상에서 마커만 지운 경우를 검출. 어느 쪽이 낡았는지는
@@ -51,6 +51,12 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  23. 링크 대상에 공백이 든 로컬 파일, 폴더 링크 - 위반
      (공백은 %20으로 쓴다. 대상이 확장자나 / 로 끝나는 것만 본다. 링크 제목
       문법과 외부 URL은 제외)
+ 24. 참조 표기 - 폐지된 옛 표기 cf., ref.와 표지(ref:, sub:, see:) 뒤 형태
+     불량은 위반, 표지 없이 따로 둔 링크(줄, 목록 항목, 공백 뒤 괄호가 링크와
+     절 이름, 설명뿐)는 경고. 표지는 줄 머리나 여는 괄호 바로 뒤에서만 인식한다.
+     ref: 뒤 비링크 서술은 링크할 수 없는 출처로 통과시키며, 내부 문서를 제목만
+     적은 것인지는 감사자 몫. 표 행, 명사에 붙인 동격 괄호는 제외
+     (ref: AGENTS/writing-style/reference-markers.md)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -89,7 +95,10 @@ from pathlib import Path
 
 from _audit_core import Finding, VIOLATION, WARNING
 from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags_category
-from audit_links import check_links, check_link_text, check_section_refs, check_link_whitespace
+from audit_links import (
+    check_links, check_link_text, check_section_refs, check_link_whitespace,
+    check_reference_markers,
+)
 from audit_structure import (
     check_descriptors, check_normative_guides, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
@@ -114,6 +123,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_link_whitespace(root)
     findings += check_link_text(root)
     findings += check_section_refs(root)
+    findings += check_reference_markers(root)
     findings += check_descriptors(root)
     findings += check_size(root)
     findings += check_temporality_mix(root)

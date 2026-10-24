@@ -66,7 +66,7 @@ def check_task_tree_attrs(root: Path) -> list[Finding]:
         if not m:
             continue
         content = m.group(2).strip()
-        if content.startswith("cf.") or content.startswith("ref."):
+        if content.startswith(("ref: ", "sub: ", "see: ")):  # 참조 표지 줄
             continue
         # 표준 키로 시작하는지. 키 뒤에 구분자(콜론/공백)나 끝이 와야 한다 -
         # 단순 startswith면 "설명서" 같은 접두 오검출이 생긴다.

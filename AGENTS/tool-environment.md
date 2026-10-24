@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-21
+date modified: 2026-10-24
 tags: [agents, 도구, 환경, IDE]
 ---
 
@@ -25,7 +25,7 @@ tags: [agents, 도구, 환경, IDE]
 
 ## 기계 감사 스크립트
 
-[tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위는 front matter와 시간성, 문서 분량, 워크로그(STATUS, TASK_TREE) 스키마, 폴더와 디스크립터, 링크와 섹션 참조, 파일명 이식성과 날짜 프리픽스 구분자, 문장 부호다. 점검 항목 목록의 SSOT는 audit.py 모듈 docstring의 "점검 항목"이며 여기에 다시 나열하지 않는다 - 목록을 여러 곳에 두면 검사가 추가될 때 어긋난다. 의미 판단과 git 맥락 검출은 감사자 몫이다 (cf. [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md)).
+[tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위는 front matter와 시간성, 문서 분량, 워크로그(STATUS, TASK_TREE) 스키마, 폴더와 디스크립터, 링크와 섹션 참조, 참조 표지, 파일명 이식성과 날짜 프리픽스 구분자, 문장 부호다. 점검 항목 목록의 SSOT는 audit.py 모듈 docstring의 "점검 항목"이며 여기에 다시 나열하지 않는다 - 목록을 여러 곳에 두면 검사가 추가될 때 어긋난다. 의미 판단과 git 맥락 검출은 감사자 몫이다 (see: [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md)).
 
 - 임계값은 보수적 초기값으로 두고 운영하며 조정한다. 공용 인프라 `tools/_audit_core.py` 상단의 상수로 관리한다.
 - `_tmp/`는 에이전트의 임시 작업 공간이다. gitignore 대상이며 감사에서 제외된다.
