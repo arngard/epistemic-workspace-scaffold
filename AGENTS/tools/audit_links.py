@@ -169,14 +169,11 @@ PAREN_LINK_ONLY_RE = re.compile(rf"(?:^|(?<=\s))\(\s*{_LINK_UNIT}(?:\s*,\s*{_LIN
 def _marker_tail_problem(marker: str, tail: str) -> "str | None":
     """표지 뒤 형태 판정. 문제가 없으면 None.
 
-    sub:, see:는 링크로만 잇는다. ref:는 링크할 수 없는 출처(사람의 발언, 회의,
-    인쇄물)를 서술로 적을 수 있어 비링크 서술도 통과시킨다 - 워크스페이스 안
-    문서를 제목만 적은 것인지는 기계로 가를 수 없어 의미 감사 소관이다.
+    세 표지 모두 링크나, 링크하기 어려운 대상의 설명으로 잇는다. 설명이 워크스페이스
+    안 문서를 제목만 적은 것인지는 기계로 가를 수 없어 의미 감사 소관이다.
     """
     if not tail.startswith(" ") or not tail.strip():
-        return f"{marker}: 뒤에 공백 한 칸과 링크나 출처가 와야 한다"
-    if marker != "ref" and not tail.lstrip().startswith("["):
-        return f"{marker}: 뒤에 링크가 와야 한다"
+        return f"{marker}: 뒤에 공백 한 칸과 링크나 설명이 와야 한다"
     return None
 
 
@@ -186,9 +183,11 @@ def check_reference_markers(root: Path) -> list[Finding]:
     - 폐지된 옛 표기 `cf.`, `ref.` - 위반.
     - 표지(ref:, sub:, see:) 뒤 형태 불량 - 위반.
     - 표지 없이 따로 둔 링크(줄이나 목록 항목이 링크와 절 이름, 설명뿐이거나,
-      괄호 안이 링크뿐) - 경고. 문장 속에 녹은 링크인지의 경계가 모호할 수 있어
-      경고로 둔다. 표 행은 색인이라 제외한다.
-    코드 펜스, 인라인 코드, HTML 주석 안은 예시나 메타 서술이라 보지 않는다.
+      공백 뒤 괄호 안이 링크뿐) - 경고. 문장 속에 녹은 링크인지의 경계가 모호할 수
+      있어 경고로 둔다. 표 행은 표지를 생략할 수 있는 형태라 이 경고를 내지 않고
+      옛 표기와 형태 불량만 본다.
+    코드 펜스, 인라인 코드, HTML 주석 안은 예시나 메타 서술이라 보지 않는다. 판정은
+    인라인 코드를 지운 줄로 하고, 메시지에는 원래 줄을 인용한다.
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
@@ -196,33 +195,35 @@ def check_reference_markers(root: Path) -> list[Finding]:
         text = FRONT_MATTER_RE.sub("", read(path))
         text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
         text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
-        text = re.sub(r"`[^`\n]*`", "", text)
-        for line in text.splitlines():
-            if line.lstrip().startswith("|"):
-                continue
+        for raw in text.splitlines():
+            line = re.sub(r"`[^`\n]*`", "", raw)
+            quote = raw.strip()[:60]
+            in_table = line.lstrip().startswith("|")
             for m in OLD_MARKER_RE.finditer(line):
                 out.append(Finding(
                     VIOLATION, "ref-marker", rel,
-                    f"폐지된 참조 표기 {m.group(1)}. - ref:, sub:, see: 표지로 바꾼다 -> {line.strip()[:60]}",
+                    f"폐지된 참조 표기 {m.group(1)}. - ref:, sub:, see: 표지로 바꾼다 -> {quote}",
                 ))
             rest = line[LINE_HEAD_RE.match(line).end():].rstrip()
-            head = HEAD_MARKER_RE.match(rest)
+            head = None if in_table else HEAD_MARKER_RE.match(rest)
             if head:
                 problem = _marker_tail_problem(head.group(1), head.group(2))
                 if problem:
-                    out.append(Finding(VIOLATION, "ref-marker", rel, f"{problem} -> {rest[:60]}"))
-            elif LINK_ONLY_RE.match(rest):
+                    out.append(Finding(VIOLATION, "ref-marker", rel, f"{problem} -> {quote}"))
+            elif not in_table and LINK_ONLY_RE.match(rest):
                 out.append(Finding(
                     WARNING, "ref-marker", rel,
-                    f"표지 없이 따로 둔 링크 - 본문에 녹이거나 ref:, sub:, see:를 단다 -> {rest[:60]}",
+                    f"표지 없이 따로 둔 링크 - 본문에 녹이거나 ref:, sub:, see:를 단다 -> {quote}",
                 ))
             for pm in PAREN_MARKER_RE.finditer(line):
                 problem = _marker_tail_problem(pm.group(1), pm.group(2))
                 if problem:
-                    out.append(Finding(VIOLATION, "ref-marker", rel, f"{problem} -> ({pm.group(1)}:{pm.group(2)[:40]}"))
+                    out.append(Finding(VIOLATION, "ref-marker", rel, f"{problem} -> {quote}"))
+            if in_table:
+                continue
             for pm in PAREN_LINK_ONLY_RE.finditer(line):
                 out.append(Finding(
                     WARNING, "ref-marker", rel,
-                    f"표지 없이 괄호에 둔 링크 - ref:, sub:, see:를 단다 -> {pm.group(0)[:60]}",
+                    f"표지 없이 괄호에 둔 링크 - ref:, sub:, see:를 단다 -> {quote}",
                 ))
     return out
