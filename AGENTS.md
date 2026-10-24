@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-21
+date modified: 2026-10-24
 tags: [규칙, 문서관리]
 ---
 
@@ -49,7 +49,7 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 
 - 담백한 평서문을 쓰고 과장된 수사를 배제한다. 볼드, 이탤릭, 이모지 등 서식 강조는 강한 경고, 금지, 주의에만 쓴다(남발하면 진짜 강조의 진정성을 잃는다).
 - 정확한 개념어로 쓰되 겉멋 든 용어나 불필요한 외래어로 치장하지 않는다. 세부는 [AGENTS/writing-style.md](AGENTS/writing-style.md) "정확한 개념어와 담백한 문체".
-- 문서 간 참조는 마크다운 링크로, 출처는 `cf.`(참고)와 `ref.`(근거)로 표기한다.
+- 문서 간 참조는 마크다운 링크로 쓰고 본문 문장에 녹이는 것을 우선한다. 따로 둘 때는 이 문서가 대상에 기대는 방식에 따라 `ref:`(이해나 정당화를 기대는 원천), `sub:`(범위의 일부를 맡긴 하위), `see:`(기대지 않는 부연과 관련) 표지를 단다. 세부는 [AGENTS/writing-style/reference-markers.md](AGENTS/writing-style/reference-markers.md).
 - 약어는 첫 등장 시 원문을 병기한다(예: `SSOT(single source of truth)`). 줄임말(truncation; feature -> feat, configuration -> config, repository -> repo 등)은 피하고 공식 형태를 쓴다.
 - 모든 .md에 YAML front matter를 붙인다: `date created`, `date modified`, `tags`(첫 항목은 카테고리, `_docs/` 4범주 직속은 감사 스크립트가 검사).
 - 추측 금지와 사실, 의견, 주체 구분은 위 비협상 게이트에 둔다.

@@ -1,12 +1,12 @@
 ---
 date created: 2026-07-05
-date modified: 2026-10-21
+date modified: 2026-10-24
 tags: [agents, 규칙, 문서관리]
 ---
 
 # 일반 문서 작성 스타일
 
-문장, 서술 수준의 작성 규약. 진입자가 첫 화면에서 봐야 할 핵심(평어체, 서식 절제, 마크다운 링크, cf./ref., 약어와 줄임말, front matter, 응답 언어)은 [AGENTS.md](../AGENTS.md) "문서 작성 스타일"에서, 추측 금지와 사실/의견 분리는 [AGENTS.md](../AGENTS.md) "비협상 게이트"에서 보고, 본 문서는 그 외 규약의 본문이다.
+문장, 서술 수준의 작성 규약. 진입자가 첫 화면에서 봐야 할 핵심(평어체, 서식 절제, 마크다운 링크와 참조 표지, 약어와 줄임말, front matter, 응답 언어)은 [AGENTS.md](../AGENTS.md) "문서 작성 스타일"에서, 추측 금지와 사실/의견 분리는 [AGENTS.md](../AGENTS.md) "비협상 게이트"에서 보고, 본 문서는 그 외 규약의 본문이다.
 
 문서의 배치와 분할은 [document-units.md](document-units.md)와 [folder-structure.md](folder-structure.md), 문서 시간성은 [document-temporality.md](document-temporality.md) 참조.
 
@@ -54,7 +54,7 @@ tags: [agents, 규칙, 문서관리]
 
 ## 지침과 사실 서술의 자체 완결성
 
-현재적 문서(지침, 규약, 정의, 설계 명세, 사실 정리)는 현재 유효한 내용만 담백하게 담는다. 그 내용이 정립된 경위, 논의 히스토리, 원자료를 추적하는 서술을 본문에 함께 두지 않는다 - 독자의 주의를 분산시키고 문서의 완결성과 가독성을 해친다. 근거나 참고가 필요하면 `ref.`, `cf.` 링크로 간결히 가리키는 데 그친다. 원자료나 히스토리를 읽어야만 본문이 이해되는 구성으로 만들지 않는다.
+현재적 문서(지침, 규약, 정의, 설계 명세, 사실 정리)는 현재 유효한 내용만 담백하게 담는다. 그 내용이 정립된 경위, 논의 히스토리, 원자료를 추적하는 서술을 본문에 함께 두지 않는다 - 독자의 주의를 분산시키고 문서의 완결성과 가독성을 해친다. 근거나 참고가 필요하면 링크로 간결히 가리키는 데 그친다. 원자료나 히스토리를 읽어야만 본문이 이해되는 구성으로 만들지 않는다.
 
 ## 고정 규격 문서 태그 중복 회피
 
@@ -70,4 +70,5 @@ tags: [agents, 규칙, 문서관리]
 
 - [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (실존 기반, audit 기계 검사).
 - [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외.
+- [reference-markers.md](writing-style/reference-markers.md): 참조 표지 `ref:`, `sub:`, `see:`의 판정, 형태, 자리 (본문 링크 우선).
 - [conversation-reporting.md](writing-style/conversation-reporting.md): 대화 보고의 구성 (결론 선행, 질문은 마지막, 산출물만, 내부 라벨 금지).
