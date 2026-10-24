@@ -16,7 +16,7 @@ from pathlib import Path
 REFERENCE_DIR = "_reference"
 IMPLEMENTATION_DIR = "_implementation"
 WORKLOG_DIR = "_docs/_worklog"
-# 도구 전용 파일은 front matter 면제 (cf. writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
+# 도구 전용 파일은 front matter 면제 (ref: writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", "_tmp", "__pycache__"}
 
@@ -53,7 +53,7 @@ SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
 SIZE_LIMIT_TEMPORAL = 10000   # 히스토리 문서(날짜 프리픽스)는 누적이 본질
 # 진입층(루트 AGENTS.md)과 폴더 디스크립터(AGENTS.md)는 구조적으로 길어진다 -
 # 진입층은 정체성/게이트/트리거 색인을 한 파일에 담는 색인이고, 디스크립터는
-# 파일별 안내 표가 폴더 직속 항목 수에 비례한다 (cf. document-units.md "분량 보조 지표").
+# 파일별 안내 표가 폴더 직속 항목 수에 비례한다 (ref: document-units.md "분량 보조 지표").
 SIZE_LIMIT_DESCRIPTOR = 5000  # 진입층/폴더 디스크립터(AGENTS.md) 완화 임계
 FOLDER_MD_LIMIT = 25          # 폴더 직속 md 파일 수 - 초과 시 분화 권고
 TEMPORAL_MIX_REPEAT = 5       # 현재적 문서 내 날짜 패턴 반복 임계
@@ -81,12 +81,12 @@ WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 1
 # front matter 날짜 필드 값 형식 (yyyy-MM-dd). 필드 존재만 보면 잘못된 값이
 # 통과하므로 값도 검사한다.
 DATE_VALUE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 (cf. _strategy/AGENTS.md
+# 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 (ref: _strategy/AGENTS.md
 # "Front matter 속성"). 하위 폴더 문서와 디스크립터에는 강제하지 않는다.
 STRATEGY_DIR = "_docs/_strategy"
 STRATEGY_FIELDS = ("importance", "urgency")
 # 날짜 프리픽스: 파일명이 yyyy-MM-dd로 시작하면 히스토리 문서.
-# 시각 확장(yyyy-MM-ddTHH-mm)도 인정한다 (cf. document-temporality.md).
+# 시각 확장(yyyy-MM-ddTHH-mm)도 인정한다 (ref: document-temporality.md).
 # 규약상 구분자는 띄어쓰기이나, 하이픈 구분자도 프리픽스로 인정해 기존
 # 문서가 히스토리 문서로 판정되게 한다. 하이픈 구분자는 별도로 경고한다.
 DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}([-.T ]|$)")
@@ -101,7 +101,7 @@ TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
 STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( KST)?$")
 STATUS_HEADER_CELLS = ["이름", "마지막 수행", "주기/트리거"]
 STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
-# 비ASCII 문장 부호 검출 대상과 ASCII 대체 힌트 (cf. writing-style/ascii-punctuation.md).
+# 비ASCII 문장 부호 검출 대상과 ASCII 대체 힌트 (ref: writing-style/ascii-punctuation.md).
 # 코드 펜스, 인라인 코드는 검사 전 제거하므로 규칙 자체의 백틱 예시, 코드,
 # 고정폭 box-drawing 트리는 검출에서 빠진다.
 NON_ASCII_PUNCT = {
@@ -201,7 +201,7 @@ def iter_md_files(root: Path):
     _reference/ 내부는 immutable raw 자료라 규약 검사 대상이 아니다
     (디스크립터 AGENTS.md 자체만 예외).
     _implementation/ 하위 프로젝트 내부(소스 트리)도 대상이 아니다 -
-    소스 폴더 구조는 코드 생태계 관례가 지배한다 (cf. folder-structure.md
+    소스 폴더 구조는 코드 생태계 관례가 지배한다 (ref: folder-structure.md
     "폴더 구조와 디스크립터" _implementation 예외). 직할 AGENTS.md와
     그 하위 문서 폴더 AGENTS/만 검사한다.
     도구 전용 폴더, 중첩 git 레포, 심링크 제외는 is_excluded가 담당한다.
@@ -353,7 +353,7 @@ def content_dirs(root: Path):
     EXEMPT_DIRS(.git, .claude 등 도구 전용)와 그 하위, 중첩 git 레포, 심링크는
     is_excluded가 제외한다.
     _implementation/ 하위 프로젝트 내부(소스 트리)는 제외한다 - 직할
-    문서 폴더 AGENTS/만 대상 (cf. folder-structure.md "폴더 구조와 디스크립터"
+    문서 폴더 AGENTS/만 대상 (ref: folder-structure.md "폴더 구조와 디스크립터"
     _implementation 예외).
     루트 자신도 디스크립터(루트 AGENTS.md)를 가진다.
     """

@@ -163,7 +163,7 @@ def check_name_collision(root: Path) -> list[Finding]:
 def check_date_prefix_separator(root: Path) -> list[Finding]:
     """날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더를 검출한다 (경고).
 
-    규약상 날짜 뒤 제목은 띄어쓰기로 잇는다 (cf. document-temporality.md).
+    규약상 날짜 뒤 제목은 띄어쓰기로 잇는다 (ref: document-temporality.md).
     _reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. _implementation/
     하위 프로젝트 내부도 문서 규약 대상이 아니므로 그 아래에서는 AGENTS/ 하위만
     본다.

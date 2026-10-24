@@ -43,7 +43,7 @@ DOC_TARGET_RE = re.compile(r"(\.[A-Za-z0-9]{1,8}(#.*)?|/)$")
 def check_link_whitespace(root: Path) -> list[Finding]:
     """링크 대상에 공백이 든 로컬 파일, 폴더 링크를 검출한다 (위반).
 
-    링크 대상의 공백은 %20으로 쓴다 (cf. document-temporality.md). 공백 든
+    링크 대상의 공백은 %20으로 쓴다 (ref: document-temporality.md). 공백 든
     대상은 링크 해석에서 빠져 실존 검사를 받지 못한다.
     """
     out: list[Finding] = []
@@ -149,4 +149,80 @@ def check_section_refs(root: Path) -> list[Finding]:
                 WARNING, "section-ref", rel,
                 f'인용 섹션명이 대상 헤딩에 없음 -> ({target}) "{section}"',
             ))
+    return out
+
+
+# 참조 표지 검사 (see: writing-style.md "참조 표지").
+# 표지는 줄 머리(목록 기호, 인용 기호, 각주 정의 뒤)나 여는 괄호 바로 뒤에 올
+# 때만 표지로 본다 - 산문 한가운데의 "see:" 같은 문자열은 표지가 아니다.
+OLD_MARKER_RE = re.compile(r"(?<![\w.])(cf|ref)\.(?=\s)")
+LINE_HEAD_RE = re.compile(r"^\s*(?:(?:[-*+]|\d+\.|>)\s+)*(?:\[\^[^\]\s]+\]:\s*)?")
+HEAD_MARKER_RE = re.compile(r"^(ref|sub|see):(.*)$")
+PAREN_MARKER_RE = re.compile(r"\((ref|sub|see):([^)]*)")
+_LINK_UNIT = r'\[[^\]]*\]\([^)\s]+\)(?:\s*"[^"\n]*")?'
+LINK_ONLY_RE = re.compile(rf"^{_LINK_UNIT}(?:\s*,\s*{_LINK_UNIT})*(?:\s+-\s+.*)?$")
+# 명사에 바로 붙인 동격 괄호(예: 히스토리 문서([x](x)))는 그 명사를 가리키는 녹인
+# 링크라 제외하고, 공백 뒤에 따로 둔 괄호만 본다.
+PAREN_LINK_ONLY_RE = re.compile(rf"(?:^|(?<=\s))\(\s*{_LINK_UNIT}(?:\s*,\s*{_LINK_UNIT})*\s*\)")
+
+
+def _marker_tail_problem(marker: str, tail: str) -> "str | None":
+    """표지 뒤 형태 판정. 문제가 없으면 None.
+
+    sub:, see:는 링크로만 잇는다. ref:는 링크할 수 없는 출처(사람의 발언, 회의,
+    인쇄물)를 서술로 적을 수 있어 비링크 서술도 통과시킨다 - 워크스페이스 안
+    문서를 제목만 적은 것인지는 기계로 가를 수 없어 의미 감사 소관이다.
+    """
+    if not tail.startswith(" ") or not tail.strip():
+        return f"{marker}: 뒤에 공백 한 칸과 링크나 출처가 와야 한다"
+    if marker != "ref" and not tail.lstrip().startswith("["):
+        return f"{marker}: 뒤에 링크가 와야 한다"
+    return None
+
+
+def check_reference_markers(root: Path) -> list[Finding]:
+    """참조 표기 규약 검사.
+
+    - 폐지된 옛 표기 `cf.`, `ref.` - 위반.
+    - 표지(ref:, sub:, see:) 뒤 형태 불량 - 위반.
+    - 표지 없이 따로 둔 링크(줄이나 목록 항목이 링크와 절 이름, 설명뿐이거나,
+      괄호 안이 링크뿐) - 경고. 문장 속에 녹은 링크인지의 경계가 모호할 수 있어
+      경고로 둔다. 표 행은 색인이라 제외한다.
+    코드 펜스, 인라인 코드, HTML 주석 안은 예시나 메타 서술이라 보지 않는다.
+    """
+    out: list[Finding] = []
+    for path in iter_md_files(root):
+        rel = str(path.relative_to(root))
+        text = FRONT_MATTER_RE.sub("", read(path))
+        text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+        text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+        text = re.sub(r"`[^`\n]*`", "", text)
+        for line in text.splitlines():
+            if line.lstrip().startswith("|"):
+                continue
+            for m in OLD_MARKER_RE.finditer(line):
+                out.append(Finding(
+                    VIOLATION, "ref-marker", rel,
+                    f"폐지된 참조 표기 {m.group(1)}. - ref:, sub:, see: 표지로 바꾼다 -> {line.strip()[:60]}",
+                ))
+            rest = line[LINE_HEAD_RE.match(line).end():].rstrip()
+            head = HEAD_MARKER_RE.match(rest)
+            if head:
+                problem = _marker_tail_problem(head.group(1), head.group(2))
+                if problem:
+                    out.append(Finding(VIOLATION, "ref-marker", rel, f"{problem} -> {rest[:60]}"))
+            elif LINK_ONLY_RE.match(rest):
+                out.append(Finding(
+                    WARNING, "ref-marker", rel,
+                    f"표지 없이 따로 둔 링크 - 본문에 녹이거나 ref:, sub:, see:를 단다 -> {rest[:60]}",
+                ))
+            for pm in PAREN_MARKER_RE.finditer(line):
+                problem = _marker_tail_problem(pm.group(1), pm.group(2))
+                if problem:
+                    out.append(Finding(VIOLATION, "ref-marker", rel, f"{problem} -> ({pm.group(1)}:{pm.group(2)[:40]}"))
+            for pm in PAREN_LINK_ONLY_RE.finditer(line):
+                out.append(Finding(
+                    WARNING, "ref-marker", rel,
+                    f"표지 없이 괄호에 둔 링크 - ref:, sub:, see:를 단다 -> {pm.group(0)[:60]}",
+                ))
     return out
