@@ -160,7 +160,6 @@ LINE_HEAD_RE = re.compile(r"^\s*(?:(?:[-*+]|\d+\.|>)\s+)*(?:\[\^[^\]\s]+\]:\s*)?
 HEAD_MARKER_RE = re.compile(r"^(ref|sub|see):(.*)$")
 PAREN_MARKER_RE = re.compile(r"\((ref|sub|see):([^)]*)")
 _LINK_UNIT = r'\[[^\]]*\]\([^)\s]+\)(?:\s*"[^"\n]*")?'
-LINK_ONLY_RE = re.compile(rf"^{_LINK_UNIT}(?:\s*,\s*{_LINK_UNIT})*(?:\s+-\s+.*)?$")
 # 명사에 바로 붙인 동격 괄호(예: 히스토리 문서([x](x)))는 그 명사를 가리키는 녹인
 # 링크라 제외하고, 공백 뒤에 따로 둔 괄호만 본다.
 PAREN_LINK_ONLY_RE = re.compile(rf"(?:^|(?<=\s))\(\s*{_LINK_UNIT}(?:\s*,\s*{_LINK_UNIT})*\s*\)")
@@ -182,18 +181,17 @@ def check_reference_markers(root: Path) -> list[Finding]:
 
     - 폐지된 옛 표기 `cf.`, `ref.` - 위반.
     - 표지(ref:, sub:, see:) 뒤 형태 불량 - 위반.
-    - 표지 없이 따로 둔 링크(줄이나 목록 항목이 링크와 절 이름, 설명뿐이거나,
-      공백 뒤 괄호 안이 링크뿐) - 경고. 문장 속에 녹은 링크인지의 경계가 모호할 수
-      있어 경고로 둔다. 표 행은 표지를 생략할 수 있는 형태라 이 경고를 내지 않고
-      옛 표기와 형태 불량만 본다. 디스크립터(AGENTS.md)의 링크 목록 항목도 색인이라
-      같은 경고를 내지 않는다.
+    - 표지 없이 공백 뒤 괄호에 둔 링크(괄호 안이 링크뿐) - 경고. 문장 속에 녹은
+      링크인지의 경계가 모호할 수 있어 경고로 둔다. 표 행은 표지를 생략할 수 있는
+      형태라 이 경고를 내지 않고 옛 표기와 형태 불량만 본다.
+    링크만 있는 목록 항목은 보지 않는다. 표지를 생략할 수 있는 색인 목록과 표지를
+    달아야 하는 참고 목록이 형태로 갈리지 않아 의미 감사 소관이다.
     코드 펜스, 인라인 코드, HTML 주석 안은 예시나 메타 서술이라 보지 않는다. 판정은
     인라인 코드를 지운 줄로 하고, 메시지에는 원래 줄을 인용한다.
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
         rel = str(path.relative_to(root))
-        is_descriptor = path.name == DESCRIPTOR_NAME
         text = FRONT_MATTER_RE.sub("", read(path))
         text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
         text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
@@ -212,11 +210,6 @@ def check_reference_markers(root: Path) -> list[Finding]:
                 problem = _marker_tail_problem(head.group(1), head.group(2))
                 if problem:
                     out.append(Finding(VIOLATION, "ref-marker", rel, f"{problem} -> {quote}"))
-            elif not in_table and not is_descriptor and LINK_ONLY_RE.match(rest):
-                out.append(Finding(
-                    WARNING, "ref-marker", rel,
-                    f"표지 없이 따로 둔 링크 - 본문에 녹이거나 ref:, sub:, see:를 단다 -> {quote}",
-                ))
             for pm in PAREN_MARKER_RE.finditer(line):
                 problem = _marker_tail_problem(pm.group(1), pm.group(2))
                 if problem:
