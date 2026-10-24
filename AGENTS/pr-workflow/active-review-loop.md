@@ -39,7 +39,7 @@ PR 상태 확인 도구: `gh pr view <number> --repo <owner>/<repository> --json
 ## 머지 충돌이 생기면 즉시 처리
 
 - PR이 열려 있는 동안 main이 전진해 작업 브랜치와 충돌하면 PR은 머지 불가 상태가 된다. 머지 가능 여부도 능동 확인 대상이다 - `gh pr view <number> --json mergeable,mergeStateStatus`.
-- 충돌은 main을 작업 브랜치로 머지해(`git merge main`) 브랜치 안에서 해소하고 푸시한다. 해소 원칙은 양쪽 변경의 의미를 보존하는 결합이 기본이고, 판단이 갈리면 사용자에게 확인한다. 공유된 작업 브랜치의 이력 재작성(rebase 후 force-push)은 피한다 (cf. [original-protection-principle.md](../original-protection-principle.md)).
+- 충돌은 main을 작업 브랜치로 머지해(`git merge main`) 브랜치 안에서 해소하고 푸시한다. 해소 원칙은 양쪽 변경의 의미를 보존하는 결합이 기본이고, 판단이 갈리면 사용자에게 확인한다. 공유된 작업 브랜치의 이력 재작성(rebase 후 force-push)은 피한다 (ref: [original-protection-principle.md](../original-protection-principle.md)).
 - 해소 푸시는 자동 체크를 다시 트리거하므로 전 체크 성공 확인까지 같은 사이클을 반복한다.
 
 리뷰 처리 후에도 추가 리뷰가 달릴 수 있으므로 머지 직전까지 같은 사이클을 반복한다.

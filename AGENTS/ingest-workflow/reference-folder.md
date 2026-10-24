@@ -8,7 +8,7 @@ tags: [agents, 절차, ingest]
 
 > [ingest-workflow.md](../ingest-workflow.md)의 하위 절차.
 
-`_reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). cf. [`_reference/AGENTS.md`](../../_reference/AGENTS.md).
+`_reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). see: [`_reference/AGENTS.md`](../../_reference/AGENTS.md).
 
 ## 처리 여부 식별
 
@@ -38,4 +38,4 @@ tags: [agents, 절차, ingest]
 
 ## Raw 자료 자체는 immutable
 
-처리 후에도 `_reference/` 안의 파일은 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (cf. [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md) "점검 항목").
+처리 후에도 `_reference/` 안의 파일은 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md) "점검 항목").

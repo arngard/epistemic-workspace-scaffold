@@ -7,9 +7,9 @@ tags: [architecture]
 # 설계 명세 디스크립터
 
 > "우리가 어떻게 만들겠다" - 최종 설계의 스니펫. 현재 상태의 도면.
-> 코드의 구조 결정뿐 아니라 이 인스턴스 고유의 운영 절차 명세도 여기 둔다 (cf. [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) "`AGENTS/`와 `_architecture/`의 경계").
+> 코드의 구조 결정뿐 아니라 이 인스턴스 고유의 운영 절차 명세도 여기 둔다 (ref: [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) "`AGENTS/`와 `_architecture/`의 경계").
 > 설계의 맥락은 [_knowledge/](../_knowledge/AGENTS.md)와 [_strategy/](../_strategy/AGENTS.md) 참조.
-> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (cf. [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
+> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (ref: [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
 
 ## 작성 스타일
 
