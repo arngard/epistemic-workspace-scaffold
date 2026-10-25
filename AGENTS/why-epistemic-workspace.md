@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-07-06
+date modified: 2026-10-24
 tags: [agents, 문서관리, 철학]
 ---
 
