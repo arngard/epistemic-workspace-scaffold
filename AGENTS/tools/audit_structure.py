@@ -129,7 +129,7 @@ def check_empty_folders(root: Path) -> list[Finding]:
 def check_name_collision(root: Path) -> list[Finding]:
     """하위 문서 묶음이 아닌 동명 문서-폴더 쌍 검출 (경고).
 
-    `X.md` + `X/`는 하위 문서 묶음 관계의 예약 신호다 (cf.
+    `X.md` + `X/`는 하위 문서 묶음 관계의 예약 신호다 (ref:
     workspace-and-project-structure.md "하위 문서 폴더 규칙"). 폴더에
     디스크립터 외 md가 없으면 그 관계가 성립할 수 없으므로 확정 검출한다.
     md가 든 동명 쌍의 실제 관계 판단은 감사자(LLM) 몫이다.

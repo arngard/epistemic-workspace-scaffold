@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-21
-date modified: 2026-10-24
+date modified: 2026-10-25
 tags: [agents, 절차, ingest]
 ---
 
@@ -33,7 +33,7 @@ tags: [agents, 절차, ingest]
 미처리 항목 발견 시:
 
 1. 자료 내용을 읽고 어떤 카테고리, 노드에 통합할지 판단.
-2. 명확하면 [ingest-workflow.md](../ingest-workflow.md) "표준 시퀀스"로 통합 후 derived 노드에 raw 파일 경로를 reference로 명시 (`cf. _reference/<file>`). 그 자료까지 처리했음을 진척 기록에 반영한다.
+2. 명확하면 [ingest-workflow.md](../ingest-workflow.md) "표준 시퀀스"로 통합 후 derived 노드에 raw 파일을 `ref:` 표지로 링크한다 (`ref: [<file>](<상대 경로>/_reference/<file>)`). 그 자료까지 처리했음을 진척 기록에 반영한다.
 3. 모호하거나 사용자 의도가 불분명하면 처리를 보류하고 그 사실을 진척 기록에 남긴 뒤 사용자에게 의견을 묻는다. 보류 항목이 기록에서 조용히 사라지지 않게 한다.
 
 ## Raw 자료 자체는 immutable
