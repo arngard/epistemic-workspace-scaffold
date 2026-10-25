@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-02
-date modified: 2026-10-21
+date modified: 2026-10-25
 tags: [agents, 작업원칙]
 ---
 
@@ -33,7 +33,7 @@ see: [ingest-workflow.md](ingest-workflow.md) "표준 시퀀스"(충돌 검사�
 - 무관한 데드코드는 요청이 없으면 지우지 말고 언급한다. 내 변경이 만든 고아만 정리한다.
 - 검사 기준: 바뀐 모든 줄이 요청에 직결되는가.
 
-see: [original-protection-principle.md](original-protection-principle.md) 원본 보호 원칙 - 되돌릴 수 없는 변경을 삼가는 가역성 원리와 부합한다.
+see: [original-protection-principle.md](original-protection-principle.md) - 되돌릴 수 없는 변경을 삼가는 가역성 원리와 부합한다.
 
 ## 4. 목표 주도 실행
 
