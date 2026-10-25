@@ -64,9 +64,7 @@ tags: [agents, 단위 작업]
 [종료] 내 노드 [x]
 ```
 
-자식 수행이 그 자식의 워크플로우를 다시 밟는 재귀 호출이므로, 앞뒤 트리 갱신은 모든 레벨에서 일어나고 중위 노드에서는 자식들 사이에도 일어난다.
-
-리프 노드의 워크플로우는 자식 재귀가 없고 그 자리의 구체 작업 자체다. 이 작업이 특정 유형이면 그 유형의 워크플로우가 여기에 조립된다 - 새 정보 유입이면 [ingest-workflow.md](ingest-workflow.md), 변경을 검토받아 main에 머지하는 단계면 [unit-task-workflow/merge-types.md](unit-task-workflow/merge-types.md). 조립되는 워크플로우는 단독으로도 재사용된다.
+리프 노드의 워크플로우는 자식 재귀가 없고 그 자리의 구체 작업 자체다. 이 작업이 특정 유형이면 그 유형의 워크플로우가 여기에 조립된다 - 새 정보 유입이면 [ingest-workflow.md](ingest-workflow.md), main 머지 단계면 [merge-types.md](unit-task-workflow/merge-types.md)가 타입을 가르고 PR 타입이면 [pr-workflow.md](pr-workflow.md)가 조립된다. 조립되는 워크플로우는 단독으로도 재사용된다.
 
 즉 unit-task-workflow는 일반 프레임(진입/진행/종료 + 재귀)을 정의하고, 구체 워크플로우는 그 프레임의 정해진 단계에 조립된다. 이것이 "워크플로우는 조립된다"의 뜻이다.
 
