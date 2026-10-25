@@ -19,9 +19,9 @@ PR에 달린 인라인 리뷰 코멘트에 응답할 때는 작성자가 누구�
   - `<comment_id>`는 리뷰 코멘트 URL 끝 `#discussion_r<숫자>`의 숫자 부분. `gh api repos/<owner>/<repo>/pulls/<num>/comments`로도 조회 가능.
 - 금지: `gh pr comment <num> --body "..."` - 본 명령은 issue-level 코멘트를 만든다. 본 PR에 새 일반 코멘트를 의도적으로 단다는 게 명백한 경우(머지 알림, 후속 작업 안내 등)에만 사용.
 
-잘못 단 경우 정정: 잘못된 코멘트 ID 조회(`gh api repos/<owner>/<repo>/issues/<num>/comments`) 후 삭제(`gh api repos/<owner>/<repo>/issues/comments/<id> -X DELETE`), 그 뒤 스레드 reply로 재발행. 인라인 리뷰 코멘트 ID는 별도 엔드포인트 - `gh api repos/<owner>/<repo>/pulls/<num>/comments` 또는 코멘트 URL 끝 `#discussion_r<숫자>`.
+잘못 단 경우 정정: 잘못된 코멘트 ID 조회(`gh api repos/<owner>/<repo>/issues/<num>/comments`) 후 삭제(`gh api repos/<owner>/<repo>/issues/comments/<id> -X DELETE`), 그 뒤 스레드 reply로 재발행. 인라인 리뷰 코멘트 ID는 issue 코멘트와 엔드포인트가 다르다(조회는 위 `<comment_id>` 항목).
 
-파괴적 원격 조작(`-X DELETE` 등)은 AI가 이번 작업에서 스스로 만든 산출물에만 적용한다. 위 삭제도 방금 잘못 단 자기 코멘트를 지우는 경우로 한정한다. 사용자, 다른 개발자, 봇이 단 코멘트나 다른 원격 리소스는 지우지 않는다 - 정정이 필요하면 사용자에게 짚어 확인받는다 (ref: [original-protection-principle.md](../original-protection-principle.md) - 가역성 원리).
+파괴적 원격 조작(`-X DELETE` 등)은 AI가 이번 작업에서 스스로 만든 산출물(위 삭제라면 방금 잘못 단 자기 코멘트)에만 적용하고, 사용자, 다른 개발자, 봇이 단 코멘트나 다른 원격 리소스에 정정이 필요하면 사용자에게 짚어 확인받는다 (ref: [original-protection-principle.md](../original-protection-principle.md) - 가역성 원리).
 
 ## 스레드 안 토론은 그 스레드가 SSOT
 
