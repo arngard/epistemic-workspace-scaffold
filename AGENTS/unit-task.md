@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-10
-date modified: 2026-10-21
+date modified: 2026-10-25
 tags: [agents, 단위 작업]
 ---
 
@@ -66,7 +66,7 @@ tags: [agents, 단위 작업]
 
 자식 수행이 그 자식의 워크플로우를 다시 밟는 재귀 호출이므로, 앞뒤 트리 갱신은 모든 레벨에서 일어나고 중위 노드에서는 자식들 사이에도 일어난다.
 
-리프 노드의 워크플로우는 자식 재귀가 없고 그 자리의 구체 작업 자체다. 이 작업이 특정 유형이면 그 유형의 워크플로우가 여기에 조립된다 - 새 정보 유입이면 [ingest-workflow.md](ingest-workflow.md), 변경을 검토받아 main에 머지하는 단계면 [pr-workflow.md](pr-workflow.md). 조립되는 워크플로우는 단독으로도 재사용된다.
+리프 노드의 워크플로우는 자식 재귀가 없고 그 자리의 구체 작업 자체다. 이 작업이 특정 유형이면 그 유형의 워크플로우가 여기에 조립된다 - 새 정보 유입이면 [ingest-workflow.md](ingest-workflow.md), 변경을 검토받아 main에 머지하는 단계면 [unit-task-workflow/merge-types.md](unit-task-workflow/merge-types.md). 조립되는 워크플로우는 단독으로도 재사용된다.
 
 즉 unit-task-workflow는 일반 프레임(진입/진행/종료 + 재귀)을 정의하고, 구체 워크플로우는 그 프레임의 정해진 단계에 조립된다. 이것이 "워크플로우는 조립된다"의 뜻이다.
 
@@ -80,10 +80,10 @@ tags: [agents, 단위 작업]
 
 ## 관련 문서
 
-- [unit-task-workflow.md](unit-task-workflow.md): 위 프레임의 운영 절차 (진입 준비, 브랜치, 진행 커밋, 종료 머지). 절차 축약은 그 하위 문서 [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md).
+- [unit-task-workflow.md](unit-task-workflow.md): 위 프레임의 운영 절차 (진입 준비, 브랜치, 진행 커밋, 종료 머지). 절차 축약과 main 머지 타입 분기는 그 하위 문서 [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md), [merge-types.md](unit-task-workflow/merge-types.md).
 - [session-boundaries.md](session-boundaries.md): 세션 경계의 재진입과 다른 세션 산출물 격리.
 - [submodule-pointer-sync.md](submodule-pointer-sync.md): 종료 흐름에 조립되는 서브모듈 pointer 재귀 정합화.
 - [pr-workflow.md](pr-workflow.md): PR 조립 모듈 (생성, 검토 대응, 머지, 후속).
 - [ingest-workflow.md](ingest-workflow.md): 새 정보 유입 조립 모듈.
-- [branch-strategy.md](branch-strategy.md): 브랜치 네이밍과 운영 모델.
+- [branch-strategy.md](branch-strategy.md): 브랜치 네이밍과 운영 모델, 작업 공간(워크트리).
 - [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md): 작업 트리 본체와 갱신 규칙.
