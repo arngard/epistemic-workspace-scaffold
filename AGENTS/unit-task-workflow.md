@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-10-23
+date modified: 2026-10-25
 tags: [agents, 워크스페이스, 운영]
 ---
 
@@ -15,7 +15,7 @@ tags: [agents, 워크스페이스, 운영]
 순서를 지킨다.
 
 1. 작업 트리 점검, 노드 결정 + 관련 절차 문서 재독: [TASK_TREE.md](../_docs/_worklog/TASK_TREE.md)에서 어느 노드에 대한 작업인지 정한다(없으면 신설). 그 노드를 통째로 한 단위 작업으로 잡을지, 자식들을 별도 단위 작업으로 쪼갤지 결정한다 - 이 결정이 곧 브랜치 소유 노드를 정한다 (ref: [unit-task.md](unit-task.md) "프로젝션 - 표현과 절차의 평탄화"). 노드 결정 직후 본 단위 작업 영역에 해당하는 절차 문서(ingest-workflow, how-to-separate-docs-folders, document-units, writing-style, folder-structure, document-temporality, instance-specialization, 자식 도메인 절차 등)를 처음부터 다시 읽는다 - 자기 기억으로 세부 규약을 단언하다 소소한 위반이 누적되는 것을 막는 1차 가드레일이다. 변경 대상 문서를 이미 같은 단위에서 손대는 경우(예: writing-style을 고치는 작업)는 그 문서 재독이 면제된다.
-2. 작업 브랜치 생성 (sub: [branch-strategy.md](branch-strategy.md)): `<type>/YYMMDD-<짧은-설명>`. 단위 작업마다 격리된 커밋 라인을 확보한다. 기본 종료가 PR 타입이라 main 트리와 동시 작업이 필요하면 워크트리(`git worktree add`)로 공간을 분리한다.
+2. 작업 브랜치와 워크트리 생성 (sub: [branch-strategy.md](branch-strategy.md)): `<type>/YYMMDD-<짧은-설명>` 브랜치를 그 브랜치 전용 워크트리와 함께 만든다. 단위 작업마다 격리된 커밋 라인과 작업 공간을 확보한다. 워크트리의 위치, 따라오지 않는 파일, 정리 순서는 [branch-strategy.md](branch-strategy.md) "작업 공간"을 따른다.
 3. 워크로그 등재: 해당 노드를 `[/]`로 표시하고 브랜치 속성에 작업 브랜치를 기재한다. 다음 세션 진입자가 컨텍스트를 복원하는 1차 입구다.
 4. 시작점 커밋: 워크로그 등재를 담은 커밋으로 시작점을 마킹한다(`--allow-empty`라도).
 
