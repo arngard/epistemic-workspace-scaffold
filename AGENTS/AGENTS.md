@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-23
+date modified: 2026-10-25
 tags: [agents]
 ---
 
@@ -45,7 +45,7 @@ tags: [agents]
 | [submodule-pointer-sync.md](submodule-pointer-sync.md) | 서브모듈 커밋 포인트 재귀 정합화 - 상위 레포 pointer 갱신과 검증 | 본 레포가 상위 레포의 서브모듈일 때 단위 작업 종료 시 |
 | [pr-workflow.md](pr-workflow.md) | 종료 머지의 PR 타입에 조립되는 워크플로우 (PR 생성: 본문, 자기 검토, 속성). 리뷰 응답, 능동 확인은 [pr-workflow/](pr-workflow/AGENTS.md) 하위 | PR 생성, PR 검토 대응 시 |
 | [external-communication.md](external-communication.md) | 외부 협업 소통 규약 (명시적 멘션, AI 시그니처) - PR 밖 이슈, 댓글 등에도 적용 | 외부 협업 시스템에 글 쓸 때 |
-| [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰 | 브랜치 생성 시 |
+| [branch-strategy.md](branch-strategy.md) | 트렁크 기반 개발 모델, 브랜치 네이밍 룰, 작업 공간(워크트리) | 브랜치와 워크트리 생성, 정리 시 |
 
 ## 공용 태그
 

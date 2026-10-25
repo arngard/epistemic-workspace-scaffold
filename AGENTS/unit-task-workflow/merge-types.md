@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-23
-date modified: 2026-10-23
+date modified: 2026-10-25
 tags: [agents, 워크스페이스, 운영]
 ---
 
@@ -18,7 +18,7 @@ tags: [agents, 워크스페이스, 운영]
 
 ## 브랜치 관리자 타입
 
-`git checkout main && git merge <branch> --no-ff && git push origin main && git branch -d <branch>`. `--no-ff`로 단위 작업 머지 커밋을 명시적으로 남긴다. 메시지는 `Merge <branch>: <요약>` 형식으로, 무엇을 왜 바꿨는지만 적는다 - 승인, 검토 통과 여부는 커밋 텍스트에 남기지 않는다(검토는 종료 흐름 3단계의 상호작용으로 처리되는 절차이지 커밋에 기록할 상태가 아니다).
+주 워크트리에서 `git merge <branch> --no-ff && git push origin main && git worktree remove <워크트리 경로> && git branch -d <branch>`. 브랜치는 워크트리를 지운 뒤에야 지워진다. 워크트리 제거가 거부되는 경우의 처리는 [../branch-strategy.md](../branch-strategy.md) "작업 공간"의 정리 항목을 따른다. `--no-ff`로 단위 작업 머지 커밋을 명시적으로 남긴다. 메시지는 `Merge <branch>: <요약>` 형식으로, 무엇을 왜 바꿨는지만 적는다 - 승인, 검토 통과 여부는 커밋 텍스트에 남기지 않는다(검토는 종료 흐름 3단계의 상호작용으로 처리되는 절차이지 커밋에 기록할 상태가 아니다).
 
 ## 환경 안전망과 잔존 점검
 
