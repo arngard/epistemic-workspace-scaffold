@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-23
+date modified: 2026-10-25
 tags: [소개]
 ---
 
@@ -26,7 +26,7 @@ tags: [소개]
 │   ├── _knowledge/        <- 외부 사실
 │   ├── _strategy/         <- 결정과 근거
 │   ├── _architecture/     <- 설계 명세
-│   └── _worklog/          <- 작업 상태, 이력
+│   └── _worklog/          <- 작업 상태
 ├── _reference/        <- 사용자가 dump한 raw 자료의 immutable 보관 영역
 ├── AGENTS/            <- 에이전트 운영 규범 (진입점은 AGENTS.md)
 └── _implementation/   <- 구현 프로젝트들 (프로젝트마다 하위 폴더)

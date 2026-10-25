@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-02
-date modified: 2026-07-05
+date modified: 2026-10-24
 tags: [agents, 코딩]
 ---
 

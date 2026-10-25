@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-23
+date modified: 2026-10-25
 tags: [소개]
 ---
 
@@ -26,7 +26,7 @@ For the rationale, see [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-
 │   ├── _knowledge/        <- External facts
 │   ├── _strategy/         <- Decisions and rationale
 │   ├── _architecture/     <- Design specifications
-│   └── _worklog/          <- Work status, history
+│   └── _worklog/          <- Work status
 ├── _reference/        <- Immutable raw materials dumped by the user
 ├── AGENTS/            <- Agent operating norms (entry point: AGENTS.md)
 └── _implementation/   <- Implementation projects (one subfolder per project)

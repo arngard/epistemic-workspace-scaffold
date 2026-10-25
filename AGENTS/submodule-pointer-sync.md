@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-26
-date modified: 2026-07-26
+date modified: 2026-10-24
 tags: [agents, 워크스페이스, 운영]
 ---
 

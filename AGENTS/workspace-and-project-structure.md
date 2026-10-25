@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-21
+date modified: 2026-10-25
 tags: [agents, 워크스페이스]
 ---
 
@@ -36,7 +36,7 @@ tags: [agents, 워크스페이스]
 ├── AGENTS.md                           <- AI 에이전트 공통 지침 (모든 도구의 진입점)
 ├── AGENTS/                             <- AGENTS.md의 하위 문서
 ├── _docs/                              <- 코드로 표현할 수 없는 지식
-│   ├── _worklog/                       <- 작업 상태, 이력, 작업 트리
+│   ├── _worklog/                       <- 작업 상태, 작업 트리
 │   ├── _ontology/                      <- 도메인 개념 정의 ("무엇이 존재하는가")
 │   ├── _knowledge/                     <- 외부 사실, 환경, 벤치마크 ("세상이 어떠한가")
 │   ├── _strategy/                      <- 우리의 결정과 근거 ("왜 이렇게 하기로 했는가")
