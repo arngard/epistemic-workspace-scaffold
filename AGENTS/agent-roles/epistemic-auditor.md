@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-10
-date modified: 2026-10-23
+date modified: 2026-10-25
 tags: [agents, 역할, 감사]
 ---
 
@@ -33,7 +33,7 @@ tags: [agents, 역할, 감사]
 3. git 맥락 검출 (스크립트 미담당, git 비의존 원칙상 audit.py 밖)
    - TASK_TREE 루트/1-depth 노드의 마크 커밋 없는 삭제
    - 루트가 아닌 완료 노드의 단독 삭제 - 조상 루트와 함께 제거되거나 완료된 중위 노드의 하위로 정리된 경우가 아닌 삭제
-   - TASK_TREE 브랜치 속성이 가리키는 브랜치의 실존 대조(`git branch -a`) - 이미 정리된 브랜치를 가리키는 잔존 속성은 끊김 재진입을 오도한다
+   - TASK_TREE 브랜치 속성이 가리키는 브랜치와 워크트리의 실존 대조(`git branch -a`, `git worktree list`) - 이미 정리된 브랜치나 워크트리를 가리키는 잔존 속성은 끊김 재진입을 오도한다
    - `_reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반 - 처리 진척 기록인 디스크립터의 변경은 제외)
    - `date closed` 히스토리 문서의 본문 변경(동결 위반 - 후속 문서 링크 추가와 정합 유지 수정은 허용, ref: [document-temporality.md](../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
    - TASK_TREE `[x]` 완료 루트의 과다 잔존
