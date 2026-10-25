@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-24
+date modified: 2026-10-25
 tags: [규칙, 문서관리]
 ---
 
@@ -33,7 +33,7 @@ always-on 진입층이다. 정체성, 비협상 게이트, 소통 규약, 트리
 
 ## 단위 작업
 
-단위 작업 시작과 종료 시 TASK_TREE를 갱신하고, 사용자 검토를 통과한 뒤 main에 머지한다. AI 자율 머지는 하지 않는다. 완료 이력은 git이 담당하고 별도 이력 파일을 두지 않는다. 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md), PR 조립은 [AGENTS/pr-workflow.md](AGENTS/pr-workflow.md).
+단위 작업 시작과 종료 시 TASK_TREE를 갱신하고, main 머지는 사용자 검토를 통과한 뒤에만 한다(AI 자율 머지 금지). 완료 이력은 git이 담당하고 별도 이력 파일을 두지 않는다. 흐름은 [AGENTS/unit-task-workflow.md](AGENTS/unit-task-workflow.md), PR 조립은 [AGENTS/pr-workflow.md](AGENTS/pr-workflow.md).
 
 ## 작업 수행 원칙
 
