@@ -55,7 +55,7 @@ tags: [worklog]
   - [ ] 문서 날짜 처리
     - 설명: 상류와 연결했다면 날짜를 바꾸지 않는다(바꾸면 상류 머지마다 충돌한다). 이력 없이 가져왔다면 `date created`를 시작일로 갱신할 수 있다. `date modified`는 내용을 바꿀 때만 갱신한다.
   - [ ] 워크스페이스 정체 특수화
-    - 설명: [AGENTS.md](../AGENTS.md) "이 워크스페이스의 정체" 절을 도메인 정체성으로 특수화한다. 그 밖의 계승 자산은 [AGENTS/instance-specialization.md](../AGENTS/instance-specialization.md)를 따른다.
+    - 설명: [AGENTS.md](../AGENTS.md) "이 워크스페이스의 정체" 절을 도메인 정체성으로 특수화한다. 그 밖의 계승 자산은 [AGENTS/epistemic-rules/instance-specialization.md](../AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
   - [ ] README와 LICENSE 정리
     - 설명: 스캐폴드 소개문인 README.md, README.en.md를 이 워크스페이스의 소개로 교체하고(상류를 받으면 충돌 유의), LICENSE를 정한다.
   - [ ] 감사 주기 값 검토

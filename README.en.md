@@ -15,7 +15,7 @@ A workspace scaffold that partitions documentation by epistemic category. Keeps 
 - Strategy: Why we decided this way
 - Architecture: How we build it
 
-For the rationale, see [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) (Korean); for operating guidance and principles, the single entry point [AGENTS.md](AGENTS.md).
+For the rationale, see [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) (Korean); for operating guidance and principles, the single entry point [AGENTS.md](AGENTS.md).
 
 ## Directory structure
 
@@ -43,10 +43,10 @@ There are two ways to obtain the scaffold.
 
 If you received the scaffold history, the `upstream` connection is not optional; it is the starting state. Audits use it to tell upstream commits from your own. Record the chosen approach and its rationale as a decision document.
 
-After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md).
+After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md).
 
 ## Further reading
 
-- see: [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - Design philosophy and rationale (Korean)
-- see: [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - Structural rationale
-- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - Criteria for separating `epistemic-structure/` subfolders
+- see: [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) - Design philosophy and rationale (Korean)
+- see: [AGENTS/epistemic-rules/workspace-and-project-structure.md](AGENTS/epistemic-rules/workspace-and-project-structure.md) - Structural rationale
+- see: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](AGENTS/epistemic-rules/how-to-separate-docs-folders.md) - Criteria for separating `epistemic-structure/` subfolders

@@ -6,7 +6,7 @@ tags: [worklog]
 
 # 워크로그 디스크립터
 
-> 단위 작업 흐름의 진입, 종료 시점에 갱신되는 운영 메타 영역 (ref: [AGENTS/unit-task-workflow.md](../AGENTS/unit-task-workflow.md)). 완료 이력의 SSOT(single source of truth)는 git 이력이며, 이 폴더에 별도 이력 파일을 두지 않는다.
+> 단위 작업 흐름의 진입, 종료 시점에 갱신되는 운영 메타 영역 (ref: [AGENTS/epistemic-rules/unit-task-workflow.md](../AGENTS/epistemic-rules/unit-task-workflow.md)). 완료 이력의 SSOT(single source of truth)는 git 이력이며, 이 폴더에 별도 이력 파일을 두지 않는다.
 > 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다. 각 파일의 갱신, 삭제 규칙은 해당 파일의 프리앰블이 SSOT다.
 
 | 파일 | 설명 | 언제 읽는가 |

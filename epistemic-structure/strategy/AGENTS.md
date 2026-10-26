@@ -8,7 +8,7 @@ tags: [strategy]
 
 > "우리가 왜 이렇게 하기로 했는가" - 우리의 결정과 그 근거.
 > 외부 사실과 환경 정보는 [knowledge/](../knowledge/AGENTS.md) 참조. 최종 설계 명세는 [architecture/](../architecture/AGENTS.md) 참조.
-> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (ref: [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터").
+> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (ref: [AGENTS/epistemic-rules/folder-structure.md](../../AGENTS/epistemic-rules/folder-structure.md) "폴더 구조와 디스크립터").
 
 ## 작성 스타일
 
@@ -57,7 +57,7 @@ urgency: 상 | 중 | 하
 - 확정된 하위 결정은 "대응" 또는 본문 하위 섹션에 선언문으로 둔다.
 - 미결인 하위 결정만 "난점" 섹션에 남긴다. 모두 확정되면 "난점"을 통째로 삭제한다.
 - "결정이 필요한 것들"처럼 확정 상태가 드러나지 않는 오픈 리스트 형식은 쓰지 않는다. 독자가 무엇이 확정이고 무엇이 미결인지 판단할 수 없다.
-- 내부 재편만으로 감당이 안 될 만큼 커지면 새로운 시각에서 문서 자체의 분할과 재배치를 검토한다. 별도 전략 문서로 쪼개거나, 내용의 성격에 따라 재배치할 수 있다. 이 경우 [how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md)의 일반적인 기준에 따라 재검토한다.
+- 내부 재편만으로 감당이 안 될 만큼 커지면 새로운 시각에서 문서 자체의 분할과 재배치를 검토한다. 별도 전략 문서로 쪼개거나, 내용의 성격에 따라 재배치할 수 있다. 이 경우 [how-to-separate-docs-folders.md](../../AGENTS/epistemic-rules/how-to-separate-docs-folders.md)의 일반적인 기준에 따라 재검토한다.
 
 ## 스캐폴드 샘플
 

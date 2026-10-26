@@ -14,4 +14,4 @@ tags: [architecture, 규칙, 네이밍, 코딩규약]
 
 ## Git 규약
 
-sub: [AGENTS/branch-strategy.md](../../AGENTS/branch-strategy.md).
+sub: [AGENTS/epistemic-rules/branch-strategy.md](../../AGENTS/epistemic-rules/branch-strategy.md).

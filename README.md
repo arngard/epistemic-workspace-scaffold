@@ -15,7 +15,7 @@ tags: [소개]
 - Strategy: 왜 이렇게 결정했는가
 - Architecture: 어떻게 만드는가
 
-왜 이렇게 하는가는 [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md), 운영 지침과 원칙은 단일 진입점 [AGENTS.md](AGENTS.md)를 본다.
+왜 이렇게 하는가는 [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md), 운영 지침과 원칙은 단일 진입점 [AGENTS.md](AGENTS.md)를 본다.
 
 ## 디렉토리 구조
 
@@ -43,10 +43,10 @@ tags: [소개]
 
 스캐폴드 이력을 받았다면 `upstream` 연결은 고를 수 있는 선택지가 아니라 시작 상태다. 감사는 이 연결로 상류 커밋과 자기 커밋을 구분한다. 고른 방식과 이유는 결정 문서로 남긴다.
 
-가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md)를 따른다.
+가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
 
 ## 더 읽을 거리
 
-- see: [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - 설계 철학과 근거
-- see: [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - 구조 근거
-- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - `epistemic-structure/` 분류 기준
+- see: [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) - 설계 철학과 근거
+- see: [AGENTS/epistemic-rules/workspace-and-project-structure.md](AGENTS/epistemic-rules/workspace-and-project-structure.md) - 구조 근거
+- see: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](AGENTS/epistemic-rules/how-to-separate-docs-folders.md) - `epistemic-structure/` 분류 기준

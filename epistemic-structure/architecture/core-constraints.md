@@ -21,7 +21,7 @@ tags: [architecture, 제약, 설계원칙]
 
 ## 원본 보호 원칙
 
-에이전트가 원본(데이터, 콘텐츠)을 다룰 때의 안전 기준은 [AGENTS/original-protection-principle.md](../../AGENTS/original-protection-principle.md) SSOT 참조 - 에이전트 행동 규범이므로 에이전트 폴더에 있다.
+에이전트가 원본(데이터, 콘텐츠)을 다룰 때의 안전 기준은 [AGENTS/epistemic-rules/original-protection-principle.md](../../AGENTS/epistemic-rules/original-protection-principle.md) SSOT 참조 - 에이전트 행동 규범이므로 에이전트 폴더에 있다.
 
 ## 제약 목록
 
