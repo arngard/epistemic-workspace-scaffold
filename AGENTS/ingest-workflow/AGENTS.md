@@ -11,4 +11,4 @@ tags: [agents]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [reference-folder.md](reference-folder.md) | `_reference/` 자료의 처리 여부 식별, 미처리 항목 처리, 원본 불변 원칙 | `_reference/`에 자료가 들어왔거나 세션 시작 시 대조할 때 |
+| [reference-folder.md](reference-folder.md) | `reference/` 자료의 처리 여부 식별, 미처리 항목 처리, 원본 불변 원칙 | `reference/`에 자료가 들어왔거나 세션 시작 시 대조할 때 |

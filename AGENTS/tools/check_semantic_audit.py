@@ -31,7 +31,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-STATUS_REL = Path("_docs/_worklog/STATUS.md")
+STATUS_REL = Path("worklog/STATUS.md")
 # 의미 감사 행은 이름 칸에 이 문구를 담은 첫 행이다. 이름 칸만 보므로 다른 행의
 # 주기/트리거 서술에 같은 문구가 있어도 오인하지 않는다.
 AUDIT_ROW_KEY = "의미 감사"

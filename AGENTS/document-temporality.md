@@ -30,8 +30,8 @@ front matter의 `date created`, `date modified`는 두 종류 모두에 붙는�
 
 표준 문서 유형의 시간성은 개별 판단에 맡기지 않고 아래로 확정한다.
 
-- 현재적 문서: AGENTS.md와 `AGENTS/` 산하 에이전트 지침 전부, `_docs/_ontology/` 정의, `_docs/_knowledge/` 노드(현재 상태 서술), `_docs/_strategy/`의 유효한 전략과 결정 문서, `_docs/_architecture/` 명세, 모든 폴더 디스크립터(현재 인벤토리), `_docs/_worklog/TASK_TREE.md`(현재와 가까운 전후의 작업 상태를 표현하며 이력 보관소가 아니다), `_docs/_worklog/STATUS.md`(상태 레지스트리).
-- 히스토리 문서: 날짜 프리픽스가 붙는 모든 문서(데일리, 먼슬리 리포트, 시점 분석, 벤치마크 기록), 현재적 노드에서 분리된 동반 로그 파일, `_reference/` raw 자료(immutable).
+- 현재적 문서: AGENTS.md와 `AGENTS/` 산하 에이전트 지침 전부, `epistemic-structure/ontology/` 정의, `epistemic-structure/knowledge/` 노드(현재 상태 서술), `epistemic-structure/strategy/`의 유효한 전략과 결정 문서, `epistemic-structure/architecture/` 명세, 모든 폴더 디스크립터(현재 인벤토리), `worklog/TASK_TREE.md`(현재와 가까운 전후의 작업 상태를 표현하며 이력 보관소가 아니다), `worklog/STATUS.md`(상태 레지스트리).
+- 히스토리 문서: 날짜 프리픽스가 붙는 모든 문서(데일리, 먼슬리 리포트, 시점 분석, 벤치마크 기록), 현재적 노드에서 분리된 동반 로그 파일, `reference/` raw 자료(immutable).
 
 ## 날짜 프리픽스의 의미와 종결 신호
 

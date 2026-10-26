@@ -7,7 +7,7 @@ tags: [strategy]
 # 전략 디스크립터
 
 > "우리가 왜 이렇게 하기로 했는가" - 우리의 결정과 그 근거.
-> 외부 사실과 환경 정보는 [_knowledge/](../_knowledge/AGENTS.md) 참조. 최종 설계 명세는 [_architecture/](../_architecture/AGENTS.md) 참조.
+> 외부 사실과 환경 정보는 [knowledge/](../knowledge/AGENTS.md) 참조. 최종 설계 명세는 [architecture/](../architecture/AGENTS.md) 참조.
 > 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (ref: [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터").
 
 ## 작성 스타일
