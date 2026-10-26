@@ -39,6 +39,11 @@ class RewriteLinksTest(unittest.TestCase):
         once = rewrite_links("[x](../_docs/_worklog/TASK_TREE.md)", "AGENTS/a.md", "AGENTS/a.md")
         self.assertEqual(rewrite_links(once, "AGENTS/a.md", "AGENTS/a.md"), once)
 
+    def test_moved_file_then_rerun_at_new_location(self):
+        once = rewrite_links("[t](../_strategy/a%20b.md#s)", "_docs/_worklog/T.md", "worklog/T.md")
+        self.assertEqual(once, "[t](../epistemic-structure/strategy/a%20b.md#s)")
+        self.assertEqual(rewrite_links(once, "worklog/T.md", "worklog/T.md"), once)
+
 
 class RewriteMentionsTest(unittest.TestCase):
     def test_paths_replaced(self):

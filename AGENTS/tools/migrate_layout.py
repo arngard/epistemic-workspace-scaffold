@@ -87,7 +87,10 @@ def _rewrite_target(target: str, old_src: str, new_src: str) -> str:
 def rewrite_links(text: str, old_src: str, new_src: str) -> str:
     """`](대상)` 형식 링크의 대상을 이전 뒤 위치에 맞게 바꾼다.
 
-    old_src는 문서의 옛 위치, new_src는 새 위치다. 외부 주소, 문서 안 앵커,
+    호출 규약: old_src는 이 호출 직전에 파일이 실제로 있던 위치, new_src는 이 호출 뒤의 위치다.
+    이번 실행에서 옮기지 않은 파일은 old_src == new_src로 넘긴다. 같은 본문에 old_src != new_src로
+    두 번 호출하는 것은 규약 밖이다(이미 바뀐 대상을 옛 위치 기준으로 다시 풀기 때문이다).
+    외부 주소, 문서 안 앵커,
     저장소 밖을 가리키는 대상은 건드리지 않는다. `#` 뒤의 절 앵커는 보존한다.
     """
     def repl(m):
