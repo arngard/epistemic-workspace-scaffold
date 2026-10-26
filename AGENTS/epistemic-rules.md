@@ -6,11 +6,11 @@ tags: [규칙, epistemic-rules]
 
 # 워크스페이스 상류 규범 요지
 
-워크스페이스 전체에 걸치는 상류 규범의 요지다. 세부는 `epistemic-rules/` 아래 SSOT(single source of truth) 문서에 있고, 이 파일은 작게 유지한다. 같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 이 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다.
+워크스페이스 전체에 걸치는 상류 규범의 요지다. 세부 규약은 `epistemic-rules/` 아래 SSOT(single source of truth) 문서에 두되, 어떤 규칙이 존재하는지는 여기서 이름으로 짚어 에이전트가 그 규칙을 인지하고 찾아보게 한다. 같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 이 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다.
 
 ## 에피스테믹 워크스페이스
 
-에피스테믹 워크스페이스다. 코드로 표현할 수 없는 지식을 인식론적 4범주로 나눠 상위 의도와 근거가 유실되지 않게 한다: `epistemic-structure/ontology`(무엇이 존재하는가), `knowledge`(우리 결정과 무관한 외부 사실, 환경), `strategy`(우리가 왜 그렇게 결정했는가), `architecture`(어떻게 만드는가). 근거는 [4범주의 이유](epistemic-rules/why-epistemic-workspace.md).
+에피스테믹 워크스페이스다. 코드로 표현할 수 없는 지식을 인식론적 4범주로 나눠 상위 의도와 근거가 유실되지 않게 한다: `epistemic-structure/ontology`(무엇이 존재하는가), `knowledge`(우리 결정과 무관한 외부 사실, 환경), `strategy`(우리가 왜 그렇게 결정했는가), `architecture`(어떻게 만드는가). 근거는 [4범주로 나누는 이유](epistemic-rules/why-epistemic-workspace.md).
 
 ## 비협상 게이트
 
@@ -25,30 +25,33 @@ tags: [규칙, epistemic-rules]
 
 @epistemic-rules/communication.md
 
-## 작업 흐름
-
-- 세션 시작, 재진입, 다른 세션 산출물 발견: [표준 세션 시작 절차](epistemic-rules/session-boundaries.md)를 밟은 뒤 인스턴스 고유 절차를 따른다.
-- 단위 작업: [작업 수행 원칙](epistemic-rules/working-principles.md)을 토대로 하고, [단위 작업 흐름](epistemic-rules/unit-task-workflow.md)대로 시작과 종료 시 TASK_TREE를 갱신하며 main 머지는 사용자 검토 뒤에만 한다. PR은 [PR 워크플로우](epistemic-rules/pr-workflow.md)를 따른다.
-- 문서 변경: 관심사의 규약 문서를 먼저 갱신하고 정합성을 확인하며, 폴더나 절차 신설에는 디스크립터와 첫 실체 1건을 동반하며, 이동은 연쇄 갱신한다([문서 단위](epistemic-rules/document-units.md), [폴더 구조](epistemic-rules/folder-structure.md), [문서 시간성](epistemic-rules/document-temporality.md) 규약).
-- 제품 지침 추출: 도구별 진입점 파일은 AGENTS 계열에서 추출한 파생물이라 규칙을 담지 않고, 갱신은 AGENTS 수정 후 재추출로만 한다([도구 환경](epistemic-rules/tool-environment.md)).
-- 하위 프로젝트 편집, 폴더 배치: `implementation/` 하위 프로젝트는 자체 지침과 함께 정보 경계, 공개/비공개 경계를 지킨다([워크스페이스 구조](epistemic-rules/workspace-and-project-structure.md)).
+@epistemic-rules/workflow.md
 
 ## 이럴 때 읽는다
 
-폴더의 AGENTS.md를 먼저 읽고 해당 상황의 문서만 연다.
+폴더의 AGENTS.md와 위 작업 흐름이 짚는 문서에 더해, 아래 상황에 해당하는 문서를 연다.
 
-- 단위 크기, 워크플로우 조립 판단 -> [단위 작업 개념](epistemic-rules/unit-task.md)
-- 여러 단계 절차나 에이전트 분업 설계 -> [단계 권한 기준](epistemic-rules/unit-task/stage-authority.md)
-- 브랜치, 워크트리 생성과 정리 -> [브랜치 전략](epistemic-rules/branch-strategy.md)
-- 서브모듈 레포의 단위 작업 종료 -> [포인터 정합화](epistemic-rules/submodule-pointer-sync.md)
+- 끊긴 뒤 재진입, 다른 세션 산출물 발견 -> [세션 경계 규약](epistemic-rules/session-boundaries.md)
+- 단위 작업 착수 -> [작업 수행 원칙](epistemic-rules/working-principles.md)
+- 단위 작업 개념 확인, 단위 크기 판단, 워크플로우 조립 판단 -> [단위 작업 개념](epistemic-rules/unit-task.md)
+- 여러 단계로 나뉜 절차나 에이전트 분업 설계 -> [단계 권한 기준](epistemic-rules/unit-task/stage-authority.md)
+- 브랜치와 워크트리 생성, 정리 -> [브랜치 전략](epistemic-rules/branch-strategy.md)
+- PR 생성, PR 검토 대응 -> [PR 워크플로우](epistemic-rules/pr-workflow.md)
+- 본 레포가 상위 레포의 서브모듈일 때 단위 작업 종료 -> [포인터 정합화](epistemic-rules/submodule-pointer-sync.md)
 - 외부 협업 시스템에 글 쓸 때 -> [외부 소통 규약](epistemic-rules/external-communication.md)
 - 새 문서의 범주를 정할 때 -> [폴더 구분 기준](epistemic-rules/how-to-separate-docs-folders.md) "판별 규칙"
-- 새 정보와 자료 유입 -> [정보 유입 처리](epistemic-rules/ingest-workflow.md)
-- 계승 자산의 변경이나 특수화 -> [상속 자산 특수화](epistemic-rules/instance-specialization.md)
+- 폴더 배치, 구현 프로젝트 등록 -> [워크스페이스 구조](epistemic-rules/workspace-and-project-structure.md)
+- 날짜 프리픽스 문서 작성, 수정, 문서 폐기 -> [문서 시간성](epistemic-rules/document-temporality.md)
+- 새 사실, 의견, 예측, 결정, 자료가 들어올 때 -> [정보 유입 처리](epistemic-rules/ingest-workflow.md)
+- 원본 삭제, 대폭 재편, 머지 판단 -> [원본 보호 원칙](epistemic-rules/original-protection-principle.md)
+- 계승된 규범, 절차의 변경이나 특수화를 도출했을 때 -> [상속 자산 특수화](epistemic-rules/instance-specialization.md)
+- 공용 태그 작성, 대면 -> [공용 태그 형식](epistemic-rules/agent-tag-format.md)
 - 서브에이전트 호출, 감사자 확장 -> [서브에이전트 역할](epistemic-rules/agent-roles.md)
-- 코드(감사 도구 포함) 작성, 수정 -> [코드 작업 지침](epistemic-rules/coding-guidelines.md)
+- 도구 환경 확인, 감사 스크립트 실행 -> [도구 환경](epistemic-rules/tool-environment.md)
+- 코드(감사 도구 포함)를 만들거나 고칠 때 -> [코드 작업 지침](epistemic-rules/coding-guidelines.md)
 - 새 용어 도입, 도메인 클래스 설계 전 -> [ontology/](../epistemic-structure/ontology/AGENTS.md) "용어 도입 전 검증"
 - 외부 사실, 결정 근거 확인 -> [knowledge/](../epistemic-structure/knowledge/AGENTS.md), [strategy/](../epistemic-structure/strategy/AGENTS.md)
-- 클래스, 모듈 생성이나 운영 절차 명세 신설 -> [architecture/](../epistemic-structure/architecture/AGENTS.md)
+- 새 클래스, 모듈 생성, 모듈, 의존성, 운영 절차 변경이나 명세 신설 -> [architecture/](../epistemic-structure/architecture/AGENTS.md)
 - 설계 판단이 갈릴 때, 구현 착수 전 -> [핵심 제약](../epistemic-structure/architecture/core-constraints.md)
-- 진입점, scaffolding 구조의 근거 의문 -> [진입점 근거](epistemic-rules/why-agents-md-not-conventions-md.md), [scaffolding 근거](epistemic-rules/why-scaffolding-not-single-file.md)
+- 스캐폴드 취지 의문, 신규 진입자 온보딩 -> [4범주의 이유](epistemic-rules/why-epistemic-workspace.md)
+- 진입점 구조, scaffolding 구조 의문 -> [진입점 근거](epistemic-rules/why-agents-md-not-conventions-md.md), [scaffolding 근거](epistemic-rules/why-scaffolding-not-single-file.md)
