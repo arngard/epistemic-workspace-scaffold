@@ -6,7 +6,7 @@ STATUS 레지스트리의 의미 감사 행과 git 이력을 대조해 트리거
 않는다. 어겼을 때 아무 신호가 없어 조건 충족을 놓치는 것을 막는 것이 목적이다.
 
 audit.py는 git에 의존하지 않는다는 원칙을 지키려고 별도 스크립트로 둔다
-(see: AGENTS/epistemic-rules/tool-environment.md "기계 감사 스크립트").
+(see: AGENTS/epistemic-rules/tools.md "기계 감사 스크립트").
 
 임계 시간과 trailer 문구는 STATUS 레지스트리의 주기/트리거 셀에서 읽는다.
 그 셀이 임계 조건의 SSOT이므로 스크립트에 하드코딩하지 않는다 - 인스턴스가

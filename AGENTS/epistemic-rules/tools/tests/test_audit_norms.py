@@ -13,6 +13,7 @@ from audit_frontmatter import check_front_matter  # noqa: E402
 from audit_links import check_imports  # noqa: E402
 from audit_structure import (  # noqa: E402
     check_claude_pointers, check_descriptors, check_empty_folders, check_name_collision,
+    check_norms_dir_descriptors,
 )
 
 FM = "---\ndate created: 2026-01-01\ndate modified: 2026-01-01\ntags:\n  - test\n---\n"
@@ -42,6 +43,18 @@ class NormsDirTest(unittest.TestCase):
     def test_content_dir_still_needs_descriptor(self):
         (self.root / "worklog/AGENTS.md").unlink()
         self.assertEqual([(f.severity, f.path) for f in check_descriptors(self.root)], [(VIOLATION, "worklog")])
+
+    def test_norms_dir_descriptors_forbidden(self):
+        self.write("AGENTS/epistemic-rules/AGENTS.md", FM)
+        self.write("AGENTS/CLAUDE.md", "@AGENTS.md\n")
+        found = check_norms_dir_descriptors(self.root)
+        self.assertEqual(
+            sorted((f.severity, f.path) for f in found),
+            [(VIOLATION, "AGENTS/CLAUDE.md"), (VIOLATION, "AGENTS/epistemic-rules/AGENTS.md")],
+        )
+        (self.root / "AGENTS/epistemic-rules/AGENTS.md").unlink()
+        (self.root / "AGENTS/CLAUDE.md").unlink()
+        self.assertEqual(check_norms_dir_descriptors(self.root), [])
 
     def test_claude_pointer_missing_warns(self):
         (self.root / "worklog/CLAUDE.md").unlink()

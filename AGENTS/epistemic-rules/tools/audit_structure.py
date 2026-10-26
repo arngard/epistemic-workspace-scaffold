@@ -236,3 +236,24 @@ def check_claude_pointers(root: Path) -> list[Finding]:
                 f"CLAUDE.md 내용이 {CLAUDE_POINTER}가 아님",
             ))
     return out
+
+
+def check_norms_dir_descriptors(root: Path) -> list[Finding]:
+    """규범 폴더 안의 AGENTS.md, CLAUDE.md 검사 (위반).
+
+    규범 폴더(AGENTS/와 그 아래)는 폴더 디스크립터와 CLAUDE.md 포인터를 두지 않는다.
+    규범 폴더 안의 AGENTS.md는 규범 문서가 아니라 디스크립터로 읽히고, CLAUDE.md는
+    그 폴더의 파일을 다룰 때 도구가 불러들인다. 파일마다 위반 1건을 낸다.
+    """
+    out: list[Finding] = []
+    for d in content_dirs(root):
+        if not in_norms_dir(root, d):
+            continue
+        for name in (DESCRIPTOR_NAME, "CLAUDE.md"):
+            path = d / name
+            if path.is_file():
+                out.append(Finding(
+                    VIOLATION, "norms-descriptor", path.relative_to(root).as_posix(),
+                    f"규범 폴더 안의 {name}. 규범 폴더는 디스크립터와 CLAUDE.md를 두지 않는다",
+                ))
+    return out

@@ -65,8 +65,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  26. `@` 가져오기 줄(줄 전체가 @경로)의 대상 부재 - 위반
      (경로는 줄을 둔 파일 위치 기준. 묶음 세부 폴더 AGENTS/epistemic-rules/ 안의
       가져오기는 경고. front matter와 코드 펜스 안은 제외)
+ 27. 규범 폴더(`AGENTS/`와 그 아래) 안의 AGENTS.md, CLAUDE.md - 위반
 
-위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tool-environment.md "기계 감사 스크립트".
+위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tools.md "기계 감사 스크립트".
 
 사용법:
     python3 AGENTS/epistemic-rules/tools/audit.py [워크스페이스 루트]   # 생략 시 현재 디렉토리
@@ -110,7 +111,7 @@ from audit_links import (
 from audit_structure import (
     check_descriptors, check_normative_guides, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
-    check_date_prefix_separator, check_claude_pointers,
+    check_date_prefix_separator, check_claude_pointers, check_norms_dir_descriptors,
 )
 from audit_worklog import (
     check_status_registry, check_status_schema,
@@ -150,6 +151,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_scaffold_state_markers(root)
     findings += check_claude_pointers(root)
     findings += check_imports(root)
+    findings += check_norms_dir_descriptors(root)
     return findings
 
 
