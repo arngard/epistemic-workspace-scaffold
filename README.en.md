@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [소개]
 ---
 
@@ -22,13 +22,21 @@ For the rationale, see [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENT
 ```
 (workspace-root)/
 ├── AGENTS/               <- Agent operating norms (entry point: AGENTS.md)
+├── worklog.md            <- Parent document introducing each skeleton folder
 ├── worklog/              <- Work status
+├── reference.md
 ├── reference/            <- Immutable raw materials dumped by the user
+├── epistemic-structure.md
 ├── epistemic-structure/  <- Knowledge not expressible in code
+│   ├── ontology.md           <- Parent document introducing each category folder
 │   ├── ontology/             <- Domain concepts
+│   ├── knowledge.md
 │   ├── knowledge/            <- External facts
+│   ├── strategy.md
 │   ├── strategy/             <- Decisions and rationale
+│   ├── architecture.md
 │   └── architecture/         <- Design specifications
+├── implementation.md
 └── implementation/       <- Implementation projects (one subfolder per project)
     ├── <project-A>/
     └── <project-B>/

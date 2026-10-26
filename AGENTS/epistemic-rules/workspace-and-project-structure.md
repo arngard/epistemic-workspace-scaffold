@@ -36,13 +36,21 @@ tags: [agents, 워크스페이스, epistemic-rules]
 (workspace-root)/                      <- 워크스페이스 루트
 ├── AGENTS.md                           <- AI 에이전트 공통 지침 (모든 도구의 진입점)
 ├── AGENTS/                             <- 규범 폴더(상류 묶음 `epistemic-rules`)
+├── worklog.md                          <- 각 골격 폴더의 부모 문서
 ├── worklog/                            <- 작업 상태, 작업 트리
+├── reference.md
 ├── reference/                          <- 사용자가 dump한 raw 자료의 immutable 보관 영역
+├── epistemic-structure.md
 ├── epistemic-structure/                <- 코드로 표현할 수 없는 지식
+│   ├── ontology.md                     <- 각 범주 폴더의 부모 문서
 │   ├── ontology/                       <- 도메인 개념 정의 ("무엇이 존재하는가")
+│   ├── knowledge.md
 │   ├── knowledge/                      <- 외부 사실, 환경, 벤치마크 ("세상이 어떠한가")
+│   ├── strategy.md
 │   ├── strategy/                       <- 우리의 결정과 근거 ("왜 이렇게 하기로 했는가")
+│   ├── architecture.md
 │   └── architecture/                   <- 설계 명세 ("어떻게 만드는가")
+├── implementation.md
 └── implementation/                     <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
     ├── <project-A>/                    <- 각 프로젝트의 실제 소스 (또는 서브모듈 포인터 등)
     └── <project-B>/
