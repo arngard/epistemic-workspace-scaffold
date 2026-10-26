@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [architecture, epistemic-rules]
 ---
 
@@ -11,6 +11,10 @@ tags: [architecture, epistemic-rules]
 ## 정의
 
 결정된 구조 자체로, 최종 설계의 스니펫이자 현재 상태의 도면이다. 모듈 정의, 의존성 규칙, 빌드/배포, 도메인의 운영 절차 등을 담는다. 질문 형태는 "무엇을 어떻게 만들겠다"다. 코드의 구조 결정뿐 아니라 도메인의 운영 절차 명세와 이 인스턴스의 환경에 결부된 명세도 이 폴더에 둔다. 인스턴스 고유의 워크스페이스 운영 규범은 이 폴더가 아니라 해당 `AGENTS/`의 묶음 옆 낱개 문서에 둔다 (ref: [AGENTS/epistemic-rules/instance-specialization.md](../../../AGENTS/epistemic-rules/instance-specialization.md) "특수화 방식"). 설계의 맥락은 [knowledge/](../../knowledge/AGENTS.md)와 [strategy/](../../strategy/AGENTS.md) 참조.
+
+## 명세 읽기
+
+이 폴더의 명세는 구현 때 함께 참조되어 서로를 지지하므로, 존재를 모르면 위반 구현이 나온다. 설계 결정과 구현 착수 전에 이 폴더의 [INDEX.md](../INDEX.md)로 명세 전체를 확인하고 걸리는 명세를 모두 읽는다.
 
 ## 작성 스타일
 

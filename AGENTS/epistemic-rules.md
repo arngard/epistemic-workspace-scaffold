@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [규칙, epistemic-rules]
 ---
 
@@ -49,8 +49,8 @@ tags: [규칙, epistemic-rules]
 - 도구 환경 확인 -> [도구 환경](epistemic-rules/tool-environment.md)
 - 감사 스크립트 실행 -> [감사 도구](epistemic-rules/tools.md)
 - 새 용어 도입, 도메인 클래스 설계 전 -> [온톨로지 규범](../epistemic-structure/ontology/AGENTS/epistemic-rules.md) "용어 도입 전 검증"
-- 외부 사실, 결정 근거 확인 -> [knowledge/](../epistemic-structure/knowledge/AGENTS.md), [strategy/](../epistemic-structure/strategy/AGENTS.md)
-- 새 클래스나 모듈 생성, 모듈 구성, 의존성, 도메인의 운영 절차의 변경, 명세 신설 -> [architecture/](../epistemic-structure/architecture/AGENTS.md)
+- 외부 사실, 결정 근거 확인 -> [knowledge/](../epistemic-structure/knowledge/INDEX.md), [strategy/](../epistemic-structure/strategy/INDEX.md)
+- 새 클래스나 모듈 생성, 모듈 구성, 의존성, 도메인의 운영 절차의 변경, 명세 신설 -> [architecture/](../epistemic-structure/architecture/INDEX.md)
 - 설계 판단이 갈릴 때 -> [설계 원칙](epistemic-rules/design-principles.md)
 - 구현 착수 전 -> [핵심 제약](../epistemic-structure/architecture/core-constraints.md)
 - 스캐폴드 취지 의문, 신규 진입자 온보딩 -> [4범주의 이유](epistemic-rules/why-epistemic-workspace.md)

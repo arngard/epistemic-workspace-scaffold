@@ -2,6 +2,7 @@
 date created: 2026-04-18
 date modified: 2026-10-26
 tags: [knowledge, 샘플]
+description: 외부 사실 문서의 위치와 형식을 보여 주는 튜토리얼 샘플. 실제 문서를 쓰면 지우거나 바꾼다
 ---
 
 # (샘플) 외부 사실 문서

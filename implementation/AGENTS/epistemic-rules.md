@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [implementation, epistemic-rules]
 ---
 
@@ -13,4 +13,4 @@ tags: [implementation, epistemic-rules]
 - 프로젝트 폴더 이름은 가급적 해당 프로젝트의 리모트 레포 이름을 고려하여 짓는다.
 - 프로젝트별 기술 스택, 빌드 방법 등의 안내는 각 프로젝트 폴더 안의 문서(해당 프로젝트의 README 등)에 둔다.
 
-코드를 만들거나 고칠 때는 [coding-guidelines.md](epistemic-rules/coding-guidelines.md)를 읽는다.
+코드를 만들거나 고칠 때는 [coding-guidelines.md](epistemic-rules/coding-guidelines.md)와 프로젝트 고유 규약 [conventions.md](../../epistemic-structure/architecture/conventions.md)를 읽는다.

@@ -2,6 +2,7 @@
 date created: 2026-10-26
 date modified: 2026-10-26
 tags: [worklog]
+description: 진행 중인 작업의 상태와 감사, 주기 작업의 마지막 수행 시각
 ---
 
 # worklog

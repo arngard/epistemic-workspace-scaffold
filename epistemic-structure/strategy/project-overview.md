@@ -4,6 +4,7 @@ date modified: 2026-07-04
 tags: [strategy, 프로젝트, 샘플]
 importance: 상
 urgency: 중
+description: 프로젝트 수준의 상위 결정을 전략 문서 형식으로 보여 주는 튜토리얼 샘플. 실제로는 지우거나 목표, 첫 출시 범위, 대상 고객 등을 각각의 `why-*.md`로 나눠 쓴다
 ---
 
 # (샘플) 프로젝트 수준 결정

@@ -2,6 +2,7 @@
 date created: 2026-04-18
 date modified: 2026-10-26
 tags: [worklog]
+description: 작업의 계층 구조와 다음 작업 포인터
 ---
 
 # 작업 트리
