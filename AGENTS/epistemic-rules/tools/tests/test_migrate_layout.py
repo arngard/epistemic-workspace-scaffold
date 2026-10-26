@@ -9,7 +9,10 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from migrate_layout import map_path, migrate, rewrite_links, rewrite_mentions  # noqa: E402
+from migrate_layout import (  # noqa: E402
+    _repair_links, map_path, migrate, rewrite_links, rewrite_mentions)
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 class MapPathTest(unittest.TestCase):
@@ -70,6 +73,47 @@ class RewriteLinksTest(unittest.TestCase):
         self.assertEqual(once, "[t](../epistemic-structure/strategy/a%20b.md#s)")
         self.assertEqual(rewrite_links(once, "worklog/T.md", "worklog/T.md"), once)
 
+
+class CodeSpanLinkTest(unittest.TestCase):
+    """코드 구간 안의 링크는 예시이므로 바꾸지 않는다."""
+
+    OLD = "AGENTS/a.md"
+
+    def test_inline_code_kept(self):
+        src = "`[x](../_docs/_worklog/T.md)` [y](../_docs/_worklog/T.md)\n"
+        out = rewrite_links(src, self.OLD, self.OLD)
+        self.assertEqual(out, "`[x](../_docs/_worklog/T.md)` [y](../worklog/T.md)\n")
+        self.assertEqual(rewrite_links(out, self.OLD, self.OLD), out)
+
+    def test_double_backtick_and_unclosed(self):
+        src = "``[a](../_reference/x.md)`` ` [b](../_reference/x.md)\n"
+        self.assertEqual(rewrite_links(src, self.OLD, self.OLD),
+                         "``[a](../_reference/x.md)`` ` [b](../reference/x.md)\n")
+
+    def test_display_code_target_rewritten(self):
+        src = "[`x.md`](../_reference/x.md)\n"
+        self.assertEqual(rewrite_links(src, self.OLD, self.OLD), "[`x.md`](../reference/x.md)\n")
+
+    def test_fence_kept(self):
+        src = "```\n[x](../_reference/x.md)\n```\n"
+        self.assertEqual(rewrite_links(src, self.OLD, self.OLD), src)
+
+    def test_repair_skips_inline_code(self):
+        cur = "AGENTS/epistemic-rules/writing-style/doc.md"
+        src = "`[s](../../AGENTS.md)` [t](../../AGENTS.md)\n"
+        out = _repair_links(src, cur, lambda p: p == "AGENTS.md")
+        self.assertEqual(out, "`[s](../../AGENTS.md)` [t](../../../AGENTS.md)\n")
+
+
+@unittest.skipUnless((REPO_ROOT / ".git").exists(), "git 작업 트리 밖")
+class RepositoryHeadTest(unittest.TestCase):
+    """이 저장소 자체에 다시 돌려도 옮기거나 바꿀 것이 없다."""
+
+    def test_dry_run_on_repository_is_noop(self):
+        rep = migrate(REPO_ROOT, dry_run=True)
+        self.assertEqual(rep.moved, [])
+        self.assertEqual(rep.rewritten, [])
+        self.assertEqual(rep.conflicts, [])
 
 class RewriteMentionsTest(unittest.TestCase):
     def test_paths_replaced(self):

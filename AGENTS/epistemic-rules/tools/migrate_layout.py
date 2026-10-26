@@ -10,6 +10,7 @@ migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸
 대상 경로가 이미 있어(추적 여부 무관) 건너뛴 이동은 Report.conflicts에 모으고, 옛 파일은 그대로 둔다.
 상류 머지로 이미 새 위치에 와 있지만 본문 링크가 옛 위치 기준인 파일은, 대상이 실제로 있을 때만
 옛 위치 기준으로 다시 계산한다. 명령행은 conflicts가 있으면 종료 코드 1, 없으면 0이다.
+링크 변환은 코드 펜스와 인라인 코드 구간 안의 예시 링크를 건드리지 않는다.
 """
 
 import argparse
@@ -83,6 +84,50 @@ _STALE_RE = re.compile(_NOT_IDENT_BEFORE + r"_(?:docs|" + _BARE_NAMES + r")" + _
 _KEEP_RE = re.compile(r"\]\([^)]*\)|(?:https?://|mailto:)[^\s)>\]]+")
 _LINK_RE = re.compile(r"\]\(([^)\s]*)((?:\s+\"[^\"]*\")?)\)")
 _SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.\-]*:")
+_FENCES = ("```", "~~~")
+_TICKS_RE = re.compile(r"`+")
+
+
+def _code_spans(line: str) -> List[Tuple[int, int]]:
+    """줄 안 인라인 코드 구간의 (시작, 끝) 목록. 짝이 없는 백틱은 글자로 본다."""
+    spans = []
+    pos = 0
+    while True:
+        m = _TICKS_RE.search(line, pos)
+        if m is None:
+            return spans
+        n = len(m.group(0))
+        c = m
+        while True:
+            c = _TICKS_RE.search(line, c.end())
+            if c is None or len(c.group(0)) == n:
+                break
+        if c is None:
+            pos = m.end()
+        else:
+            spans.append((m.start(), c.end()))
+            pos = c.end()
+
+
+def _sub_outside_code(pattern, repl, text: str) -> str:
+    """코드 펜스와 인라인 코드 구간 밖에만 pattern.sub(repl)을 적용한다."""
+    out = []
+    in_fence = False
+    for line in text.splitlines(keepends=True):
+        if line.lstrip().startswith(_FENCES):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
+        pos = 0
+        for start, end in _code_spans(line):
+            out.append(pattern.sub(repl, line[pos:start]))
+            out.append(line[start:end])
+            pos = end
+        out.append(pattern.sub(repl, line[pos:]))
+    return "".join(out)
 
 
 def _inverse_path(rel: str) -> str:
@@ -145,11 +190,11 @@ def rewrite_links(text: str, old_src: str, new_src: str) -> str:
     이번 실행에서 옮기지 않은 파일은 old_src == new_src로 넘긴다. 같은 본문에 old_src != new_src로
     두 번 호출하는 것은 규약 밖이다(이미 바뀐 대상을 옛 위치 기준으로 다시 풀기 때문이다).
     외부 주소, 문서 안 앵커, 저장소 밖을 가리키는 대상은 건드리지 않는다.
-    `#` 뒤의 절 앵커는 보존한다.
+    코드 펜스와 인라인 코드 구간 안의 예시 링크도 건드리지 않는다. `#` 뒤의 절 앵커는 보존한다.
     """
     def repl(m):
         return "](" + _rewrite_target(m.group(1), old_src, new_src) + m.group(2) + ")"
-    return _LINK_RE.sub(repl, text)
+    return _sub_outside_code(_LINK_RE, repl, text)
 
 
 def _resolve(base_dir: str, target: str) -> Optional[str]:
@@ -169,6 +214,7 @@ def _repair_links(text: str, cur: str, exists) -> str:
     cur가 대응표의 새 경로일 때만 동작한다. 현재 위치 기준으로 대상이 없고,
     옛 위치(_inverse_path(cur)) 기준으로 풀어 대응시킨 경로가 exists(경로)로 있으면
     그 경로로 다시 계산한다. 고친 뒤에는 대상이 있으므로 재실행해도 바뀌지 않는다.
+    코드 펜스와 인라인 코드 구간 안의 예시 링크는 건드리지 않는다.
     """
     old = _inverse_path(cur)
     if old == cur:
@@ -185,7 +231,7 @@ def _repair_links(text: str, cur: str, exists) -> str:
         if cand == target or there is None or not exists(there):
             return m.group(0)
         return "](" + cand + m.group(2) + ")"
-    return _LINK_RE.sub(repl, text)
+    return _sub_outside_code(_LINK_RE, repl, text)
 
 
 def _stale_link_lines(text: str) -> List[Tuple[int, str]]:
@@ -231,7 +277,7 @@ def rewrite_mentions(text: str) -> Tuple[str, List[Tuple[int, str]]]:
     in_fence = False
     for no, line in enumerate(text.splitlines(keepends=True), start=1):
         body = line.rstrip("\r\n")
-        if body.lstrip().startswith(("```", "~~~")):
+        if body.lstrip().startswith(_FENCES):
             in_fence = not in_fence
             out.append(line)
             continue
