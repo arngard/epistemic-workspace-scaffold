@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [worklog]
 description: 작업의 계층 구조와 다음 작업 포인터
 ---
