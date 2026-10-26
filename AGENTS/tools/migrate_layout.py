@@ -4,12 +4,19 @@
 옛 레이아웃(_docs/_worklog 등)의 경로를 새 레이아웃(worklog 등)으로 대응시키고,
 마크다운 링크와 본문 언급을 새 경로로 바꾸는 순수 함수를 담는다.
 모든 경로 인자는 레포 루트 기준 POSIX 상대 경로다. import 시 부수 효과는 없다.
+migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸는 실행부다.
 """
 
+import argparse
+import os
 import posixpath
 import re
+import subprocess
+import sys
 import urllib.parse
-from typing import List, Tuple
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import List, Optional, Tuple
 
 # 옛 경로 -> 새 경로. 긴 접두어를 먼저 적용한다.
 PATH_MAP = [
@@ -138,3 +145,106 @@ def rewrite_mentions(text: str) -> Tuple[str, List[Tuple[int, str]]]:
             report.append((no, body))
         out.append(new_line)
     return "".join(out), report
+
+
+@dataclass
+class Report:
+    """이전 결과. 경로는 레포 루트 기준 POSIX 상대 경로다."""
+
+    moved: List[Tuple[str, str]] = field(default_factory=list)
+    rewritten: List[str] = field(default_factory=list)
+    residual: List[Tuple[str, int, str]] = field(default_factory=list)
+
+
+def _tracked(root: Path) -> List[str]:
+    out = subprocess.run(["git", "ls-files", "-z"], cwd=str(root), check=True, stdout=subprocess.PIPE).stdout
+    return [p for p in out.decode("utf-8").split("\0") if p]
+
+
+def _prune_empty_dirs(root: Path, rel_dir: str) -> None:
+    """옮긴 파일의 옛 상위 폴더가 비었으면 루트 직전까지 거슬러 올라가며 지운다."""
+    cur = rel_dir
+    while cur and cur != ".":
+        d = root / cur
+        try:
+            d.rmdir()
+        except OSError:
+            return
+        cur = posixpath.dirname(cur)
+
+
+def _sweep_old_dirs(root: Path) -> None:
+    """옛 최상위 폴더 아래의 빈 폴더를 아래에서부터 지운다. 파일이 남은 폴더는 둔다."""
+    for top in ["_docs"] + [old for old, _ in PATH_MAP if "/" not in old]:
+        base = root / top
+        if not base.is_dir():
+            continue
+        for dirpath, _dirs, _files in os.walk(str(base), topdown=False):
+            try:
+                os.rmdir(dirpath)
+            except OSError:
+                pass
+
+
+def migrate(root: Path, dry_run: bool = False) -> Report:
+    """root의 추적 파일을 새 레이아웃으로 옮기고 추적 md 파일의 링크와 언급을 바꾼다.
+
+    각 md 파일의 본문은 (이번 실행 전 위치, 현재 위치)로 정확히 한 번만 변환하므로 재실행은 변화가 없다.
+    dry_run이면 파일 시스템과 색인을 건드리지 않고 같은 보고를 돌려준다.
+    """
+    root = Path(root)
+    report = Report()
+    tracked = _tracked(root)
+    present = set(tracked)
+    # 이번 실행 전 위치 -> 이번 실행 뒤 위치
+    plan = {}
+    for rel in tracked:
+        new = map_path(rel)
+        if new != rel and new not in present:
+            plan[rel] = new
+    for old, new in plan.items():
+        report.moved.append((old, new))
+        if dry_run:
+            continue
+        (root / new).parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["git", "mv", old, new], cwd=str(root), check=True)
+        _prune_empty_dirs(root, posixpath.dirname(old))
+    if not dry_run:
+        _sweep_old_dirs(root)
+    for old in tracked:
+        new = plan.get(old, old)
+        if not new.endswith(".md"):
+            continue
+        read_from = old if dry_run else new
+        with open(str(root / read_from), encoding="utf-8", newline="") as f:
+            text = f.read()
+        out, residual = rewrite_mentions(rewrite_links(text, old, new))
+        report.residual.extend((new, no, line) for no, line in residual)
+        if out != text:
+            report.rewritten.append(new)
+            if not dry_run:
+                with open(str(root / new), "w", encoding="utf-8", newline="") as f:
+                    f.write(out)
+    return report
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    ap = argparse.ArgumentParser(description="폴더 구조를 새 레이아웃으로 이전한다.")
+    ap.add_argument("root", help="이전할 git 저장소 루트")
+    ap.add_argument("--dry-run", action="store_true", help="파일을 바꾸지 않고 보고만 한다")
+    args = ap.parse_args(argv)
+    rep = migrate(Path(args.root), dry_run=args.dry_run)
+    print("옮긴 파일 (%d):" % len(rep.moved))
+    for old, new in rep.moved:
+        print("  %s -> %s" % (old, new))
+    print("본문을 바꾼 파일 (%d):" % len(rep.rewritten))
+    for p in rep.rewritten:
+        print("  %s" % p)
+    print("옛 경로가 남은 줄 (%d):" % len(rep.residual))
+    for p, no, line in rep.residual:
+        print("  %s:%d: %s" % (p, no, line))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
