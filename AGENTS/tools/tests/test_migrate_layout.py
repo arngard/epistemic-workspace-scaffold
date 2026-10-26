@@ -193,5 +193,101 @@ class MigrateTest(unittest.TestCase):
             self.assertIn("AGENTS/a.md", rep.rewritten)
 
 
+NEW_FIXTURE = {
+    "worklog/TASK_TREE.md": "[s](../epistemic-structure/strategy/x.md)\n",
+    "epistemic-structure/strategy/x.md": "[t](../../worklog/TASK_TREE.md)\n",
+    "epistemic-structure/AGENTS.md": "docs\n",
+    "reference/AGENTS.md": "ref\n",
+    "AGENTS/a.md": "[w](../worklog/TASK_TREE.md)\n",
+}
+
+
+class ChildMergeTest(unittest.TestCase):
+    """상류 머지 직후 자식 레포: 새 위치에 왔지만 본문은 옛 위치 기준인 파일."""
+
+    def test_old_relative_links_repaired(self):
+        files = dict(NEW_FIXTURE)
+        files["worklog/TASK_TREE.md"] += "[결정](../_strategy/x.md#절)\n"
+        files["epistemic-structure/strategy/my.md"] = (
+            "[t](../_worklog/TASK_TREE.md)\n[r](../../_reference/AGENTS.md)\n[n](../_strategy/none.md)\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root, dry_run=True)
+            self.assertEqual(sorted(rep.rewritten),
+                             ["epistemic-structure/strategy/my.md", "worklog/TASK_TREE.md"])
+            rep = migrate(root)
+            self.assertEqual(rep.moved, [])
+            self.assertEqual((root / "worklog/TASK_TREE.md").read_text(encoding="utf-8"),
+                             "[s](../epistemic-structure/strategy/x.md)\n"
+                             "[결정](../epistemic-structure/strategy/x.md#절)\n")
+            self.assertEqual((root / "epistemic-structure/strategy/my.md").read_text(encoding="utf-8"),
+                             "[t](../../worklog/TASK_TREE.md)\n[r](../../reference/AGENTS.md)\n"
+                             "[n](../_strategy/none.md)\n")
+            self.assertEqual(rep.residual,
+                             [("epistemic-structure/strategy/my.md", 3, "[n](../_strategy/none.md)")])
+            self.assertEqual(rep.conflicts, [])
+            before = _snapshot(root)
+            again = migrate(root)
+            self.assertEqual((again.moved, again.rewritten), ([], []))
+            self.assertEqual(again.residual, rep.residual)
+            self.assertEqual(_snapshot(root), before)
+
+
+class EdgeCaseTest(unittest.TestCase):
+    def test_untracked_tmp_moved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp)
+            (root / "_tmp/sub").mkdir(parents=True)
+            (root / "_tmp/sub/a.txt").write_text("a\n", encoding="utf-8")
+            dry = migrate(root, dry_run=True)
+            self.assertIn(("_tmp", ".tmp"), dry.moved)
+            self.assertTrue((root / "_tmp/sub/a.txt").is_file())
+            self.assertFalse((root / ".tmp").exists())
+            rep = migrate(root)
+            self.assertIn(("_tmp", ".tmp"), rep.moved)
+            self.assertEqual(rep.conflicts, [])
+            self.assertFalse((root / "_tmp").exists())
+            self.assertEqual((root / ".tmp/sub/a.txt").read_text(encoding="utf-8"), "a\n")
+
+    def test_untracked_tmp_conflict(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp)
+            (root / "_tmp").mkdir()
+            (root / "_tmp/a.txt").write_text("a\n", encoding="utf-8")
+            (root / ".tmp").mkdir()
+            (root / ".tmp/b.txt").write_text("b\n", encoding="utf-8")
+            rep = migrate(root)
+            self.assertEqual(rep.conflicts, [("_tmp", ".tmp")])
+            self.assertNotIn(("_tmp", ".tmp"), rep.moved)
+            self.assertTrue((root / "_tmp/a.txt").is_file())
+            self.assertFalse((root / ".tmp/a.txt").exists())
+
+    def test_untracked_destination_is_conflict(self):
+        files = dict(FIXTURE)
+        files["_docs/_worklog/dup.md"] = "old\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            (root / "worklog").mkdir()
+            (root / "worklog/dup.md").write_text("untracked\n", encoding="utf-8")
+            dry = migrate(root, dry_run=True)
+            rep = migrate(root)
+            self.assertEqual(dry.conflicts, rep.conflicts)
+            self.assertEqual(rep.conflicts, [("_docs/_worklog/dup.md", "worklog/dup.md")])
+            self.assertEqual((root / "_docs/_worklog/dup.md").read_text(encoding="utf-8"), "old\n")
+            self.assertEqual((root / "worklog/dup.md").read_text(encoding="utf-8"), "untracked\n")
+
+    def test_unmapped_old_files_reported(self):
+        files = dict(FIXTURE)
+        files["_docs/README.md"] = "readme\n"
+        files["_docs/_custom/x.md"] = "custom\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root)
+            self.assertIn(("_docs/README.md", 0, "옮길 대응이 없는 옛 경로 파일"), rep.residual)
+            self.assertIn(("_docs/_custom/x.md", 0, "옮길 대응이 없는 옛 경로 파일"), rep.residual)
+            self.assertTrue((root / "_docs/README.md").is_file())
+            self.assertTrue((root / "_docs/_custom/x.md").is_file())
+
+
 if __name__ == "__main__":
     unittest.main()
