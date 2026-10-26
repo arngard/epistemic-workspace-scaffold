@@ -18,10 +18,33 @@ class MapPathTest(unittest.TestCase):
         self.assertEqual(map_path("_docs/_strategy/a b.md"), "epistemic-structure/strategy/a b.md")
         self.assertEqual(map_path("_docs/AGENTS.md"), "epistemic-structure/AGENTS.md")
         self.assertEqual(map_path("_tmp/x"), ".tmp/x")
-        self.assertEqual(map_path("AGENTS/folder-structure.md"), "AGENTS/folder-structure.md")
+        self.assertEqual(map_path("AGENTS/folder-structure.md"), "AGENTS/epistemic-rules/folder-structure.md")
 
     def test_idempotent(self):
         self.assertEqual(map_path("worklog/STATUS.md"), "worklog/STATUS.md")
+
+
+class Phase2MapTest(unittest.TestCase):
+    def test_exact_and_prefix(self):
+        self.assertEqual(map_path("AGENTS/folder-structure.md"), "AGENTS/epistemic-rules/folder-structure.md")
+        self.assertEqual(map_path("AGENTS/unit-task-workflow.md"), "AGENTS/epistemic-rules/unit-task-workflow.md")
+        self.assertEqual(map_path("AGENTS/unit-task/stage-authority.md"), "AGENTS/epistemic-rules/unit-task/stage-authority.md")
+        self.assertEqual(map_path("AGENTS/tools/audit.py"), "AGENTS/epistemic-rules/tools/audit.py")
+        self.assertEqual(map_path("AGENTS/AGENTS.md"), "AGENTS/AGENTS.md")
+        self.assertEqual(map_path("AGENTS/my-custom.md"), "AGENTS/my-custom.md")
+
+    def test_idempotent(self):
+        self.assertEqual(map_path("AGENTS/epistemic-rules/tools/audit.py"), "AGENTS/epistemic-rules/tools/audit.py")
+
+    def test_mentions(self):
+        out, rep = rewrite_mentions("`python3 AGENTS/tools/audit.py .`와 `AGENTS/document-units.md`")
+        self.assertEqual(out, "`python3 AGENTS/epistemic-rules/tools/audit.py .`와 `AGENTS/epistemic-rules/document-units.md`")
+        self.assertEqual(rep, [])
+        self.assertEqual(rewrite_mentions(out)[0], out)
+
+    def test_mention_in_fence_reported(self):
+        out, rep = rewrite_mentions("```\npython3 AGENTS/tools/audit.py .\n```\n")
+        self.assertEqual([n for n, _ in rep], [2])
 
 
 class RewriteLinksTest(unittest.TestCase):
@@ -130,6 +153,24 @@ class MigrateTest(unittest.TestCase):
             self.check_final(root)
             self.assertIn(("_docs/_worklog/TASK_TREE.md", "worklog/TASK_TREE.md"), rep.moved)
             self.assertIn("AGENTS/a.md", rep.rewritten)
+
+    def test_phase2_child_own_doc_stays(self):
+        files = {
+            "AGENTS/working-principles.md": "[t](../worklog/TASK_TREE.md)\n",
+            "AGENTS/my-custom.md": "[w](working-principles.md)\n",
+            "worklog/TASK_TREE.md": "x\n",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            migrate(root)
+            self.assertEqual((root / "AGENTS/my-custom.md").read_text(encoding="utf-8"),
+                             "[w](epistemic-rules/working-principles.md)\n")
+            self.assertEqual((root / "AGENTS/epistemic-rules/working-principles.md").read_text(encoding="utf-8"),
+                             "[t](../../worklog/TASK_TREE.md)\n")
+            _git(root, "add", "-A")
+            again = migrate(root)
+            self.assertEqual(again.moved, [])
+            self.assertEqual(again.rewritten, [])
 
     def test_rerun_is_noop(self):
         with tempfile.TemporaryDirectory() as tmp:

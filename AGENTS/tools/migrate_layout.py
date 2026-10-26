@@ -36,6 +36,19 @@ PATH_MAP = [
     ("_tmp", ".tmp"),
 ]
 
+# 상류 규범 묶음으로 옮기는 루트 규범. 문서는 정확 일치, 폴더는 접두어로 대응한다.
+NORM_DOCS = (
+    "agent-roles.md", "agent-tag-format.md", "branch-strategy.md", "coding-guidelines.md",
+    "document-temporality.md", "document-units.md", "external-communication.md", "folder-structure.md",
+    "how-to-separate-docs-folders.md", "ingest-workflow.md", "instance-specialization.md",
+    "original-protection-principle.md", "pr-workflow.md", "session-boundaries.md",
+    "submodule-pointer-sync.md", "tool-environment.md", "unit-task-workflow.md", "unit-task.md",
+    "why-agents-md-not-conventions-md.md", "why-epistemic-workspace.md", "why-scaffolding-not-single-file.md",
+    "working-principles.md", "workspace-and-project-structure.md", "writing-style.md",
+)
+NORM_DIRS = ("agent-roles", "ingest-workflow", "pr-workflow", "tools", "unit-task", "unit-task-workflow", "writing-style")
+PATH_MAP += [("AGENTS/" + n, "AGENTS/epistemic-rules/" + n) for n in NORM_DOCS + NORM_DIRS]
+
 # 본문에서 `_docs/` 없이 쓰인 옛 폴더 이름 -> 새 이름.
 _BARE_MAP = {
     "_worklog": "worklog",
@@ -52,12 +65,18 @@ _BARE_NAMES = "|".join(n[1:] for n in _BARE_MAP)
 _NOT_IDENT_BEFORE = r"(?<![A-Za-z0-9_])"
 _NOT_IDENT_AFTER = r"(?![A-Za-z0-9_])"
 
+# 상류 규범의 옛 루트 경로 언급. 앞 글자가 영숫자, _, ., /, -이면 다른 경로의 일부로 본다.
+_NORM_BEFORE = r"(?<![A-Za-z0-9_./-])"
+_NORM_RE = (
+    _NORM_BEFORE + r"AGENTS/(?:(?:" + "|".join(re.escape(n) for n in NORM_DIRS) + r")/|(?:"
+    + "|".join(re.escape(n) for n in NORM_DOCS) + r")(?![A-Za-z0-9_-]))"
+)
 # 건드리지 않을 구간(링크 대상, URL)과 바꿀 언급을 한 정규식으로 묶어 앞에서부터 훑는다.
 _MENTION_RE = re.compile(
     r"(?P<keep>\]\([^)]*\)|(?:https?://|mailto:)[^\s)>\]]+)"
     r"|(?P<hit>" + _NOT_IDENT_BEFORE
     + r"(?:_docs/(?:_(?:" + _BARE_NAMES + r")|AGENTS\.md)|_(?:" + _BARE_NAMES + r"))"
-    + _NOT_IDENT_AFTER + r")"
+    + _NOT_IDENT_AFTER + r"|" + _NORM_RE + r")"
 )
 # 바꾸고 남은 옛 경로 표지. 보고 대상 판정에 쓴다.
 _STALE_RE = re.compile(_NOT_IDENT_BEFORE + r"_(?:docs|" + _BARE_NAMES + r")" + _NOT_IDENT_AFTER)
@@ -71,18 +90,31 @@ def _inverse_path(rel: str) -> str:
     for old, new in PATH_MAP:
         if rel == new:
             return old
-        if old != "_docs/AGENTS.md" and rel.startswith(new + "/"):
+        if not old.endswith(".md") and rel.startswith(new + "/"):
             return old + rel[len(new):]
     return rel
 
 
-def map_path(rel: str) -> str:
-    """옛 경로를 새 경로로 대응시킨다. 대응이 없거나 이미 새 경로면 그대로 돌려준다."""
+def _map_once(rel: str) -> str:
     for old, new in PATH_MAP:
         if rel == old:
             return new
-        if old != "_docs/AGENTS.md" and rel.startswith(old + "/"):
+        if not old.endswith(".md") and rel.startswith(old + "/"):
             return new + rel[len(old):]
+    return rel
+
+
+def map_path(rel: str) -> str:
+    """옛 경로를 새 경로로 대응시킨다. 더 바뀌지 않을 때까지 대응을 거듭 적용한다.
+
+    .md로 끝나는 항목은 정확 일치로만 대응하고, 나머지는 접두어로 대응한다.
+    대응이 없거나 이미 새 경로면 그대로 돌려준다.
+    """
+    for _ in range(len(PATH_MAP) + 1):
+        nxt = _map_once(rel)
+        if nxt == rel:
+            return rel
+        rel = nxt
     return rel
 
 
@@ -172,13 +204,16 @@ def _stale_link_lines(text: str) -> List[Tuple[int, str]]:
 
 def _has_stale(line: str) -> bool:
     """링크 대상과 URL을 뺀 나머지에 옛 경로 표지가 남았는지 판정한다."""
-    return _STALE_RE.search(_KEEP_RE.sub("", line)) is not None
+    plain = _KEEP_RE.sub("", line)
+    return _STALE_RE.search(plain) is not None or re.search(_NORM_RE, plain) is not None
 
 
 def _mention_repl(m):
     if m.group("keep") is not None:
         return m.group(0)
     hit = m.group("hit")
+    if hit.startswith("AGENTS/"):
+        return "AGENTS/epistemic-rules/" + hit[len("AGENTS/"):]
     if hit.startswith("_docs/"):
         return map_path(hit)
     return _BARE_MAP[hit]
@@ -188,7 +223,7 @@ def rewrite_mentions(text: str) -> Tuple[str, List[Tuple[int, str]]]:
     """본문에 언급된 옛 경로를 새 경로로 바꾼다.
 
     코드 펜스 안은 바꾸지 않고, 옛 경로가 든 줄을 보고 목록에 넣는다. 링크 대상과 URL,
-    식별자 안에 든 문자열은 바꾸지 않는다. 바꾼 뒤에도 `_docs`가 남은 줄은 보고한다.
+    식별자 안에 든 문자열은 바꾸지 않는다. 바꾼 뒤에도 옛 경로가 남은 줄은 보고한다.
     반환값은 (바꾼 본문, [(줄 번호, 줄)])이다.
     """
     out = []
