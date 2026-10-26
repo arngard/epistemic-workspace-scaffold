@@ -13,6 +13,8 @@ def check_descriptors(root: Path) -> list[Finding]:
     """모든 폴더가 디스크립터(AGENTS.md)를 갖는지, 폴더 직속 md 수 임계를 검사."""
     out: list[Finding] = []
     for d in content_dirs(root):
+        if in_norms_dir(root, d):
+            continue  # 규범 폴더는 디스크립터를 두지 않는다
         rel = d.relative_to(root) if d != root else Path(".")
         # reference/ 하위 폴더는 immutable raw 보관이라 규약 검사 대상이 아니다.
         # 디스크립터도 강제하지 않고, 분화 권고도 하지 않는다 - 원본을 재편하지
@@ -111,10 +113,13 @@ def check_empty_folders(root: Path) -> list[Finding]:
     out: list[Finding] = []
     for d in content_dirs(root):
         rel = d.relative_to(root).as_posix() if d != root else "."
-        if rel in SKELETON_DIRS:
+        if rel in SKELETON_DIRS or in_norms_dir(root, d):
             continue
         try:
-            entries = [e for e in d.iterdir() if e.name != DESCRIPTOR_NAME]
+            entries = [
+                e for e in d.iterdir()
+                if e.name not in (DESCRIPTOR_NAME, "CLAUDE.md", NORMS_DIR_NAME)
+            ]
         except OSError:
             # 목록 불가 폴더는 정적 감사 대상에서 조용히 건너뛴다.
             continue
@@ -131,8 +136,8 @@ def check_name_collision(root: Path) -> list[Finding]:
 
     `X.md` + `X/`는 하위 문서 묶음 관계의 예약 신호다 (ref:
     workspace-and-project-structure.md "하위 문서 폴더 규칙"). 폴더에
-    디스크립터 외 md가 없으면 그 관계가 성립할 수 없으므로 확정 검출한다.
-    md가 든 동명 쌍의 실제 관계 판단은 감사자(LLM) 몫이다.
+    디스크립터와 CLAUDE.md 외 항목이 없으면 그 관계가 성립할 수 없으므로 확정
+    검출한다. 항목이 든 동명 쌍의 실제 관계 판단은 감사자(LLM) 몫이다.
     """
     out: list[Finding] = []
     for d in content_dirs(root):
@@ -147,11 +152,10 @@ def check_name_collision(root: Path) -> list[Finding]:
             doc = d / (sub.name + ".md")
             if not doc.exists():
                 continue
-            has_md = any(
-                p.is_file() and p.suffix == ".md" and p.name != DESCRIPTOR_NAME
-                for p in sub.iterdir()
+            has_sub = any(
+                p.name not in (DESCRIPTOR_NAME, "CLAUDE.md") for p in sub.iterdir()
             )
-            if not has_md:
+            if not has_sub:
                 out.append(Finding(
                     WARNING, "naming", str(doc.relative_to(root)),
                     f"동명 폴더 {sub.relative_to(root)}/에 하위 문서가 없음. "
@@ -206,4 +210,29 @@ def check_filename_portability(root: Path) -> list[Finding]:
         stem = name.split(".", 1)[0].upper()
         if stem in WINDOWS_RESERVED:
             out.append(Finding(VIOLATION, "portability", rel, f"윈도우 예약어 이름 ({stem})"))
+    return out
+
+
+def check_claude_pointers(root: Path) -> list[Finding]:
+    """AGENTS.md가 있는 폴더의 CLAUDE.md 포인터 검사 (경고).
+
+    규범 폴더가 아닌 폴더에 AGENTS.md가 있으면 같은 폴더에 내용이 `@AGENTS.md`
+    (앞뒤 공백 제외)인 CLAUDE.md가 있어야 한다. 없거나 내용이 다르면 경고한다.
+    """
+    out: list[Finding] = []
+    for d in content_dirs(root):
+        if in_norms_dir(root, d) or not (d / DESCRIPTOR_NAME).exists():
+            continue
+        rel = d.relative_to(root).as_posix() if d != root else "."
+        pointer = d / "CLAUDE.md"
+        if not pointer.is_file():
+            out.append(Finding(
+                WARNING, "claude-pointer", rel,
+                f"CLAUDE.md 없음. 내용이 {CLAUDE_POINTER}인 CLAUDE.md를 둔다",
+            ))
+        elif read(pointer).strip() != CLAUDE_POINTER:
+            out.append(Finding(
+                WARNING, "claude-pointer", rel,
+                f"CLAUDE.md 내용이 {CLAUDE_POINTER}가 아님",
+            ))
     return out

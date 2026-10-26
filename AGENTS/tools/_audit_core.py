@@ -32,6 +32,15 @@ SCAFFOLD_STATE_MARKER = "스캐폴드 상태"
 # 규범 폴더로 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
 NORMATIVE_DIRS = ("AGENTS", "epistemic-structure/architecture")
 
+# 규범 폴더 이름과 상류 규범 묶음 이름. 규범 폴더는 어느 깊이에서든 이름이
+# AGENTS인 폴더와 그 아래 전부이며, 폴더 디스크립터와 CLAUDE.md 포인터를 두지 않는다.
+NORMS_DIR_NAME = "AGENTS"
+BUNDLE_NAME = "epistemic-rules"
+# 폴더 CLAUDE.md의 표준 내용 - 같은 폴더의 AGENTS.md를 가져온다.
+CLAUDE_POINTER = "@AGENTS.md"
+# 가져오기 줄: 줄 전체가 공백 없는 @경로. 문장 속 @경로는 가져오기 검사 대상이 아니다.
+IMPORT_LINE_RE = re.compile(r"^@(\S+)$")
+
 # 에피스테믹 골격이 출고하는 표준 폴더. 실체 0건 검출에서 상시 예외.
 SKELETON_DIRS = {
     ".", "AGENTS", "AGENTS/tools", "epistemic-structure",
@@ -200,7 +209,7 @@ def iter_md_files(root: Path):
     """규약 검사 대상 .md 순회.
 
     reference/ 내부는 immutable raw 자료라 규약 검사 대상이 아니다
-    (디스크립터 AGENTS.md 자체만 예외).
+    (디스크립터 AGENTS.md 자체와 규범 폴더 reference/AGENTS/만 예외).
     implementation/ 하위 프로젝트 내부(소스 트리)도 대상이 아니다 -
     소스 폴더 구조는 코드 생태계 관례가 지배한다 (ref: folder-structure.md
     "폴더 구조와 디스크립터" implementation 예외). 직할 AGENTS.md와
@@ -212,16 +221,58 @@ def iter_md_files(root: Path):
         if is_excluded(root, path):
             continue
         parts = path.relative_to(root).parts
-        if parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_descriptor:
+        if (
+            parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_descriptor
+            and not (len(parts) >= 3 and parts[1] == NORMS_DIR_NAME)
+        ):
             continue
         if (
             len(parts) >= 2
             and parts[0] == IMPLEMENTATION_DIR
             and not (len(parts) == 2 and parts[1] == DESCRIPTOR_NAME)
-            and parts[1] != "AGENTS"
+            and parts[1] != NORMS_DIR_NAME
         ):
             continue
         yield path
+
+
+def in_norms_dir(root: Path, d: Path) -> bool:
+    """폴더 d가 규범 폴더(루트 상대 경로 성분에 AGENTS가 있는 폴더)인지 판정.
+
+    파일은 path.parent로 부른다. 루트 자신은 규범 폴더가 아니다.
+    """
+    return NORMS_DIR_NAME in d.relative_to(root).parts
+
+
+def in_bundle_detail(root: Path, d: Path) -> bool:
+    """폴더 d가 묶음 세부 폴더(AGENTS 바로 다음 성분이 epistemic-rules)인지 판정."""
+    parts = d.relative_to(root).parts
+    return any(
+        a == NORMS_DIR_NAME and b == BUNDLE_NAME for a, b in zip(parts, parts[1:])
+    )
+
+
+def imports_in(path: Path) -> "list[tuple[int, str]]":
+    """front matter와 코드 펜스 밖의 가져오기 줄 (줄 번호, 경로) 목록.
+
+    가져오기 줄은 줄 전체가 @경로인 줄이다. 줄 번호는 파일 전체 기준 1부터다.
+    """
+    text = read(path)
+    match = FRONT_MATTER_RE.match(text)
+    offset = text[:match.end()].count("\n") if match else 0
+    out: "list[tuple[int, str]]" = []
+    in_fence = False
+    for i, line in enumerate(text[match.end():].splitlines() if match else text.splitlines()):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        m = IMPORT_LINE_RE.match(stripped)
+        if m:
+            out.append((offset + i + 1, m.group(1)))
+    return out
 
 
 def read(path: Path) -> str:

@@ -224,3 +224,30 @@ def check_reference_markers(root: Path) -> list[Finding]:
                     f"표지 없이 괄호에 둔 링크 - ref:, sub:, see:를 단다 -> {quote}",
                 ))
     return out
+
+
+def check_imports(root: Path) -> list[Finding]:
+    """`@` 가져오기 줄의 대상 실재 검사.
+
+    줄 전체가 @경로인 줄만 가져오기로 본다. 대상은 줄을 둔 파일 위치 기준이며
+    없으면 위반이다. 묶음 세부 폴더 안의 가져오기는 경고한다. 검사 파일은
+    iter_md_files의 파일과 각 폴더의 CLAUDE.md다.
+    """
+    files = set(iter_md_files(root))
+    for d in content_dirs(root):
+        pointer = d / "CLAUDE.md"
+        if pointer.is_file() and not is_excluded(root, pointer):
+            files.add(pointer)
+    out: list[Finding] = []
+    for path in sorted(files):
+        rel = str(path.relative_to(root))
+        for lineno, raw in imports_in(path):
+            target = (path.parent / urllib.parse.unquote(raw)).resolve()
+            if not target.exists():
+                out.append(Finding(VIOLATION, "import", rel, f"{lineno}행 가져오기 대상 없음 -> @{raw}"))
+            if in_bundle_detail(root, path.parent):
+                out.append(Finding(
+                    WARNING, "import", rel,
+                    f"{lineno}행 묶음 세부 문서 안의 가져오기. 가져오기는 폴더 AGENTS.md와 묶음 요지에만 둔다",
+                ))
+    return out

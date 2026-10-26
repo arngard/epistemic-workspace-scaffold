@@ -15,7 +15,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   4. 날짜 프리픽스 없는 문서의 date closed (시간성 혼합 신호) - 위반
   5. STATUS.md 레지스트리 표 외 서술 누적 - 위반
   6. TASK_TREE.md 속성 노드 표준 키 위반 - 위반
-  7. 디스크립터(AGENTS.md) 없는 폴더 - 위반
+  7. 디스크립터(AGENTS.md) 없는 폴더 - 위반 (규범 폴더(`AGENTS/`와 그 아래) 제외)
   8. 폴더 직속 md 파일 수 임계 초과 - 경고 (분화 권고)
      (reference/ 하위는 제외 - 원본을 재편하지 않으므로 실행 불가능한 권고다)
   9. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
@@ -27,8 +27,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  13. STATUS.md 레지스트리 표 스키마, 시각 형식 - 경고
  14. epistemic-structure/ 4범주 직속 문서의 tags 첫 항목 정합 - 경고
  15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더 제외) - 경고
+     (`CLAUDE.md`와 규범 폴더는 실체로 세지 않음)
      (찌꺼기인지 사양 동결인지 첫 실체 대기인지는 감사자가 판단)
- 16. 하위 문서 없는 동명 문서-폴더 쌍 - 경고
+ 16. 디스크립터와 `CLAUDE.md` 외 항목이 없는 동명 문서-폴더 쌍 - 경고
      (동명 쌍은 하위 문서 묶음 관계의 예약 신호. md가 든 동명 쌍의
       실제 관계 판단은 감사자 몫)
  17. 마크다운 링크 표시텍스트-대상 정합 - 위반
@@ -59,6 +60,11 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      링크만 있는 목록 항목은 색인 목록과 참고 목록이 형태로 갈리지 않아 보지 않고,
      명사에 붙인 동격 괄호와 화살표 포인터도 보지 않는다(모두 감사자 몫)
      (ref: AGENTS/writing-style/reference-markers.md)
+ 25. AGENTS.md가 있는 폴더(규범 폴더 제외)의 CLAUDE.md 포인터 - 경고
+     (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님)
+ 26. `@` 가져오기 줄(줄 전체가 @경로)의 대상 부재 - 위반
+     (경로는 줄을 둔 파일 위치 기준. 묶음 세부 폴더 AGENTS/epistemic-rules/ 안의
+      가져오기는 경고. front matter와 코드 펜스 안은 제외)
 
 위치: AGENTS/tools/audit.py. 사용 안내 문서는 AGENTS/tool-environment.md "기계 감사 스크립트".
 
@@ -99,12 +105,12 @@ from _audit_core import Finding, VIOLATION, WARNING
 from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags_category
 from audit_links import (
     check_links, check_link_text, check_section_refs, check_link_whitespace,
-    check_reference_markers,
+    check_reference_markers, check_imports,
 )
 from audit_structure import (
     check_descriptors, check_normative_guides, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
-    check_date_prefix_separator,
+    check_date_prefix_separator, check_claude_pointers,
 )
 from audit_worklog import (
     check_status_registry, check_status_schema,
@@ -142,6 +148,8 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_date_prefix_separator(root)
     findings += check_ascii_punctuation(root)
     findings += check_scaffold_state_markers(root)
+    findings += check_claude_pointers(root)
+    findings += check_imports(root)
     return findings
 
 
