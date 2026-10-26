@@ -64,5 +64,5 @@ see: [unit-task.md](unit-task.md)(단위 작업 정의와 재귀 쪼개짐), [TA
 - see: [unit-task-workflow.md](unit-task-workflow.md) - 단위 작업 운영 흐름.
 - see: [coding-guidelines.md](coding-guidelines.md) - 코드 작업 전용 지침.
 - see: [original-protection-principle.md](original-protection-principle.md) - 원본 보호 원칙.
-- see: [core-constraints.md](../../epistemic-structure/architecture/core-constraints.md) - 설계 원칙(tiebreaker).
+- see: [design-principles.md](design-principles.md) - 설계 원칙(tiebreaker).
 - see: [ingest-workflow.md](ingest-workflow.md) - 정보 유입 처리.

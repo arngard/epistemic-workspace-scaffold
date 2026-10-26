@@ -6,7 +6,7 @@ tags: [규칙, epistemic-rules]
 
 # 워크스페이스 상류 규범 요지
 
-워크스페이스 전체에 걸치는 상류 규범의 요지다. 세부 규약은 `epistemic-rules/` 아래 SSOT(single source of truth) 문서에 두되, 어떤 규칙이 존재하는지는 여기서 이름으로 짚어 에이전트가 그 규칙을 인지하고 찾아보게 한다. 같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 이 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다.
+워크스페이스 전체에 걸치는 상류 규범의 요지다. 세부 규약은 `epistemic-rules/` 아래 SSOT(single source of truth) 문서에 두고, 여기서는 규칙의 존재를 이름으로 짚어 에이전트가 인지하고 찾아보게 한다. 같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 이 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다.
 
 ## 에피스테믹 워크스페이스
 
@@ -47,11 +47,12 @@ tags: [규칙, epistemic-rules]
 - 계승된 규범, 절차의 변경이나 특수화를 도출했을 때 -> [상속 자산 특수화](epistemic-rules/instance-specialization.md)
 - 공용 태그 작성, 대면 -> [공용 태그 형식](epistemic-rules/agent-tag-format.md)
 - 서브에이전트 호출, 감사자 확장 -> [서브에이전트 역할](epistemic-rules/agent-roles.md)
-- 도구 환경 확인, 감사 스크립트 실행 -> [도구 환경](epistemic-rules/tool-environment.md)
-- 코드(감사 도구 포함)를 만들거나 고칠 때 -> [코드 작업 지침](epistemic-rules/coding-guidelines.md)
+- 도구 환경 확인 -> [도구 환경](epistemic-rules/tool-environment.md)
+- 감사 스크립트 실행 -> [감사 도구](epistemic-rules/tools.md)
 - 새 용어 도입, 도메인 클래스 설계 전 -> [ontology/](../epistemic-structure/ontology/AGENTS.md) "용어 도입 전 검증"
 - 외부 사실, 결정 근거 확인 -> [knowledge/](../epistemic-structure/knowledge/AGENTS.md), [strategy/](../epistemic-structure/strategy/AGENTS.md)
-- 새 클래스, 모듈 생성, 모듈, 의존성, 운영 절차 변경이나 명세 신설 -> [architecture/](../epistemic-structure/architecture/AGENTS.md)
-- 설계 판단이 갈릴 때, 구현 착수 전 -> [핵심 제약](../epistemic-structure/architecture/core-constraints.md)
+- 새 클래스나 모듈 생성, 모듈, 의존성, 운영 절차의 변경이나 명세 신설 -> [architecture/](../epistemic-structure/architecture/AGENTS.md)
+- 설계 판단이 갈릴 때 -> [설계 원칙](epistemic-rules/design-principles.md)
+- 구현 착수 전 -> [핵심 제약](../epistemic-structure/architecture/core-constraints.md)
 - 스캐폴드 취지 의문, 신규 진입자 온보딩 -> [4범주의 이유](epistemic-rules/why-epistemic-workspace.md)
 - 진입점 구조, scaffolding 구조 의문 -> [진입점 근거](epistemic-rules/why-agents-md-not-conventions-md.md), [scaffolding 근거](epistemic-rules/why-scaffolding-not-single-file.md)

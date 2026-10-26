@@ -21,7 +21,7 @@ EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
 
 # 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (folder-structure.md
-# "폴더 구조와 디스크립터"). 도구 계층 자동 인식용 명명.
+# "폴더 구조와 디스크립터"). 같은 폴더의 CLAUDE.md가 @AGENTS.md로 가져온다.
 DESCRIPTOR_NAME = "AGENTS.md"
 
 # 아직 실제 내용으로 채워지지 않은 스캐폴드 출고 상태를 알리는 마커. 디스크립터
@@ -62,8 +62,10 @@ CATEGORY_TAG_DIRS = {
 SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
 SIZE_LIMIT_TEMPORAL = 10000   # 히스토리 문서(날짜 프리픽스)는 누적이 본질
 # 진입층(루트 AGENTS.md)과 폴더 디스크립터(AGENTS.md)는 구조적으로 길어진다 -
-# 진입층은 정체성/게이트/트리거 색인을 한 파일에 담는 색인이고, 디스크립터는
-# 파일별 안내 표가 폴더 직속 항목 수에 비례한다 (ref: document-units.md "분량 보조 지표").
+# 진입층은 요지 가져오기/정체성/고유 규범과 덮어쓰기 목록을 한 파일에 담고,
+# 디스크립터는 파일별 안내 표가 폴더 직속 항목 수에 비례한다. 상황별 트리거
+# 목록은 루트 요지 AGENTS/epistemic-rules.md "이럴 때 읽는다"에 있고, 요지는
+# 일반 임계를 따른다 (ref: document-units.md "분량 보조 지표").
 SIZE_LIMIT_DESCRIPTOR = 5000  # 진입층/폴더 디스크립터(AGENTS.md) 완화 임계
 FOLDER_MD_LIMIT = 25          # 폴더 직속 md 파일 수 - 초과 시 분화 권고
 TEMPORAL_MIX_REPEAT = 5       # 현재적 문서 내 날짜 패턴 반복 임계

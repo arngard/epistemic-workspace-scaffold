@@ -11,7 +11,7 @@ tags: [agents, 문서관리, 네이밍, epistemic-rules]
 지침 본체는 루트와 각 폴더의 `AGENTS.md`에 둔다. 각 AI 도구의 진입점 파일은 본체를 담지 않는다. Claude Code 진입점은 `AGENTS.md`가 있는 폴더마다 두는 `CLAUDE.md`이며 내용은 `@AGENTS.md` 한 줄이다. Copilot 진입점은 루트 `AGENTS.md`를 먼저 읽고 `@` 줄의 대상과 작업 폴더의 `AGENTS.md`를 함께 읽으라는 포인터다. `AGENTS.md`를 직접 읽는 도구에는 진입점 파일을 두지 않는다. 도구별 읽기 동작과 조회 일자는 [tool-environment.md](tool-environment.md) "도구별 자동 참조 파일"에 있다.
 
 ## 근거
-- 각 AI 도구는 자기만의 파일명을 사용함 (Claude Code->CLAUDE.md, Copilot->.github/copilot-instructions.md). `AGENTS.md`를 직접 읽는 도구(Codex, Antigravity)도 있으나 모든 도구가 읽는 범용 표준 파일명은 아직 없음.
+- 각 AI 도구는 자기만의 파일명을 사용함 (Claude Code->CLAUDE.md, Copilot->.github/copilot-instructions.md). `AGENTS.md`를 직접 읽는 도구(Codex, Antigravity(미확인))도 있으나 모든 도구가 읽는 범용 표준 파일명은 아직 없음.
 - Claude Code는 작업 폴더나 그 상위 폴더에 `CLAUDE.md`가 있으면 `AGENTS.md`를 기본으로 읽지 않는다. 이를 바꾸는 설정은 사용자 설정과 관리 설정에서만 읽혀 저장소가 바꿀 수 없다. 그래서 `CLAUDE.md`가 `AGENTS.md`를 가져와야 한다.
 - Claude Code는 폴더의 `CLAUDE.md`를 그 폴더의 파일을 다룰 때 불러들인다. 폴더마다 `@AGENTS.md` 한 줄의 `CLAUDE.md`를 두면 그 폴더의 `AGENTS.md`가 모델의 판단과 상관없이 읽힌다.
 - 가져오기는 내용을 복사하지 않으므로 본체는 `AGENTS.md` 한 곳에 남는다.

@@ -24,7 +24,7 @@ tags: [규칙, epistemic-rules]
 
 ## 제품 지침 추출
 
-AGENTS 계열이 정전(canonical) SSOT다. 도구별 진입점 파일(CLAUDE.md 등)은 이를 가리키는 파생물이라 규칙을 직접 담지 않는다. 갱신은 AGENTS 수정 후 재추출로만 한다. 진입점 표는 [AGENTS/epistemic-rules/tool-environment.md](tool-environment.md).
+AGENTS 계열이 정전(canonical) SSOT다. 도구별 진입점 파일(CLAUDE.md 등)은 이를 가리키는 파생물이라 규칙을 직접 담지 않는다. 진입점은 `@AGENTS.md` 같은 고정 포인터라 규칙의 갱신은 AGENTS 수정으로만 한다. 진입점 표는 [AGENTS/epistemic-rules/tool-environment.md](tool-environment.md).
 
 ## 하위 프로젝트 편집
 
