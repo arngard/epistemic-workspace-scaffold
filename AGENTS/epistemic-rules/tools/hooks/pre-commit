@@ -1,0 +1,45 @@
+#!/bin/sh
+# 커밋 전 훅: 폴더 색인을 다시 만들고 바뀐 색인 파일을 스테이지에 더한다.
+# 연결: git config core.hooksPath <이 hooks 폴더의 루트 상대 경로>
+# Python 3.9 이상을 찾지 못하거나 생성기가 실패하면 커밋을 막는다.
+# 이 밖의 일(감사 실행 등)은 하지 않는다.
+
+root=$(git rev-parse --show-toplevel) || exit 1
+
+# 생성기는 저장소 루트가 아니라 이 훅 파일 위치 기준으로 찾는다.
+gen="$(dirname "$0")/../build_index.py"
+if [ ! -f "$gen" ]; then
+    echo "pre-commit: index generator not found. 생성기가 없다 - $gen" >&2
+    exit 1
+fi
+
+# python3, python, py -3 순으로 3.9 이상인 것을 고른다. py -3은 단어 분할로 나뉜다.
+py=
+for c in python3 python "py -3"; do
+    if $c -c 'import sys; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then
+        py=$c
+        break
+    fi
+done
+if [ -z "$py" ]; then
+    echo "pre-commit: Python 3.9 not found. Python 3.9 이상을 찾지 못했다." >&2
+    exit 1
+fi
+
+out=$($py "$gen" "$root")
+status=$?
+if [ "$status" -ne 0 ]; then
+    echo "pre-commit: index build failed. 색인 생성이 실패해 커밋을 막는다." >&2
+    exit "$status"
+fi
+
+# 바뀐 경로를 스테이지에 더한다. 추적되지 않던 남는 쪽을 지운 경우는 건너뛴다.
+cr=$(printf '\r')
+printf '%s\n' "$out" | while IFS= read -r p; do
+    p=${p%"$cr"}
+    [ -n "$p" ] || continue
+    if [ -e "$root/$p" ] || git -C "$root" ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
+        git -C "$root" add -A -- "$p" || exit 1
+    fi
+done || exit 1
+exit 0
