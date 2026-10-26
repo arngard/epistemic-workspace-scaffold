@@ -30,7 +30,7 @@ SCAFFOLD_STATE_MARKER = "스캐폴드 상태"
 
 # 골격 기본 규범 폴더 (folder-structure.md "폴더 구조와 디스크립터"). 하위 폴더도
 # 규범 폴더로 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
-NORMATIVE_DIRS = ("AGENTS", "epistemic-structure/architecture")
+NORMATIVE_DIRS = ("epistemic-structure/architecture",)
 
 # 규범 폴더 이름과 상류 규범 묶음 이름. 규범 폴더는 어느 깊이에서든 이름이
 # AGENTS인 폴더와 그 아래 전부이며, 폴더 디스크립터와 CLAUDE.md 포인터를 두지 않는다.

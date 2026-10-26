@@ -87,7 +87,7 @@ def check_strategy_fields(root: Path) -> list[Finding]:
 def check_tags_category(root: Path) -> list[Finding]:
     """epistemic-structure/ 4범주 직속 문서의 tags 첫 항목이 카테고리와 일치하는지 (경고).
 
-    하위 폴더 문서에는 강제하지 않는다 (ref: AGENTS.md "문서 작성 스타일").
+    하위 폴더 문서에는 강제하지 않는다 (ref: AGENTS/epistemic-rules/communication.md "문서 작성 스타일").
     """
     out: list[Finding] = []
     for rel_dir, expected in CATEGORY_TAG_DIRS.items():

@@ -44,7 +44,7 @@ PR 생성 시 다음 속성을 적절히 할당한다.
 
 ## 하위 문서
 
-PR 생성 후 절차는 자체 완결적 세부라 [pr-workflow/](pr-workflow/AGENTS.md) 하위 문서로 둔다.
+PR 생성 후 절차는 자체 완결적 세부라 `pr-workflow/` 아래 하위 문서로 둔다.
 
 - [review-response.md](pr-workflow/review-response.md): 리뷰 코멘트 응답 방식 (스레드 reply, 도구별 호출, 스레드 SSOT).
 - [active-review-loop.md](pr-workflow/active-review-loop.md): 제출 후 능동 리뷰 확인 (이중 채널 감지, 체크 실패, 머지 충돌, 알림 트리거).

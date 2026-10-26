@@ -72,7 +72,7 @@ unit-task-workflow는 일반 프레임(진입/진행/종료 + 재귀)을 정의�
 
 ## 하위 문서
 
-분량이 크고 자체 완결적인 세부 규칙은 [unit-task/](unit-task/AGENTS.md) 하위 문서로 둔다.
+분량이 크고 자체 완결적인 세부 규칙은 `unit-task/` 아래 하위 문서로 둔다.
 
 - [stage-authority.md](unit-task/stage-authority.md): 여러 단계로 나뉜 워크플로우에서 판정 권한을 두는 기준.
 

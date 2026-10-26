@@ -58,6 +58,6 @@ tags: [agents, 절차, ingest, epistemic-rules]
 ## 참고
 
 - see: [session-boundaries.md](session-boundaries.md) "세션 시작" - 본 워크플로의 트리거 위치
-- ref: [AGENTS.md](../../AGENTS.md) "비협상 게이트" - 사실/의견 주체 분리 원칙
+- ref: [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트" - 사실/의견 주체 분리 원칙
 - sub: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) - 카테고리 판별 규칙
 - see: [`reference/AGENTS.md`](../../reference/AGENTS.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태

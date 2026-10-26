@@ -6,7 +6,7 @@ tags: [agents, 역할, epistemic-rules]
 
 # 서브에이전트 역할 정의
 
-이 스캐폴드를 적용한 프로젝트에서 활용되는 서브에이전트(페르소나) 역할의 도구 중립 정의. 역할 공통 규칙은 본 문서가, 역할별 정의는 [agent-roles/](agent-roles/AGENTS.md) 하위 문서가 담는다.
+이 스캐폴드를 적용한 프로젝트에서 활용되는 서브에이전트(페르소나) 역할의 도구 중립 정의. 역할 공통 규칙은 본 문서가, 역할별 정의는 역할 목록이 링크하는 하위 문서(예: [epistemic-auditor.md](agent-roles/epistemic-auditor.md))가 담는다.
 
 ## 모델 선택
 
@@ -27,4 +27,4 @@ tags: [agents, 역할, epistemic-rules]
 스캐폴드를 적용한 인스턴스가 자기 도메인 고유 정책(예: 출처 표기 강화, 도메인 데이터 정합, 누적 왜곡 점검)을 감사하려면, [epistemic-auditor](agent-roles/epistemic-auditor.md)를 수정하지 않고 인스턴스 전용 감사자를 별도 역할로 둔다. 특수화 방식은 [instance-specialization.md](instance-specialization.md) "특수화 방식"을 따른다.
 
 - 포함 호출: 인스턴스 감사자는 epistemic-auditor를 super로 포함해 호출한다. 한 번의 호출로 스캐폴드 공통 정합성과 인스턴스 고유 점검이 함께 수행된다.
-- 등재: 인스턴스 감사자도 본 문서의 역할 목록에 올리고, [agent-roles/](agent-roles/AGENTS.md) 하위 문서에 정의와 도구별 구현 위치를 둔다.
+- 등재: 인스턴스 감사자도 본 문서의 역할 목록에 올리고, `agent-roles/` 아래 하위 문서에 정의와 도구별 구현 위치를 둔다.

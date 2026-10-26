@@ -6,7 +6,7 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 # 일반 문서 작성 스타일
 
-문장, 서술 수준의 작성 규약. 진입자가 첫 화면에서 봐야 할 핵심(담백한 평서문, 서식 절제, 마크다운 링크와 참조 표지, 약어와 줄임말, front matter)은 [AGENTS.md](../../AGENTS.md) "문서 작성 스타일"에서, 평어체와 응답 언어는 같은 문서 "응답 언어"에서, 추측 금지와 사실/의견 분리는 [AGENTS.md](../../AGENTS.md) "비협상 게이트"에서 보고, 본 문서는 그 외 규약의 본문이다.
+문장, 서술 수준의 작성 규약. 진입자가 첫 화면에서 봐야 할 핵심(담백한 평서문, 서식 절제, 마크다운 링크와 참조 표지, 약어와 줄임말, front matter)은 [communication.md](communication.md) "문서 작성 스타일"에서, 평어체와 응답 언어는 같은 문서 "응답 언어"에서, 추측 금지와 사실/의견 분리는 [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트"에서 보고, 본 문서는 그 외 규약의 본문이다.
 
 문서의 배치와 분할은 [document-units.md](document-units.md)와 [folder-structure.md](folder-structure.md), 문서 시간성은 [document-temporality.md](document-temporality.md) 참조.
 
@@ -27,12 +27,12 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 정확한 개념어를 쓰라는 요구와 군더더기 없는 평서문을 쓰라는 요구는 층위가 다르다. 앞은 개념에 맞는 단어를 고르는 일(단어 선택)이고, 뒤는 그 단어를 부풀리거나 치장하지 않고 엮는 일(문장 구성)이다. 층위가 다르므로 대개 같은 방향을 가리키고 서로 충돌하지 않는다.
 
 - 겉멋 든 전문 용어나 불필요한 외래어를 정확함으로 착각해 끌어들이지 않는다. 이미 뜻이 정확한 표준어가 있으면 기술적으로 들린다는 이유로 바꾸지 않는다.
-- 진짜 전문 용어(그 개념의 표준 명칭)는 정확성을 우선해 그대로 쓰고, 첫 등장 시 풀어쓴다(약어 병기는 [AGENTS.md](../../AGENTS.md) "문서 작성 스타일" 참조).
+- 진짜 전문 용어(그 개념의 표준 명칭)는 정확성을 우선해 그대로 쓰고, 첫 등장 시 풀어쓴다(약어 병기는 [communication.md](communication.md) "문서 작성 스타일" 참조).
 - 정확함으로 착각한 치장 어휘는 정확성과 담백함을 동시에 위반한다. 둘이 충돌하는 것처럼 보이는 경우는 대개 치장을 정확함으로 오인한 것이다.
 
 ## 출처와 주체 표기의 범위
 
-사실과 의견을 구분하고 의견에 주체를 명시하는 원칙은 [AGENTS.md](../../AGENTS.md) "비협상 게이트" 참조. 본 절은 그 표기를 어디까지 하는가를 정한다.
+사실과 의견을 구분하고 의견에 주체를 명시하는 원칙은 [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트" 참조. 본 절은 그 표기를 어디까지 하는가를 정한다.
 
 - 표기가 필요한 것: 의견, 주장, 분석, 판단의 주체. 검증이 필요하거나 논쟁적인 사실, 특정 외부 출처에서 온 사실의 출처. 같은 사실이 진술 주체의 소속, 직책, 이해관계에 따라 다르게 진술될 수 있으면 출처와 그 출처의 입장을 함께 명시한다.
 - 표기가 필요 없는 것: 프로젝트 참여자 누구나 같게 받아들이는 공유 전제. 이런 사실에까지 출처를 다는 것은 잡음이며, 정작 출처가 중요한 진술을 가린다.
@@ -62,11 +62,11 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 ## 도구 전용 설정 파일 예외
 
-도구 전용 설정 파일(`.claude/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. AGENTS.md "문서 작성 스타일"의 공통 필수 필드(`date created`, `date modified`, `tags`)를 본 파일들에 강제하지 않는다.
+도구 전용 설정 파일(`.claude/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. [communication.md](communication.md) "문서 작성 스타일"의 공통 필수 필드(`date created`, `date modified`, `tags`)를 본 파일들에 강제하지 않는다.
 
 ## 하위 문서
 
-분량이 크고 자체 완결적인 세부 규약은 [writing-style/](writing-style/AGENTS.md) 하위 문서로 둔다.
+분량이 크고 자체 완결적인 세부 규약은 `writing-style/` 아래 하위 문서로 둔다.
 
 - [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (실존 기반, audit 기계 검사).
 - [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외.

@@ -18,7 +18,7 @@ tags: [agents, 작업원칙, epistemic-rules]
 - 요청이나 문서에 쓰인 용어, 전제가 부정확하면 그대로 따르지 않고 무엇이 왜 문제인지 짚는다.
 - 사용자 결정 영역은 자율로 확정하지 않는다. 의향 옵션을 제시하고 결정을 받는다.
 
-see: [ingest-workflow.md](ingest-workflow.md) "표준 시퀀스"(충돌 검사에서 AI가 단정하지 않는다), [AGENTS.md](../../AGENTS.md) "비협상 게이트"의 사실, 의견, 주체 구분.
+see: [ingest-workflow.md](ingest-workflow.md) "표준 시퀀스"(충돌 검사에서 AI가 단정하지 않는다), [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트"의 사실, 의견, 주체 구분.
 
 ## 2. 단순함 우선
 

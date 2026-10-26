@@ -43,7 +43,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 ## 하위 문서
 
-분량이 크고 자체 완결적인 세부 절차는 [unit-task-workflow/](unit-task-workflow/AGENTS.md) 하위 문서로 둔다.
+분량이 크고 자체 완결적인 세부 절차는 `unit-task-workflow/` 아래 하위 문서로 둔다.
 
 - [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md): 절차 축약의 조건, 착수 시점 판정, 브랜치와 등재의 형태 일관성.
 - [merge-types.md](unit-task-workflow/merge-types.md): main 머지의 타입 결정, PR 타입과 브랜치 관리자 타입의 절차, 환경 안전망과 잔존 점검.

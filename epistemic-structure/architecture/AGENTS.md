@@ -24,5 +24,5 @@ tags: [architecture]
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
 | [core-constraints.md](core-constraints.md) | 설계 원칙 및 핵심 제약. 스캐폴드 상태 - 제약 목록 작성 필요 | 설계 결정, 구현 착수 전 |
-| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [AGENTS/](../../AGENTS/AGENTS.md) 참조 | 코드 작성, 빌드 설정 시 |
+| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [epistemic-rules.md](../../AGENTS/epistemic-rules.md) 참조 | 코드 작성, 빌드 설정 시 |
 | [sample-spec.md](sample-spec.md) | 설계 명세 문서의 위치와 형식을 보여주는 튜토리얼용 샘플. 실제 작성 시 삭제하거나 교체한다 | 첫 명세 작성 시 |

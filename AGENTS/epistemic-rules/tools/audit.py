@@ -21,7 +21,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   9. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
  10. 파일명의 크로스 플랫폼 이식성 (윈도우 금지 문자, 예약어 등)
  11. 규범 폴더 디스크립터의 파일별 안내 완전성 - 경고
-     (골격 기본 규범 폴더 AGENTS/, epistemic-structure/architecture/ 및 그 하위 전체 +
+     (골격 기본 규범 폴더 epistemic-structure/architecture/ 및 그 하위 전체 +
       파일별 안내 표를 가진 디스크립터의 폴더)
  12. TASK_TREE.md 완료 노드의 브랜치 속성 잔존 - 경고
  13. STATUS.md 레지스트리 표 스키마, 시각 형식 - 경고
