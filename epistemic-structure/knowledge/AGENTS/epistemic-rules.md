@@ -10,9 +10,7 @@ tags: [knowledge, epistemic-rules]
 
 ## 정의
 
-외부 사실, 환경 정보, 벤치마크 분석. 질문 형태는 "세상이 어떠한가"다.
-
-"세상이 어떤가" - 외부 사실, 환경 정보, 벤치마크 분석. 우리의 결정과 그 근거는 [strategy/](../../strategy/AGENTS.md) 참조. 최종 설계 명세는 [architecture/](../../architecture/AGENTS.md) 참조.
+외부 사실, 환경 정보, 벤치마크 분석. 질문 형태는 "세상이 어떠한가"다. 우리의 결정과 그 근거는 [strategy/](../../strategy/AGENTS.md) 참조. 최종 설계 명세는 [architecture/](../../architecture/AGENTS.md) 참조.
 
 ## 작성 스타일
 
