@@ -30,6 +30,7 @@ import argparse
 import os
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Optional
 
@@ -91,12 +92,32 @@ def ignored_entries(root: Path, paths: "list[Path]") -> "list[str]":
         return []
     if probe.returncode != 0 or probe.stdout.strip() != b"true":
         return []
-    data = b"".join(_rel(root, p).encode(*_ENC) + b"\0" for p in paths)
+    # core.precomposeunicode가 켜진 git(macOS)은 이름을 NFC로 다루므로 디스크의
+    # NFD 이름을 NFC로 바꿔 넘긴다. 꺼져 있으면 바이트 그대로 비교하므로 두지 않는다.
+    pre = _git(root, ["config", "--bool", "core.precomposeunicode"])
+    precompose = pre.stdout.strip() == b"true"
+    rels = [_rel(root, p) for p in paths]
+    if precompose:
+        rels = [unicodedata.normalize("NFC", r) for r in rels]
+    data = b"".join(r.encode(*_ENC) + b"\0" for r in rels)
     r = _git(root, ["check-ignore", "--stdin", "-z"], data)
     # 종료 코드 1은 무시 파일이 없다는 뜻이다.
     if r.returncode not in (0, 1):
         raise RuntimeError(r.stderr.decode(*_ENC).strip())
     return sorted(s.decode(*_ENC) for s in r.stdout.split(b"\0") if s)
+
+
+def _format_error(root: Path, e: IndexFormatError) -> str:
+    """오류 위치를 감사 출력처럼 루트 상대 경로로 적는다."""
+    if e.path is None:
+        return str(e)
+    try:
+        where = Path(e.path).relative_to(root).as_posix()
+    except ValueError:
+        where = str(e.path)
+    if e.line:
+        where = "%s:%d" % (where, e.line)
+    return "%s: %s" % (where, e.message)
 
 
 def _setup_streams() -> None:
@@ -129,7 +150,8 @@ def main(argv: "Optional[list[str]]" = None) -> int:
             return 2
         changed = build(root, dry_run=args.dry_run)
     except IndexFormatError as e:
-        print("Error: index format. %s" % e, file=sys.stderr)
+        print("Error: index format. %s" % _format_error(root, e),
+              file=sys.stderr)
         return 2
     except (OSError, RuntimeError) as e:
         print("Error: index build failed. %s" % e, file=sys.stderr)

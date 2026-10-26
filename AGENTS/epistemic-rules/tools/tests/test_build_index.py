@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import unittest
 from pathlib import Path
 
@@ -65,7 +66,8 @@ class BuildTest(unittest.TestCase):
 
     def test_bad_yaml_exit_2(self):
         self.write("INDEX.yaml", "a:\n")
-        self.assertEqual(main([str(self.root)]), 2)
+        code, out, err = self.run_main()
+        self.assertEqual(code, 2)
         self.assertFalse((self.root / "INDEX.md").exists())
 
     def test_returns_sorted_posix_paths(self):
@@ -113,8 +115,8 @@ class BuildTest(unittest.TestCase):
         self.write("s/INDEX.yaml", '"x.md":\n  description: ok\nbad\n')
         code, out, err = self.run_main()
         self.assertEqual(code, 2)
-        self.assertIn("INDEX.yaml:3", err)
-        self.assertIn(str(Path("s") / "INDEX.yaml"), err)
+        self.assertIn(" s/INDEX.yaml:3: ", err)
+        self.assertNotIn(str(self.root), err)
         self.assertFalse((self.root / "INDEX.md").exists())
 
     def test_not_a_directory_exit_2(self):
@@ -166,6 +168,27 @@ class IgnoredEntriesTest(unittest.TestCase):
             os.environ.update(self.env)
             self.assertEqual(ignored_entries(self.root, paths), ["secret.txt"])
             self.assertEqual(ignored_entries(self.root, []), [])
+        finally:
+            os.environ.clear()
+            os.environ.update(old)
+
+    def test_nfd_name_nfc_pattern(self):
+        name = "\ube44\ubc00.txt"
+        nfd = unicodedata.normalize("NFD", name)
+        subprocess.run(["git", "config", "core.precomposeunicode", "true"],
+                       cwd=str(self.root), env=self.env, check=True)
+        (self.root / ".gitignore").write_bytes((name + "\n").encode("utf-8"))
+        path = self.root / nfd
+        path.write_text("x\n", encoding="utf-8")
+        disk = [q.name for q in self.root.iterdir() if q.name != ".gitignore"
+                and q.name != ".git"]
+        if disk != [nfd]:
+            self.skipTest("NFD 이름을 그대로 둘 수 없는 파일시스템")
+        old = dict(os.environ)
+        try:
+            os.environ.clear()
+            os.environ.update(self.env)
+            self.assertEqual(ignored_entries(self.root, [path]), [name])
         finally:
             os.environ.clear()
             os.environ.update(old)
@@ -284,6 +307,15 @@ class HookTest(unittest.TestCase):
         self.assertEqual(self.commit("a.md"), 0, self.last_err)
         names = self.git("show", "--name-only", "--format=", "HEAD").split()
         self.assertEqual(names, ["a.md"])
+
+    def test_colon_folder_staged(self):
+        self.install_tools()
+        self.write(":x/AGENTS.md", FM)
+        self.write(":x/b.md", FM)
+        self.assertEqual(self.commit("AGENTS.md", "a.md", ":(literal):x"), 0,
+                         self.last_err)
+        names = self.git("show", "--name-only", "--format=", "HEAD").split()
+        self.assertIn(":x/INDEX.md", names)
 
     def test_no_python_blocks(self):
         tools = self.install_tools()
