@@ -9,8 +9,14 @@ migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸
 파일 시스템 이름 바꾸기로 옮긴다. .tmp/가 이미 있으면 ("_tmp", ".tmp")를 충돌로 보고한다.
 대상 경로가 이미 있어(추적 여부 무관) 건너뛴 이동은 Report.conflicts에 모으고, 옛 파일은 그대로 둔다.
 상류 머지로 이미 새 위치에 와 있지만 본문 링크가 옛 위치 기준인 파일은, 대상이 실제로 있을 때만
-옛 위치 기준으로 다시 계산한다. 명령행은 conflicts가 있으면 종료 코드 1, 없으면 0이다.
+옛 위치 기준으로 다시 계산한다. 명령행은 conflicts나 unconverted가 있으면 종료 코드 1, 없으면 0이다.
 링크 변환은 코드 펜스와 인라인 코드 구간 안의 예시 링크를 건드리지 않는다.
+reference/AGENTS.md에 "등록된 자료" 절의 표가 있으면 reference/INDEX.yaml(description, status)로
+옮기고 그 절을 지운다. 추가일 열은 버리고, 상태 칸에 어휘 뒤로 남은 글(derived 링크 등)은 설명 끝에
+덧붙인다. 폴더 행은 이름 끝의 /를 남긴다. 읽지 못한 행이 있거나 항목이 든 INDEX.yaml(형식 오류 포함)이
+이미 있으면 절을 건드리지 않고 Report.unconverted에 보고한다. 주석과 빈 줄뿐인 INDEX.yaml은 없는 것으로
+보고 덮어쓴다.
+unconverted가 있으면 명령행 종료 코드도 1이다.
 """
 
 import argparse
@@ -19,10 +25,15 @@ import posixpath
 import re
 import subprocess
 import sys
+import unicodedata
 import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Tuple
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _index_core import (  # noqa: E402
+    REFERENCE_STATUSES, IndexFormatError, load_index_yaml, quote_scalar)
 
 # 옛 경로 -> 새 경로. 긴 접두어를 먼저 적용한다.
 PATH_MAP = [
@@ -308,6 +319,196 @@ def rewrite_mentions(text: str) -> Tuple[str, List[Tuple[int, str]]]:
         out.append(new_line)
     return "".join(out), report
 
+REFERENCE_DIR_NAME = "reference"
+REFERENCE_DESCRIPTOR = "reference/AGENTS.md"
+REFERENCE_INDEX = "reference/INDEX.yaml"
+_SECTION_NAME = "등록된 자료"
+_SECTION_RE = re.compile(r"^(#{1,6})[ \t]+" + _SECTION_NAME + r"[ \t]*$")
+_HEADING_RE = re.compile(r"^(#{1,6})[ \t]")
+_EMPTY_NOTE_RE = re.compile(r"^\(아직 등록된 자료 없음\.?\)$")
+_KNOWN_COLUMNS = ("파일", "추가일", "설명", "상태")
+_SEPARATOR_CELL_RE = re.compile(r"^:?-+:?$")
+_CELL_SPLIT_RE = re.compile(r"(?<!\\)\|")
+_LINK_CELL_RE = re.compile(r"^\[[^\]]*\]\(([^)\s]*)(?:\s+\"[^\"]*\")?\)$")
+_CODE_CELL_RE = re.compile(r"^`([^`]+)`$")
+INDEX_YAML_HEADER = (
+    "# reference/ 자료의 설명과 처리 상태. 항목 이름마다 description과 status를 적는다.\n")
+
+
+def _split_row(line: str) -> List[str]:
+    """표 행을 칸 목록으로 나눈다. 칸 안의 `\\|`는 `|`로 되돌린다."""
+    body = line.strip()
+    if body.startswith("|"):
+        body = body[1:]
+    if body.endswith("|") and not body.endswith("\\|"):
+        body = body[:-1]
+    return [c.strip().replace("\\|", "|") for c in _CELL_SPLIT_RE.split(body)]
+
+
+def _file_name(cell: str) -> Optional[str]:
+    """파일 칸에서 reference/ 직속 항목 이름을 얻는다. 얻을 수 없으면 None이다.
+
+    이름이 /로 끝나면 폴더 행이다. 끝 / 하나를 떼고 검사한 뒤 키에 다시 붙인다.
+    """
+    folder = False
+    m = _CODE_CELL_RE.match(cell)
+    if m:
+        name = m.group(1).strip()
+        if name.endswith("/"):
+            folder, name = True, name[:-1]
+    else:
+        m = _LINK_CELL_RE.match(cell)
+        if m:
+            target = m.group(1).partition("#")[0]
+            if not target or _SCHEME_RE.match(target):
+                return None
+            decoded = urllib.parse.unquote(target)
+            if decoded.endswith("/"):
+                folder, decoded = True, decoded[:-1]
+            joined = posixpath.join(REFERENCE_DIR_NAME, decoded)
+            norm = posixpath.normpath(joined)
+            parts = norm.split("/")
+            if len(parts) != 2 or parts[0] != REFERENCE_DIR_NAME:
+                return None
+            name = parts[1]
+        elif cell and not re.search(r"[\[\]`]", cell):
+            name = cell
+            if name.endswith("/"):
+                folder, name = True, name[:-1]
+        else:
+            return None
+    if not name or name in (".", "..") or "/" in name or "\\" in name \
+            or "*" in name or "~" in name:
+        return None
+    return unicodedata.normalize("NFC", name + ("/" if folder else ""))
+
+
+def _split_status(cell: str) -> Optional[Tuple[str, str]]:
+    """상태 칸을 (어휘, 어휘 뒤에 남은 글)로 나눈다. 어휘로 시작하지 않으면 None이다."""
+    for word in sorted(REFERENCE_STATUSES, key=len, reverse=True):
+        for lead in ("`" + word + "`", word):
+            if cell.startswith(lead):
+                rest = cell[len(lead):]
+                if rest and rest[0].isalnum():
+                    continue
+                tail = rest.strip()
+                if tail and not tail[0].isalnum() and tail[0] not in "(-[":
+                    return None
+                return word, tail
+    return None
+
+
+def _quote_key(name: str) -> str:
+    """항목 이름을 늘 큰따옴표로 감싼 YAML 키로 쓴다."""
+    quote_scalar(name)  # 제어 문자가 든 이름이면 IndexFormatError
+    return '"' + name.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def _read_table(lines: List[str]) -> Tuple[List[Tuple[str, str, str]], List[str]]:
+    """절 본문 줄에서 표를 읽어 ([(이름, 설명, 상태)], 읽지 못한 항목 목록)을 돌려준다."""
+    rows: List[Tuple[str, str, str]] = []
+    bad: List[str] = []
+    table = [ln for ln in lines if ln.strip().startswith("|")]
+    others = [ln.strip() for ln in lines
+              if ln.strip() and not ln.strip().startswith("|")
+              and not _EMPTY_NOTE_RE.match(ln.strip())]
+    for ln in others:
+        bad.append("표 밖의 글: " + ln)
+    if not table:
+        return rows, bad
+    first = next(i for i, ln in enumerate(lines) if ln.strip().startswith("|"))
+    last = max(i for i, ln in enumerate(lines) if ln.strip().startswith("|"))
+    if any(not ln.strip().startswith("|") and ln.strip() for ln in lines[first:last + 1]):
+        bad.append("표가 중간에 끊겼다")
+        return rows, bad
+    head = [c.strip("` ") for c in _split_row(table[0])]
+    unknown = [c for c in head if c not in _KNOWN_COLUMNS]
+    if unknown:
+        bad.append("모르는 열: " + ", ".join(unknown))
+        return rows, bad
+    if "파일" not in head or "상태" not in head or head.count("파일") > 1 \
+            or head.count("상태") > 1 or head.count("설명") > 1:
+        bad.append("머리 칸에 파일과 상태가 하나씩 없다: " + table[0].strip())
+        return rows, bad
+    if len(table) < 2 or not all(_SEPARATOR_CELL_RE.match(c) for c in _split_row(table[1])):
+        bad.append("머리 줄 다음에 구분 줄이 없다: " + table[0].strip())
+        return rows, bad
+    i_file, i_status = head.index("파일"), head.index("상태")
+    i_desc = head.index("설명") if "설명" in head else None
+    seen = set()
+    for ln in table[2:]:
+        cells = _split_row(ln)
+        if len(cells) != len(head):
+            bad.append("칸 수가 머리와 다르다: " + ln.strip())
+            continue
+        name = _file_name(cells[i_file])
+        status = _split_status(cells[i_status])
+        if name is None or status is None:
+            bad.append("파일 칸이나 상태 칸을 읽지 못했다: " + ln.strip())
+            continue
+        if name in seen:
+            bad.append("같은 파일이 두 번 있다: " + ln.strip())
+            continue
+        seen.add(name)
+        desc = cells[i_desc] if i_desc is not None else ""
+        if status[1]:
+            desc = (desc + " " + status[1]).strip()
+        rows.append((name, desc, status[0]))
+    return rows, bad
+
+
+def convert_reference_table(text: str) -> Tuple[str, str, List[str]]:
+    """reference/AGENTS.md 본문의 "등록된 자료" 표를 INDEX.yaml 텍스트로 옮긴다.
+
+    (절을 뺀 새 본문, INDEX.yaml 텍스트, 읽지 못한 항목 목록)을 돌려준다. 절이 없으면
+    (text, "", [])이다. 읽지 못한 행이나 표 밖의 글이 하나라도 있으면 본문을 바꾸지 않고
+    INDEX.yaml 텍스트도 빈 문자열로 둔다. 표에 행이 없으면 절만 지우고 머리 주석만 든 텍스트를 만든다.
+    파일 칸은 링크, 인라인 코드, 일반 글에서 이름을 얻고, 추가일 열은 버린다. 값은 quote_scalar로 쓴다.
+    """
+    lines = text.splitlines(keepends=True)
+    start = end = None
+    level = 0
+    in_fence = False
+    for i, line in enumerate(lines):
+        if line.lstrip().startswith(_FENCES):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if start is None:
+            m = _SECTION_RE.match(line.rstrip("\r\n"))
+            if m:
+                start, level = i, len(m.group(1))
+        else:
+            m = _HEADING_RE.match(line)
+            if m and len(m.group(1)) <= level:
+                end = i
+                break
+    if start is None:
+        return text, "", []
+    if end is None:
+        end = len(lines)
+    rows, bad = _read_table([ln.rstrip("\r\n") for ln in lines[start + 1:end]])
+    out = [INDEX_YAML_HEADER]
+    if not bad:
+        try:
+            for name, desc, status in rows:
+                out.append(_quote_key(name) + ":\n")
+                if desc:
+                    out.append("  description: " + quote_scalar(desc) + "\n")
+                out.append("  status: " + quote_scalar(status) + "\n")
+        except IndexFormatError as e:
+            bad.append("YAML로 쓸 수 없는 값: " + e.message)
+    if bad:
+        return text, "", bad
+    rest = "".join(lines[:start]) + "".join(lines[end:])
+    if end == len(lines):
+        rest = rest.rstrip("\r\n")
+        if rest:
+            eol = "\r\n" if "\r\n" in text else "\n"
+            rest += eol
+    return rest, "".join(out), []
+
 
 @dataclass
 class Report:
@@ -317,6 +518,8 @@ class Report:
     rewritten: List[str] = field(default_factory=list)
     residual: List[Tuple[str, int, str]] = field(default_factory=list)
     conflicts: List[Tuple[str, str]] = field(default_factory=list)  # (옛 경로, 새 경로) 대상이 이미 있어 건너뜀
+    converted: List[Tuple[str, str]] = field(default_factory=list)  # (자료 표를 뺀 파일, 만든 INDEX.yaml)
+    unconverted: List[Tuple[str, str]] = field(default_factory=list)  # (파일, 변환하지 못한 사유)
 
 
 def _tracked(root: Path) -> List[str]:
@@ -375,6 +578,37 @@ def _move_untracked_tmp(root: Path, present, plan, report: Report, dry_run: bool
     report.moved.append(("_tmp", ".tmp"))
     if not dry_run:
         os.rename(str(base), str(dest))
+
+
+def _convert_reference(root: Path, text: str, report: Report, dry_run: bool) -> str:
+    """reference/AGENTS.md 본문의 자료 표를 INDEX.yaml로 옮기고 새 본문을 돌려준다.
+
+    옮기지 못하면(읽지 못한 행, 항목이 든 기존 INDEX.yaml) 본문을 그대로 돌려주고 report.unconverted에
+    쌓는다. 기존 INDEX.yaml이 주석과 빈 줄뿐이면(상류가 출고하는 파일) 없는 것으로 보고 덮어쓴다.
+    dry_run이면 파일을 쓰지 않고 converted만 채운다.
+    """
+    body, yaml, bad = convert_reference_table(text)
+    for item in bad:
+        report.unconverted.append((REFERENCE_DESCRIPTOR, item))
+    if bad or body == text:
+        return text
+    target = root / REFERENCE_INDEX
+    if os.path.islink(str(target)) or (os.path.lexists(str(target)) and not target.is_file()):
+        report.unconverted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX + "가 이미 있다"))
+        return text
+    try:
+        existing = load_index_yaml(target)
+    except IndexFormatError as e:
+        report.unconverted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX + " 형식 오류: " + e.message))
+        return text
+    if existing:
+        report.unconverted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX + "가 이미 있다"))
+        return text
+    report.converted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX))
+    if not dry_run:
+        with open(str(root / REFERENCE_INDEX), "w", encoding="utf-8", newline="") as f:
+            f.write(yaml)
+    return body
 
 
 def migrate(root: Path, dry_run: bool = False) -> Report:
@@ -440,6 +674,8 @@ def migrate(root: Path, dry_run: bool = False) -> Report:
         residual += [r for r in _stale_link_lines(out) if r[0] not in seen]
         residual.sort()
         report.residual.extend((new, no, line) for no, line in residual)
+        if new == REFERENCE_DESCRIPTOR:
+            out = _convert_reference(root, out, report, dry_run)
         if out != text:
             report.rewritten.append(new)
             if not dry_run:
@@ -466,7 +702,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     print("대상이 이미 있어 옮기지 못한 파일 (%d):" % len(rep.conflicts))
     for old, new in rep.conflicts:
         print("  %s -> %s" % (old, new))
-    return 1 if rep.conflicts else 0
+    print("등록된 자료 표를 옮긴 파일 (%d):" % len(rep.converted))
+    for src, dest in rep.converted:
+        print("  %s -> %s" % (src, dest))
+    print("옮기지 못한 등록된 자료 표 (%d):" % len(rep.unconverted))
+    for path, reason in rep.unconverted:
+        print("  %s: %s" % (path, reason))
+    return 1 if rep.conflicts or rep.unconverted else 0
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 date created: 2026-10-26
 date modified: 2026-10-26
 tags: [epistemic-structure]
+description: 코드로 표현할 수 없는 지식을 담는 네 범주(ontology, knowledge, strategy, architecture)
 ---
 
 # epistemic-structure

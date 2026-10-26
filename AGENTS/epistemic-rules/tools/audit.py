@@ -9,7 +9,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 점검 항목:
   1. YAML front matter 필수 필드 (date created, date modified, tags)와 날짜
      필드 값 형식(yyyy-MM-dd). 선택 필드 date closed는 히스토리 문서 전용.
-     date created가 date modified보다 늦으면 경고.
+     date created가 date modified보다 늦으면 경고. 생성 색인 쪽 파일(INDEX.md,
+     INDEX2.md ...)은 면제.
   2. 문서 유형별 분량 임계 (일반 노드, 히스토리 문서, 진입층/폴더 디스크립터) - 경고
   3. 현재적 문서의 시간성 혼합 패턴 (날짜 헤더/불릿 반복) - 경고
   4. 날짜 프리픽스 없는 문서의 date closed (시간성 혼합 신호) - 위반
@@ -17,19 +18,23 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   6. TASK_TREE.md 속성 노드 표준 키 위반 - 위반
   7. 디스크립터(AGENTS.md) 없는 폴더 - 위반 (규범 폴더(`AGENTS/`와 그 아래) 제외)
   8. 폴더 직속 md 파일 수 임계 초과 - 경고 (분화 권고)
-     (reference/ 하위는 제외 - 원본을 재편하지 않으므로 실행 불가능한 권고다)
+     (reference/ 하위는 제외 - 원본을 재편하지 않으므로 실행 불가능한 권고다.
+      색인 파일은 세지 않음)
   9. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
  10. 파일명의 크로스 플랫폼 이식성 (윈도우 금지 문자, 예약어 등)
- 11. 파일별 안내 표를 두는 폴더의 디스크립터 안내 완전성 - 경고
-     (골격 기본값 epistemic-structure/architecture/ 및 그 하위 전체 +
-      파일별 안내 표를 가진 디스크립터의 폴더)
+ 11. 색인 정합 - 색인을 둘 폴더(규범 폴더 밖에서 AGENTS.md가 있는 폴더)의
+     INDEX.md 누락은 경고, 낡은 내용과 남는 쪽과 색인을 두지 않는 폴더의 색인
+     파일과 INDEX.yaml 형식 오류는 위반
+     (생성기와 같은 _index_core.render_all 결과와 비교. 줄바꿈은 LF로 맞춘다.
+      reference/ 하위 폴더와 중첩 저장소 안은 보지 않음)
  12. TASK_TREE.md 완료 노드의 브랜치 속성 잔존 - 경고
  13. STATUS.md 레지스트리 표 스키마, 시각 형식 - 경고
  14. epistemic-structure/ 4범주 직속 문서의 tags 첫 항목 정합 - 경고
  15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더 제외) - 경고
-     (`CLAUDE.md`와 규범 폴더는 실체로 세지 않음)
+     (`CLAUDE.md`와 규범 폴더, 색인 파일은 실체로 세지 않음)
      (찌꺼기인지 사양 동결인지 첫 실체 대기인지는 감사자가 판단)
  16. 디스크립터와 `CLAUDE.md` 외 항목이 없는 동명 문서-폴더 쌍 - 경고
+     (색인 파일은 세지 않음)
      (동명 쌍은 하위 문서 묶음 관계의 예약 신호. md가 든 동명 쌍의
       실제 관계 판단은 감사자 몫)
  17. 마크다운 링크 표시텍스트-대상 정합 - 위반
@@ -41,12 +46,12 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
      (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
  20. 비ASCII 문장 부호 (em dash, 화살표, 가운뎃점, 말줄임표, 둥근 따옴표) - 경고
-     (백틱/코드펜스 예시와 고정폭 box-drawing 트리는 제외.
+     (백틱/코드펜스 예시와 고정폭 box-drawing 트리, 생성 색인 쪽 파일은 제외.
       ref: AGENTS/epistemic-rules/writing-style/ascii-punctuation.md)
- 21. 디스크립터의 "스캐폴드 상태" 안내와 링크 대상 파일의 마커 대조 - 경고
-     (인스턴스가 플레이스홀더를 실제 내용으로 채우고 안내를 갱신하지 않은
-      경우, 또는 대상에서 마커만 지운 경우를 검출. 어느 쪽이 낡았는지는
-      사람/LLM 판단)
+ 21. front matter description의 스캐폴드 상태 마커와 본문 마커 대조 - 경고
+     (description에 "스캐폴드 상태"가 있는데 본문에 없으면 검출. 인스턴스가
+      플레이스홀더를 실제 내용으로 채우고 description을 갱신하지 않은 경우,
+      또는 본문에서 마커만 지운 경우. 어느 쪽이 낡았는지는 사람/LLM 판단)
  22. 날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더 - 경고
      (규약은 띄어쓰기. reference/ 하위 제외. 하이픈 구분자도 프리픽스로는 인정)
  23. 링크 대상에 공백이 든 로컬 파일, 폴더 링크 - 위반
@@ -58,7 +63,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      표지 뒤 비링크 설명은 링크하기 어려운 대상으로 통과시키며, 내부 문서를 제목만
      적은 것인지는 감사자 몫. 표 행은 경고에서 제외하고 옛 표기와 형태 불량만 본다.
      링크만 있는 목록 항목은 색인 목록과 참고 목록이 형태로 갈리지 않아 보지 않고,
-     명사에 붙인 동격 괄호와 화살표 포인터도 보지 않는다(모두 감사자 몫)
+     명사에 붙인 동격 괄호와 화살표 포인터도 보지 않는다(모두 감사자 몫).
+     생성 색인 쪽 파일은 제외
      (ref: AGENTS/epistemic-rules/writing-style/reference-markers.md)
  25. AGENTS.md가 있는 폴더(규범 폴더 제외)의 CLAUDE.md 포인터 - 경고
      (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님)
@@ -66,6 +72,13 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      (경로는 줄을 둔 파일 위치 기준. 묶음 세부 폴더 AGENTS/epistemic-rules/ 안의
       가져오기는 경고. front matter와 코드 펜스 안은 제외)
  27. 규범 폴더(`AGENTS/`와 그 아래) 안의 AGENTS.md, CLAUDE.md - 위반
+ 28. 색인 설명 원본 - 경고
+     (md 문서 description의 형식 오류와 길이 초과, INDEX.yaml 항목의 대상 부재,
+      reference/ 밖에서 md 문서를 가리키는 항목, 동명 문서가 있는 폴더 항목,
+      알 수 없는 키, 설명 길이 초과, reference/ 항목의 status 누락이나 어휘 밖
+      값, reference/ 밖 항목의 쓰이지 않는 status 키, reference/ 직속의 미등록
+      항목, 순차 분류로 선언된 폴더 INDEX.yaml의 "." 밖 항목, 설명의 비ASCII
+      문장 부호)
 
 위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tools.md "기계 감사 스크립트".
 
@@ -79,7 +92,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
     2  사용법 오류 (인자가 디렉토리가 아님)
 
 이식성 노트:
-- Python 3.8+ 표준 라이브러리만 사용. 특정 AI 도구, OS에 의존하지 않는다.
+- Python 3.9+ 표준 라이브러리만 사용. 특정 AI 도구, OS에 의존하지 않는다.
 - 경로는 전부 pathlib로 다루고, 출력은 UTF-8로 강제한다 (윈도우 콘솔의
   cp949 기본값 대비).
 - 링크 검사는 OS의 파일시스템 특성(대소문자 무시, 유니코드 정규화 무시)에
@@ -91,9 +104,11 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 
 구조:
 - 공용 인프라(Finding, 상수, 순회/읽기/링크 해석 헬퍼)는 _audit_core.py.
+  색인의 YAML 부분집합 파서와 렌더러는 생성기와 함께 쓰는 _index_core.py.
 - 검사 함수는 의미별 모듈에 나뉜다: audit_frontmatter(front matter/스키마),
   audit_links(링크/참조), audit_structure(폴더/디스크립터/이식성),
-  audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호).
+  audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호),
+  audit_index(색인 정합/설명 원본).
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
   해석, 인코딩 설정, 출력, 종료 코드를 담당한다.
@@ -108,8 +123,9 @@ from audit_links import (
     check_links, check_link_text, check_section_refs, check_link_whitespace,
     check_reference_markers, check_imports,
 )
+from audit_index import check_index_files, check_index_sources
 from audit_structure import (
-    check_descriptors, check_normative_guides, check_empty_folders,
+    check_descriptors, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
     check_date_prefix_separator, check_claude_pointers, check_norms_dir_descriptors,
 )
@@ -141,7 +157,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_strategy_fields(root)
     findings += check_task_tree_attrs(root)
     findings += check_task_tree_completed_branch(root)
-    findings += check_normative_guides(root)
+    findings += check_index_files(root)
     findings += check_tags_category(root)
     findings += check_empty_folders(root)
     findings += check_name_collision(root)
@@ -152,6 +168,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_claude_pointers(root)
     findings += check_imports(root)
     findings += check_norms_dir_descriptors(root)
+    findings += check_index_sources(root)
     return findings
 
 

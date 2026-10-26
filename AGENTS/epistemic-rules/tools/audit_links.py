@@ -71,8 +71,8 @@ def check_link_text(root: Path) -> list[Finding]:
 
     링크 대상은 check_links가 실존을 검사하지만 표시텍스트는 그 검사 밖이라,
     폐지된 파일명이나 옛 경로가 표시텍스트로 남으면 링크가 깨지지 않은 채
-    독자를 없는 파일로 오도한다 (예: [strategy/INDEX.md](../AGENTS.md)는 대상이
-    실존해 링크는 성립하나 표시텍스트 strategy/INDEX.md는 부재 파일). 본 검사가
+    독자를 없는 파일로 오도한다 (예: [strategy/overview.md](../AGENTS.md)는 대상이
+    실존해 링크는 성립하나 표시텍스트 strategy/overview.md는 부재 파일). 본 검사가
     그 사각을 닫는다. 파일명 형태의 표시텍스트만 본다 - 공백 없이 (.md로 끝나거나
     / 를 포함한 것), 그리고 경로 성분 중 하나가 날짜 프리픽스로 시작하면서 .md나
     / 로 끝나는 것(날짜 문서와 폴더는 이름에 공백이 든다). 그 밖에 공백이 든
@@ -190,9 +190,12 @@ def check_reference_markers(root: Path) -> list[Finding]:
     인라인 코드를 한 글자 자리표로 바꾼 줄로 하고, 메시지에는 원래 줄을 인용한다.
     지우지 않고 자리표를 두는 것은 표지 뒤 대상이 인라인 코드일 때 꼬리가 비었다고
     오판하지 않기 위해서다.
+    생성 색인 쪽 파일은 사용자가 고칠 수 없으므로 뺀다(항목 20과 같은 원칙).
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
+        if INDEX_PAGE_RE.match(path.name):
+            continue
         rel = str(path.relative_to(root))
         text = FRONT_MATTER_RE.sub("", read(path))
         text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)

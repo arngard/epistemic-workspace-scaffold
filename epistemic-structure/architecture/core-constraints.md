@@ -2,6 +2,7 @@
 date created: 2026-04-18
 date modified: 2026-10-26
 tags: [architecture, 제약]
+description: 프로젝트 전반에 걸리는 핵심 설계 제약. 스캐폴드 상태 - 제약 목록 작성 필요
 ---
 
 # 핵심 제약

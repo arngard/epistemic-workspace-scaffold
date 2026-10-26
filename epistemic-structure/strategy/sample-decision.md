@@ -4,6 +4,7 @@ date modified: 2026-07-04
 tags: [strategy, 샘플]
 importance: 하
 urgency: 하
+description: 설계 결정 문서의 위치와 형식을 보여 주는 튜토리얼 샘플. 실제 결정을 쓰면 지우거나 바꾼다
 ---
 
 # (샘플) 설계 결정 문서

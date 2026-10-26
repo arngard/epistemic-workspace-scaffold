@@ -2,6 +2,7 @@
 date created: 2026-04-18
 date modified: 2026-10-26
 tags: [소개]
+description: 스캐폴드 소개의 영어판
 ---
 
 [한국어](README.md) | English

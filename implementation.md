@@ -2,6 +2,7 @@
 date created: 2026-10-26
 date modified: 2026-10-26
 tags: [implementation]
+description: 이 워크스페이스가 만드는 구현 프로젝트
 ---
 
 # implementation

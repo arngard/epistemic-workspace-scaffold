@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-03
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [agents, 절차, ingest, epistemic-rules]
 ---
 
@@ -29,7 +29,7 @@ tags: [agents, 절차, ingest, epistemic-rules]
 1. 분류: 들어온 입력이 사실(외부 관찰)인가, 의견(주관적 진술)인가, 예측(미래 추정)인가, 결정(우리 측 판단)인가, raw 자료인가.
 2. 출처, 시점, 주체 식별: 사실은 출처와 발견 시점, 의견과 예측은 진술 주체와 시점, 결정은 결정 주체와 시점. 이 메타가 빠지면 이후 가중치 재구성이 불가능하다.
 3. 기존 노드 검색: 같은 주제, 관련 의견, 동일 출처, 동일 주체, 동일 결정 주제의 기존 노드를 찾는다.
-   - 우선 `epistemic-structure/` 하위 폴더의 디스크립터(AGENTS.md)를 훑어 카테고리 후보 파악. 존재하는 문서의 목록은 파일시스템(자기설명적 파일명)에서 직접 본다.
+   - 우선 `epistemic-structure/` 하위 폴더의 디스크립터(AGENTS.md)를 훑어 카테고리 후보 파악. 존재하는 문서의 목록과 짧은 설명은 각 폴더의 `INDEX.md`에서 본다.
    - 후보 노드 본문은 Grep으로 핵심 키워드 검색해 위치 확인.
 4. 충돌, 중복 검사 (Contradiction flagging):
    - 새 입력이 기존 노드의 진술과 충돌하면 조용히 덮어쓰지 않는다.
@@ -39,11 +39,11 @@ tags: [agents, 절차, ingest, epistemic-rules]
 5. 카테고리 결정: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" 적용.
 6. 노드 결정: 기존 노드에 추가 vs 신규 노드 생성. 기존 노드의 주제 응집성을 깨면 신규로 분리 (한 문서는 한 관심사 원칙).
 7. 교차 참조 갱신: 같은 정보가 여러 노드에 걸쳐 있으면 노드 간 마크다운 링크로 연결한다. 워크스페이스가 양방향 그래프 패턴을 채택했다면 그 양방향 의무도 같은 단계에서 처리한다.
-8. 디스크립터 점검: 규범 문서를 신설했으면 상류 규범은 그 묶음 요지의 트리거나 부모 문서 본문에, 자손 규범은 그 폴더 `AGENTS.md`에 링크한다 (ref: [instance-specialization.md](instance-specialization.md) "특수화 방식"). 디스크립터에 파일별 안내 표를 두는 폴더에 문서를 신설했으면 그 표에도 설명과 읽기 트리거를 등재한다. `reference/` 자료를 처리했으면 그 영역의 처리 진척 기록을 갱신한다 (ref: [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터").
+8. 디스크립터 점검: 규범 문서를 신설했으면 상류 규범은 그 묶음 요지의 트리거나 부모 문서 본문에, 자손 규범은 그 폴더 `AGENTS.md`에 링크한다 (ref: [instance-specialization.md](instance-specialization.md) "특수화 방식"). 문서를 신설했으면 그 문서의 `description`을 단다. `reference/` 자료를 처리했으면 `reference/INDEX.yaml`의 항목을 갱신한다 (ref: [folder-index.md](folder-index.md) "자료 처리 상태").
 9. 종료 전 빠뜨림 검사: 위 단계 중 누락이 있는지 자체 review.
    - 출처, 시점, 주체를 빠뜨렸는가?
    - 기존 노드 검색을 했는가? 충돌 검사를 했는가?
-   - 규범 문서 링크(묶음 요지의 트리거나 부모 문서 본문, 자손 규범은 폴더 `AGENTS.md`)와 디스크립터 갱신(파일별 안내 표, `reference/` 처리 상태)을 했는가?
+   - 규범 문서 링크(묶음 요지의 트리거나 부모 문서 본문, 자손 규범은 폴더 `AGENTS.md`)와 문서의 `description`과 `reference/INDEX.yaml` 항목 갱신을 했는가?
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 
@@ -60,4 +60,4 @@ tags: [agents, 절차, ingest, epistemic-rules]
 - see: [session-boundaries.md](session-boundaries.md) "세션 시작" - 본 워크플로의 트리거 위치
 - ref: [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트" - 사실/의견 주체 분리 원칙
 - sub: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) - 카테고리 판별 규칙
-- see: [`reference/AGENTS.md`](../../reference/AGENTS.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태
+- see: [`reference/INDEX.md`](../../reference/INDEX.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태

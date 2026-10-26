@@ -1,3 +1,6 @@
 # 모든 텍스트 파일은 저장소에 LF로 정규화하고 작업 트리에도 LF로 체크아웃한다.
 # 바이너리 파일은 git이 NUL 바이트로 자동 감지해 정규화 대상에서 제외한다.
 * text=auto eol=lf
+
+# 폴더 색인은 생성 파일이라 PR(pull request) 차이에서 접는다. 머지 충돌은 생성기를 다시 돌려 푼다.
+INDEX*.md linguist-generated=true
