@@ -50,6 +50,24 @@ class Phase2MapTest(unittest.TestCase):
         self.assertEqual([n for n, _ in rep], [2])
 
 
+class Phase2bMapTest(unittest.TestCase):
+    def test_chain_to_final(self):
+        self.assertEqual(
+            map_path("AGENTS/coding-guidelines.md"),
+            "implementation/AGENTS/epistemic-rules/coding-guidelines.md")
+        self.assertEqual(
+            map_path("AGENTS/ingest-workflow/reference-folder.md"),
+            "reference/AGENTS/epistemic-rules/reference-folder.md")
+        self.assertEqual(
+            map_path("AGENTS/epistemic-rules/coding-guidelines.md"),
+            "implementation/AGENTS/epistemic-rules/coding-guidelines.md")
+
+    def test_sibling_unaffected(self):
+        self.assertEqual(
+            map_path("AGENTS/ingest-workflow.md"),
+            "AGENTS/epistemic-rules/ingest-workflow.md")
+
+
 class RewriteLinksTest(unittest.TestCase):
     def test_depth_change_and_encoding(self):
         src = "[t](../_strategy/a%20b.md#절)"

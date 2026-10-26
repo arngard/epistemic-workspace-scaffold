@@ -49,6 +49,13 @@ NORM_DOCS = (
 )
 NORM_DIRS = ("agent-roles", "ingest-workflow", "pr-workflow", "tools", "unit-task", "unit-task-workflow", "writing-style")
 PATH_MAP += [("AGENTS/" + n, "AGENTS/epistemic-rules/" + n) for n in NORM_DOCS + NORM_DIRS]
+# 폴더 묶음으로 나가는 규범. 앞 대응이 낳은 자리에서 최종 자리로 한 번 더 옮긴다.
+PATH_MAP += [
+    ("AGENTS/epistemic-rules/coding-guidelines.md",
+     "implementation/AGENTS/epistemic-rules/coding-guidelines.md"),
+    ("AGENTS/epistemic-rules/ingest-workflow/reference-folder.md",
+     "reference/AGENTS/epistemic-rules/reference-folder.md"),
+]
 
 # 본문에서 `_docs/` 없이 쓰인 옛 폴더 이름 -> 새 이름.
 _BARE_MAP = {
