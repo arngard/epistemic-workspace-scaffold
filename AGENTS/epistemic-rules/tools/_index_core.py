@@ -71,7 +71,23 @@ class IndexFormatError(ValueError):
         return "%s: %s" % (where, self.message) if where else self.message
 
 
-_PLAIN_FIRST_BAD = "\"'[]{}>|*&!%@#`"
+_PLAIN_FIRST_BAD = "\"'[]{},>|*&!%@#`"
+_LINE_BREAKS = "\u2028\u2029\u0085"
+# YAML이 문자열이 아닌 값(null, 불리언, 수, 날짜)으로 읽는 따옴표 없는 값.
+_NON_STRING_RE = re.compile(
+    r"^(?:~|=|<<|null|true|false|yes|no|on|off"
+    r"|[-+]?\.(?:inf|nan)"
+    r"|[-+]?(?:\d[\d_]*)(?:\.[\d_]*)?(?:[eE][-+]?\d+)?"
+    r"|[-+]?\.\d[\d_]*(?:[eE][-+]?\d+)?"
+    r"|[-+]?0[xXoObB][0-9a-fA-F_]+"
+    r"|[-+]?\d[\d_]*(?::[0-5]?\d)+(?:\.[\d_]*)?"
+    r"|\d{4}-\d{1,2}-\d{1,2}(?:[Tt ].*)?)$", re.IGNORECASE)
+
+
+def _has_control(text: str) -> bool:
+    """제어 문자(Cc)나 유니코드 줄 구분자가 있으면 참."""
+    return any(unicodedata.category(c) == "Cc" or c in _LINE_BREAKS
+               for c in text)
 _NAME_LINE_RE = re.compile(r'^"((?:[^"\\]|\\.)*)":[ ]*$')
 _KEY_LINE_RE = re.compile(r"^  ([A-Za-z_][A-Za-z0-9_-]*):(?: (.*))?$")
 _QUOTED_RE = re.compile(r'^"((?:[^"\\]|\\.)*)"[ ]*$')
@@ -99,6 +115,8 @@ def parse_scalar(raw: str) -> str:
     text = raw.strip()
     if text == "":
         return ""
+    if _has_control(text):
+        raise IndexFormatError("값에 탭이나 제어 문자가 있다")
     if text[0] == '"':
         m = _QUOTED_RE.match(text)
         if not m:
@@ -112,17 +130,20 @@ def parse_scalar(raw: str) -> str:
         raise IndexFormatError("따옴표 없는 값이 ':'로 끝난다")
     if text in ("-", "?") or text.startswith(("- ", "? ")):
         raise IndexFormatError("따옴표 없는 값이 '- ' 또는 '? '로 시작한다")
+    if _NON_STRING_RE.match(text):
+        raise IndexFormatError("따옴표 없는 값이 문자열이 아닌 값으로 읽힌다")
     return text
 
 
 def quote_scalar(value: str) -> str:
     """값을 부분집합 규칙을 지키는 YAML 스칼라 문자열로 쓴다.
 
-    따옴표 없이 읽히는 값은 그대로, 아니면 큰따옴표로 감싼다. 줄바꿈이나
-    탭을 담은 값은 한 줄로 쓸 수 없어 IndexFormatError다.
+    따옴표 없이 읽히는 값은 그대로, 아니면 큰따옴표로 감싼다. 숫자나 null처럼
+    읽히는 값도 감싼다. 탭, 줄바꿈 등 제어 문자와 줄 구분자를 담은 값은
+    쓸 수 없어 IndexFormatError다.
     """
-    if any(c in value for c in "\n\r\t"):
-        raise IndexFormatError("줄바꿈이나 탭이 든 값은 쓸 수 없다")
+    if _has_control(value):
+        raise IndexFormatError("제어 문자가 든 값은 쓸 수 없다")
     if value == value.strip() and value:
         try:
             if parse_scalar(value) == value and not value.startswith('"'):
@@ -170,18 +191,20 @@ def load_index_yaml(path: Path) -> "dict[str, dict[str, str]]":
     if not path.is_file():
         return {}
     text = read(path)
-    if text.startswith("﻿"):
+    if text.startswith("\ufeff"):
         text = text[1:]
     data: "dict[str, dict[str, str]]" = {}
     current: "Optional[dict[str, str]]" = None
     self_line = 0
-    for no, line in enumerate(text.splitlines(), start=1):
+    for no, line in enumerate(text.replace("\r\n", "\n").split("\n"), start=1):
         try:
             if line.strip() == "" or line.lstrip().startswith("#"):
                 continue
             m = _NAME_LINE_RE.match(line)
             if m:
                 name = unicodedata.normalize("NFC", _unescape(m.group(1)))
+                if name == "":
+                    raise IndexFormatError("항목 이름이 비었다")
                 if name in data:
                     raise IndexFormatError("항목 이름이 겹친다: " + name)
                 current = data[name] = {}

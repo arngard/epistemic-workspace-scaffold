@@ -57,7 +57,7 @@ class ScalarTest(unittest.TestCase):
     def test_plain_allows_inner_markers(self):
         self.assertEqual(parse_scalar("a-b ?c"), "a-b ?c")
         self.assertEqual(parse_scalar("a#b"), "a#b")
-        self.assertEqual(parse_scalar("-5"), "-5")
+        self.assertEqual(parse_scalar("-a5"), "-a5")
 
     def test_rejects_bad_quoted(self):
         for raw in ('"a', '"a\\n"', '"a" b', '"a"b', '"a\\"'):
@@ -70,6 +70,32 @@ class ScalarTest(unittest.TestCase):
                 continue
             with self.assertRaises(IndexFormatError):
                 parse_scalar(ch + "a")
+
+    def test_rejects_leading_comma(self):
+        with self.assertRaises(IndexFormatError):
+            parse_scalar(",a")
+
+    def test_rejects_control_chars(self):
+        for raw in ("a\tb", "a\t#b", "a:\tb", "a\x01b", "a\u2028b",
+                    "a\u2029b", "a\x85b", '"a\tb"'):
+            with self.assertRaises(IndexFormatError, msg=repr(raw)):
+                parse_scalar(raw)
+
+    def test_rejects_non_string_plain(self):
+        for raw in ("~", "null", "Null", "TRUE", "false", "Yes", "no", "ON",
+                    "off", "12", "-12", "+3", "1.5", "-1.5", ".5", "1e3",
+                    "1.5E-3", "0x1F", "0o7", ".inf", "-.INF", ".nan", "1_000",
+                    "1:30", "2026-10-25"):
+            with self.assertRaises(IndexFormatError, msg=raw):
+                parse_scalar(raw)
+
+    def test_quoted_non_string_ok(self):
+        self.assertEqual(parse_scalar('"null"'), "null")
+        self.assertEqual(parse_scalar('"12"'), "12")
+
+    def test_plain_words_like_numbers_ok(self):
+        for raw in ("1a", "nullable", "v1.2.3", "0x", "a1"):
+            self.assertEqual(parse_scalar(raw), raw)
 
     def test_empty(self):
         self.assertEqual(parse_scalar("  "), "")
@@ -95,8 +121,15 @@ class QuoteScalarTest(unittest.TestCase):
         for v in values:
             self.assertEqual(parse_scalar(quote_scalar(v)), v, repr(v))
 
+    def test_quotes_non_string(self):
+        self.assertEqual(quote_scalar("null"), '"null"')
+        self.assertEqual(quote_scalar("12"), '"12"')
+        for v in ("null", "12", "~", "yes", "1e3", ",a", ".inf", "0x1F"):
+            self.assertEqual(parse_scalar(quote_scalar(v)), v, v)
+
     def test_rejects_unrepresentable(self):
-        for v in ("a\nb", "a\rb", "a\tb"):
+        for v in ("a\nb", "a\rb", "a\tb", "a\x01b", "a\u2028b",
+                  "a\u2029b", "a\x85b"):
             with self.assertRaises(IndexFormatError):
                 quote_scalar(v)
 
@@ -202,6 +235,25 @@ class YamlTest(unittest.TestCase):
         with self.assertRaises(IndexFormatError) as cm:
             load_index_yaml(self.root / "INDEX.yaml")
         self.assertEqual(cm.exception.line, 3)
+
+    def test_empty_entry_name(self):
+        self.write("INDEX.yaml", '"":\n  description: x\n')
+        with self.assertRaises(IndexFormatError) as cm:
+            load_index_yaml(self.root / "INDEX.yaml")
+        self.assertEqual(cm.exception.line, 1)
+
+    def test_line_numbers_stable_with_separators(self):
+        # U+2028이 든 줄이 있어도 뒤 줄의 번호가 밀리지 않는다.
+        self.write("INDEX.yaml", '"a":\n  description: "x\u2028y"\n'
+                   '"b":\n   description: z\n')
+        with self.assertRaises(IndexFormatError) as cm:
+            load_index_yaml(self.root / "INDEX.yaml")
+        self.assertEqual(cm.exception.line, 2)
+        self.write("INDEX.yaml", '"a":\n  description: x\u2028y\n'
+                   '"b":\n  description: z\n  description: w\n')
+        with self.assertRaises(IndexFormatError) as cm:
+            load_index_yaml(self.root / "INDEX.yaml")
+        self.assertEqual(cm.exception.line, 2)
 
     def test_duplicate_key(self):
         self.write("INDEX.yaml", '"a":\n  description: x\n  description: y\n')
