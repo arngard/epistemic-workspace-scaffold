@@ -14,7 +14,7 @@ def check_descriptors(root: Path) -> list[Finding]:
     out: list[Finding] = []
     for d in content_dirs(root):
         rel = d.relative_to(root) if d != root else Path(".")
-        # _reference/ 하위 폴더는 immutable raw 보관이라 규약 검사 대상이 아니다.
+        # reference/ 하위 폴더는 immutable raw 보관이라 규약 검사 대상이 아니다.
         # 디스크립터도 강제하지 않고, 분화 권고도 하지 않는다 - 원본을 재편하지
         # 않는 것이 원칙이라 "하위 폴더 분화"는 그 안에서 실행 불가능한 권고다.
         parts = rel.parts
@@ -164,7 +164,7 @@ def check_date_prefix_separator(root: Path) -> list[Finding]:
     """날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더를 검출한다 (경고).
 
     규약상 날짜 뒤 제목은 띄어쓰기로 잇는다 (ref: document-temporality.md).
-    _reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. _implementation/
+    reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. implementation/
     하위 프로젝트 내부도 문서 규약 대상이 아니므로 그 아래에서는 AGENTS/ 하위만
     본다.
     """

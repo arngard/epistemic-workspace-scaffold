@@ -71,8 +71,8 @@ def check_link_text(root: Path) -> list[Finding]:
 
     링크 대상은 check_links가 실존을 검사하지만 표시텍스트는 그 검사 밖이라,
     폐지된 파일명이나 옛 경로가 표시텍스트로 남으면 링크가 깨지지 않은 채
-    독자를 없는 파일로 오도한다 (예: [_strategy/INDEX.md](../AGENTS.md)는 대상이
-    실존해 링크는 성립하나 표시텍스트 _strategy/INDEX.md는 부재 파일). 본 검사가
+    독자를 없는 파일로 오도한다 (예: [strategy/INDEX.md](../AGENTS.md)는 대상이
+    실존해 링크는 성립하나 표시텍스트 strategy/INDEX.md는 부재 파일). 본 검사가
     그 사각을 닫는다. 파일명 형태의 표시텍스트만 본다 - 공백 없이 (.md로 끝나거나
     / 를 포함한 것), 그리고 경로 성분 중 하나가 날짜 프리픽스로 시작하면서 .md나
     / 로 끝나는 것(날짜 문서와 폴더는 이름에 공백이 든다). 그 밖에 공백이 든
@@ -126,7 +126,7 @@ def check_section_refs(root: Path) -> list[Finding]:
         rel = str(path.relative_to(root))
         text = FRONT_MATTER_RE.sub("", read(path))
         # 코드 펜스만 제거한다. 인라인 코드는 남긴다 - 섹션명이 경로를 백틱으로
-        # 감쌀 수 있어(예: "`_reference/` 폴더 처리") 제거하면 섹션명이 훼손된다.
+        # 감쌀 수 있어(예: "`reference/` 폴더 처리") 제거하면 섹션명이 훼손된다.
         # 백틱 자체는 normalize_heading이 양측에서 대칭 제거한다.
         text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
         for target, section in SECTION_REF_RE.findall(text):

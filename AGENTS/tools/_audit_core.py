@@ -13,12 +13,12 @@ import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 
-REFERENCE_DIR = "_reference"
-IMPLEMENTATION_DIR = "_implementation"
-WORKLOG_DIR = "_docs/_worklog"
+REFERENCE_DIR = "reference"
+IMPLEMENTATION_DIR = "implementation"
+WORKLOG_DIR = "worklog"
 # 도구 전용 파일은 front matter 면제 (ref: writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
-EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", "_tmp", "__pycache__"}
+EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
 
 # 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (folder-structure.md
 # "폴더 구조와 디스크립터"). 도구 계층 자동 인식용 명명.
@@ -30,21 +30,22 @@ SCAFFOLD_STATE_MARKER = "스캐폴드 상태"
 
 # 골격 기본 규범 폴더 (folder-structure.md "폴더 구조와 디스크립터"). 하위 폴더도
 # 규범 폴더로 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
-NORMATIVE_DIRS = ("AGENTS", "_docs/_architecture")
+NORMATIVE_DIRS = ("AGENTS", "epistemic-structure/architecture")
 
 # 에피스테믹 골격이 출고하는 표준 폴더. 실체 0건 검출에서 상시 예외.
 SKELETON_DIRS = {
-    ".", "AGENTS", "AGENTS/tools", "_docs", "_docs/_ontology",
-    "_docs/_knowledge", "_docs/_strategy", "_docs/_architecture",
-    "_docs/_worklog", REFERENCE_DIR, IMPLEMENTATION_DIR,
+    ".", "AGENTS", "AGENTS/tools", "epistemic-structure",
+    "epistemic-structure/ontology", "epistemic-structure/knowledge",
+    "epistemic-structure/strategy", "epistemic-structure/architecture",
+    WORKLOG_DIR, REFERENCE_DIR, IMPLEMENTATION_DIR,
 }
 
-# _docs/ 4범주 직속 문서의 tags 첫 항목 기대값 (하위 폴더에는 강제하지 않는다).
+# epistemic-structure/ 4범주 직속 문서의 tags 첫 항목 기대값 (하위 폴더에는 강제하지 않는다).
 CATEGORY_TAG_DIRS = {
-    "_docs/_ontology": "ontology",
-    "_docs/_knowledge": "knowledge",
-    "_docs/_strategy": "strategy",
-    "_docs/_architecture": "architecture",
+    "epistemic-structure/ontology": "ontology",
+    "epistemic-structure/knowledge": "knowledge",
+    "epistemic-structure/strategy": "strategy",
+    "epistemic-structure/architecture": "architecture",
 }
 
 # --- 임계값 (초기값. 보수적으로 시작해 운영하며 조정) ---
@@ -81,9 +82,9 @@ WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 1
 # front matter 날짜 필드 값 형식 (yyyy-MM-dd). 필드 존재만 보면 잘못된 값이
 # 통과하므로 값도 검사한다.
 DATE_VALUE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# 전략 문서(_docs/_strategy 4범주 직속)의 추가 필수 속성 (ref: _strategy/AGENTS.md
+# 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 (ref: strategy/AGENTS.md
 # "Front matter 속성"). 하위 폴더 문서와 디스크립터에는 강제하지 않는다.
-STRATEGY_DIR = "_docs/_strategy"
+STRATEGY_DIR = "epistemic-structure/strategy"
 STRATEGY_FIELDS = ("importance", "urgency")
 # 날짜 프리픽스: 파일명이 yyyy-MM-dd로 시작하면 히스토리 문서.
 # 시각 확장(yyyy-MM-ddTHH-mm)도 인정한다 (ref: document-temporality.md).
@@ -182,7 +183,7 @@ def is_excluded(root: Path, path: Path) -> bool:
     """순회 공통 제외 판정 (iter_md_files, content_dirs, 이식성 검사 공유).
 
     도구 전용 폴더(EXEMPT_DIRS) 하위, 중첩 git 레포 하위, 심볼릭 링크는
-    제외한다. 카테고리별 추가 규칙(_reference, _implementation)은 각 호출부가
+    제외한다. 카테고리별 추가 규칙(reference, implementation)은 각 호출부가
     자기 책임으로 덧붙인다.
     """
     parts = path.relative_to(root).parts
@@ -198,11 +199,11 @@ def is_excluded(root: Path, path: Path) -> bool:
 def iter_md_files(root: Path):
     """규약 검사 대상 .md 순회.
 
-    _reference/ 내부는 immutable raw 자료라 규약 검사 대상이 아니다
+    reference/ 내부는 immutable raw 자료라 규약 검사 대상이 아니다
     (디스크립터 AGENTS.md 자체만 예외).
-    _implementation/ 하위 프로젝트 내부(소스 트리)도 대상이 아니다 -
+    implementation/ 하위 프로젝트 내부(소스 트리)도 대상이 아니다 -
     소스 폴더 구조는 코드 생태계 관례가 지배한다 (ref: folder-structure.md
-    "폴더 구조와 디스크립터" _implementation 예외). 직할 AGENTS.md와
+    "폴더 구조와 디스크립터" implementation 예외). 직할 AGENTS.md와
     그 하위 문서 폴더 AGENTS/만 검사한다.
     도구 전용 폴더, 중첩 git 레포, 심링크 제외는 is_excluded가 담당한다.
     """
@@ -308,8 +309,8 @@ def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: s
       2. 루트 기준 또는 source 상대로 표시텍스트 경로가 실존 -
          [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md).
       3. 폴더 표기(/로 끝남)의 폴더명이 대상 경로 성분에 존재 -
-         [_knowledge/](../_knowledge/AGENTS.md).
-    셋 다 아니면 부재 파일을 지칭하는 오도로 본다 (daily.md, _strategy/INDEX.md).
+         [knowledge/](../knowledge/AGENTS.md).
+    셋 다 아니면 부재 파일을 지칭하는 오도로 본다 (daily.md, strategy/INDEX.md).
     """
     disp_norm = disp.rstrip("/")
     disp_base = disp_norm.rsplit("/", 1)[-1]
@@ -352,9 +353,9 @@ def content_dirs(root: Path):
 
     EXEMPT_DIRS(.git, .claude 등 도구 전용)와 그 하위, 중첩 git 레포, 심링크는
     is_excluded가 제외한다.
-    _implementation/ 하위 프로젝트 내부(소스 트리)는 제외한다 - 직할
+    implementation/ 하위 프로젝트 내부(소스 트리)는 제외한다 - 직할
     문서 폴더 AGENTS/만 대상 (ref: folder-structure.md "폴더 구조와 디스크립터"
-    _implementation 예외).
+    implementation 예외).
     루트 자신도 디스크립터(루트 AGENTS.md)를 가진다.
     """
     yield root

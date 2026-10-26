@@ -13,5 +13,7 @@ tags: [agents, 도구]
 |------|------|-----------------|
 | [audit.py](audit.py) | 형식 정합성 기계 감사 (도구 중립, 결정론적) | 새 세션 시작 시, push/PR 시 |
 | [check_semantic_audit.py](check_semantic_audit.py) | 의미 감사 트리거 조건 판정 (git 의존이라 audit.py와 분리) | 새 세션 시작 시 의미 감사 필요 여부 판정 |
+| [migrate_layout.py](migrate_layout.py) | 구조 이전 일시 도구. 옛 최상위 폴더 배치를 새 배치로 옮기고 링크를 고친다. 자식 레포 전파가 끝나면 지운다 | 자식 레포에서 상류 머지 직후 |
+| [tests/](tests/AGENTS.md) | 도구 단위 시험 | 도구를 고친 뒤 |
 
-audit.py는 유일한 직접 실행 진입점이다. 검사 로직은 공용 인프라 `_audit_core.py`와 의미별 검사 모듈 `audit_frontmatter.py`(front matter/스키마), `audit_links.py`(링크/참조), `audit_structure.py`(폴더/디스크립터/이식성), `audit_worklog.py`(STATUS/TASK_TREE), `audit_content.py`(분량/시간성/문장 부호)로 분할돼 있으며, audit.py가 import해 조합한다. 분할은 파일당 크기를 낮춰 편집 안전성과 의미 단위 유지보수성을 높이기 위함이다.
+audit.py는 유일한 직접 실행 진입점이다. 검사 로직은 공용 인프라 `_audit_core.py`와 의미별 검사 모듈 `audit_frontmatter.py`(front matter/스키마), `audit_links.py`(링크/참조), `audit_structure.py`(폴더/디스크립터/이식성), `audit_worklog.py`(STATUS/TASK_TREE), `audit_content.py`(분량/시간성/문장 부호)로 분할돼 있으며, audit.py가 import해 조합한다. 분할은 파일당 크기를 낮춰 편집 안전성과 의미 단위 유지보수성을 높이기 위함이다. `migrate_layout.py`는 임시 예외로, 자식 레포 전파가 끝날 때까지만 둔다.
