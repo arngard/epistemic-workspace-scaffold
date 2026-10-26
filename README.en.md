@@ -22,13 +22,13 @@ For the rationale, see [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENT
 ```
 (workspace-root)/
 ├── AGENTS/               <- Agent operating norms (entry point: AGENTS.md)
-├── worklog.md            <- Parent document introducing each skeleton folder
+├── worklog.md            <- Parent document: X.md introduces the same-name folder X/ (likewise below)
 ├── worklog/              <- Work status
 ├── reference.md
 ├── reference/            <- Immutable raw materials dumped by the user
 ├── epistemic-structure.md
 ├── epistemic-structure/  <- Knowledge not expressible in code
-│   ├── ontology.md           <- Parent document introducing each category folder
+│   ├── ontology.md           <- Parent document: X.md introduces the same-name folder X/ (likewise below)
 │   ├── ontology/             <- Domain concepts
 │   ├── knowledge.md
 │   ├── knowledge/            <- External facts

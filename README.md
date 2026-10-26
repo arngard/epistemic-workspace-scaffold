@@ -22,13 +22,13 @@ tags: [소개]
 ```
 (workspace-root)/
 ├── AGENTS/               <- 에이전트 운영 규범 (진입점은 AGENTS.md)
-├── worklog.md            <- 각 골격 폴더를 소개하는 부모 문서
+├── worklog.md            <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
 ├── worklog/              <- 작업 상태
 ├── reference.md
 ├── reference/            <- 사용자가 dump한 raw 자료의 immutable 보관 영역
 ├── epistemic-structure.md
 ├── epistemic-structure/  <- 코드로 표현할 수 없는 지식
-│   ├── ontology.md           <- 각 범주 폴더를 소개하는 부모 문서
+│   ├── ontology.md           <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
 │   ├── ontology/             <- 도메인 개념
 │   ├── knowledge.md
 │   ├── knowledge/            <- 외부 사실
