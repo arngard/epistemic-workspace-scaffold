@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-10-26
-tags: [architecture, 제약, 설계원칙]
+tags: [architecture, 제약]
 ---
 
 # 핵심 제약

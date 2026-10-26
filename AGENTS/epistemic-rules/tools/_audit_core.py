@@ -20,7 +20,7 @@ WORKLOG_DIR = "worklog"
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
 
-# 폴더 디스크립터 파일명. 모든 폴더가 이 파일을 가진다 (folder-structure.md
+# 폴더 디스크립터 파일명. 예외로 정한 폴더를 뺀 모든 폴더가 이 파일을 가진다 (folder-structure.md
 # "폴더 구조와 디스크립터"). 같은 폴더의 CLAUDE.md가 @AGENTS.md로 가져온다.
 DESCRIPTOR_NAME = "AGENTS.md"
 
@@ -28,8 +28,8 @@ DESCRIPTOR_NAME = "AGENTS.md"
 # 안내와 대상 파일 양쪽에 같은 문구가 있어야 정합이다.
 SCAFFOLD_STATE_MARKER = "스캐폴드 상태"
 
-# 골격 기본 규범 폴더 (folder-structure.md "폴더 구조와 디스크립터"). 하위 폴더도
-# 규범 폴더로 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
+# 골격이 기본으로 파일별 안내 표를 두는 폴더 (folder-structure.md "폴더 구조와
+# 디스크립터"). 하위 폴더도 같이 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
 NORMATIVE_DIRS = ("epistemic-structure/architecture",)
 
 # 규범 폴더 이름과 상류 규범 묶음 이름. 규범 폴더는 어느 깊이에서든 이름이
@@ -424,7 +424,7 @@ def content_dirs(root: Path):
 
 
 def is_normative_dir(root: Path, d: Path) -> bool:
-    """골격 기본 규범 폴더(하위 포함) 또는 파일별 안내 표를 가진 폴더인지 판별.
+    """골격이 기본으로 파일별 안내 표를 두는 폴더(하위 포함) 또는 파일별 안내 표를 가진 폴더인지 판별.
 
     파일별 안내 표 판별: 디스크립터의 마크다운 표 행에 폴더 직속 md 파일로의
     링크가 하나라도 있으면 그 폴더는 파일별 안내를 운영하는 것으로 본다.

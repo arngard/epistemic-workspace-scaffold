@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-03
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [agents, 절차, ingest, epistemic-rules]
 ---
 
@@ -43,7 +43,7 @@ tags: [agents, 절차, ingest, epistemic-rules]
 9. 종료 전 빠뜨림 검사: 위 단계 중 누락이 있는지 자체 review.
    - 출처, 시점, 주체를 빠뜨렸는가?
    - 기존 노드 검색을 했는가? 충돌 검사를 했는가?
-   - 디스크립터 갱신(규범 폴더의 파일별 안내, `reference/` 처리 상태)을 했는가?
+   - 디스크립터 갱신(파일별 안내 표, `reference/` 처리 상태)을 했는가?
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 

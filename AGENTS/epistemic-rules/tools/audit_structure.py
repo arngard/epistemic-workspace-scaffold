@@ -40,9 +40,9 @@ def check_descriptors(root: Path) -> list[Finding]:
 
 
 def check_normative_guides(root: Path) -> list[Finding]:
-    """규범 폴더 디스크립터의 파일별 안내 완전성 검사 (경고).
+    """파일별 안내 표를 두는 폴더의 디스크립터 안내 완전성 검사 (경고).
 
-    규범 폴더의 직속 md 파일이 디스크립터 본문에 언급되지 않으면 경고.
+    그 폴더의 직속 md 파일이 디스크립터 본문에 언급되지 않으면 경고.
     존재를 모르면 위반 행동이 나오는 문서들이므로 안내 누락 자체가 신호다.
     """
     out: list[Finding] = []
@@ -63,7 +63,7 @@ def check_normative_guides(root: Path) -> list[Finding]:
                 continue
             out.append(Finding(
                 WARNING, "normative", rel,
-                f"디스크립터 파일별 안내에 미등재 - {p.name}. 규범 폴더는 파일별 설명과 읽기 트리거를 유지한다",
+                f"디스크립터 파일별 안내에 미등재 - {p.name}. 파일별 안내 표를 두는 폴더는 파일별 설명과 읽기 트리거를 유지한다",
             ))
     return out
 
