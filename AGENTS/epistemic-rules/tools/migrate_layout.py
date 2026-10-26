@@ -324,6 +324,7 @@ _SECTION_NAME = "등록된 자료"
 _SECTION_RE = re.compile(r"^(#{1,6})[ \t]+" + _SECTION_NAME + r"[ \t]*$")
 _HEADING_RE = re.compile(r"^(#{1,6})[ \t]")
 _EMPTY_NOTE_RE = re.compile(r"^\(아직 등록된 자료 없음\.?\)$")
+_KNOWN_COLUMNS = ("파일", "추가일", "설명", "상태")
 _SEPARATOR_CELL_RE = re.compile(r"^:?-+:?$")
 _CELL_SPLIT_RE = re.compile(r"(?<!\\)\|")
 _LINK_CELL_RE = re.compile(r"^\[[^\]]*\]\(([^)\s]*)(?:\s+\"[^\"]*\")?\)$")
@@ -363,7 +364,8 @@ def _file_name(cell: str) -> Optional[str]:
             name = cell
         else:
             return None
-    if not name or name in (".", "..") or "/" in name or "\\" in name:
+    if not name or name in (".", "..") or "/" in name or "\\" in name \
+            or "*" in name or "~" in name:
         return None
     return unicodedata.normalize("NFC", name)
 
@@ -376,7 +378,10 @@ def _split_status(cell: str) -> Optional[Tuple[str, str]]:
                 rest = cell[len(lead):]
                 if rest and rest[0].isalnum():
                     continue
-                return word, rest.strip()
+                tail = rest.strip()
+                if tail and not tail[0].isalnum() and tail[0] not in "(-[":
+                    return None
+                return word, tail
     return None
 
 
@@ -404,6 +409,10 @@ def _read_table(lines: List[str]) -> Tuple[List[Tuple[str, str, str]], List[str]
         bad.append("표가 중간에 끊겼다")
         return rows, bad
     head = [c.strip("` ") for c in _split_row(table[0])]
+    unknown = [c for c in head if c not in _KNOWN_COLUMNS]
+    if unknown:
+        bad.append("모르는 열: " + ", ".join(unknown))
+        return rows, bad
     if "파일" not in head or "상태" not in head or head.count("파일") > 1 \
             or head.count("상태") > 1 or head.count("설명") > 1:
         bad.append("머리 칸에 파일과 상태가 하나씩 없다: " + table[0].strip())

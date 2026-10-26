@@ -599,11 +599,28 @@ class ReferenceTableTest(unittest.TestCase):
             "external_link": "| [a](https://e.com/a) | d | 글 | 처리 대기 |",
             "two_links": "| [a](a) [b](b) | d | 글 | 처리 대기 |",
             "glued_status": "| a.pdf | d | 글 | 처리 대기열 |",
+            "comma_status": "| a.pdf | d | 글 | 처리됨, 노드 |",
+            "dot_status": "| a.pdf | d | 글 | 처리됨.x |",
+            "slash_status": "| a.pdf | d | 글 | 처리됨 / 보관용 |",
+            "star_name": "| a*b.pdf | d | 글 | 처리 대기 |",
+            "tilde_name": "| a~b.pdf | d | 글 | 처리 대기 |",
         }
         for label, row in cases.items():
             text = _table(row)
             body, yaml, bad = convert_reference_table(text)
             self.assertEqual((body, yaml, len(bad)), (text, "", 1), label)
+
+    def test_unknown_column_reported(self):
+        text = ("## 등록된 자료\n\n| 파일 | 출처 | 설명 | 상태 |\n|---|---|---|---|\n"
+                "| a.pdf | 메일 | 글 | 처리됨 |\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual((body, yaml, len(bad)), (text, "", 1))
+        self.assertIn("모르는 열: 출처", bad[0])
+
+    def test_status_remainder_allowed_starts(self):
+        for rest in ("(노드)", "- 노드", "[n](n.md)"):
+            row = "| a.pdf | d | 글 | 처리됨 %s |" % rest
+            self.assertEqual(convert_reference_table(_table(row))[2], [], rest)
 
     def test_duplicate_name_reported(self):
         rows = ["| a.pdf | d | 가 | 처리 대기 |", "| [a](a.pdf) | d | 나 | 처리됨 |"]
