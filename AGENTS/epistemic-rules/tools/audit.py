@@ -46,7 +46,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
      (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
  20. 비ASCII 문장 부호 (em dash, 화살표, 가운뎃점, 말줄임표, 둥근 따옴표) - 경고
-     (백틱/코드펜스 예시와 고정폭 box-drawing 트리는 제외.
+     (백틱/코드펜스 예시와 고정폭 box-drawing 트리, 생성 색인 쪽 파일은 제외.
       ref: AGENTS/epistemic-rules/writing-style/ascii-punctuation.md)
  21. front matter description의 스캐폴드 상태 마커와 본문 마커 대조 - 경고
      (description에 "스캐폴드 상태"가 있는데 본문에 없으면 검출. 인스턴스가
@@ -75,8 +75,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      (md 문서 description의 형식 오류와 길이 초과, INDEX.yaml 항목의 대상 부재,
       reference/ 밖에서 md 문서를 가리키는 항목, 동명 문서가 있는 폴더 항목,
       알 수 없는 키, 설명 길이 초과, reference/ 항목의 status 누락이나 어휘 밖
-      값, reference/ 직속의 미등록 항목, 순차 분류로 선언된 폴더 INDEX.yaml의
-      "." 밖 항목)
+      값, reference/ 밖 항목의 쓰이지 않는 status 키, reference/ 직속의 미등록
+      항목, 순차 분류로 선언된 폴더 INDEX.yaml의 "." 밖 항목, 설명의 비ASCII
+      문장 부호)
 
 위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tools.md "기계 감사 스크립트".
 

@@ -6,15 +6,24 @@
 
 공용 인프라는 _audit_core와 _index_core, 오케스트레이션은 audit.py.
 """
+import re
 from pathlib import Path
 
 from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
 from _index_core import (
-    INDEX_DESC_LIMIT, INDEX_KEYS, REFERENCE_STATUSES, SELF_KEY, UNREGISTERED,
+    INDEX_DESC_LIMIT, INDEX_KEYS, REFERENCE_STATUSES, SELF_KEY, STRUCTURE_KEY,
+    UNREGISTERED,
     IndexFormatError, entry_paths, front_matter_description, in_reference_subfolder,
     index_dirs, index_yaml_lines, list_entries, load_index_yaml, render_all)
 
-BUILD_HINT = "AGENTS/epistemic-rules/tools/build_index.py로 다시 만든다"
+BUILD_TOOL = "AGENTS/epistemic-rules/tools/build_index.py"
+BUILD_HINT = f"{BUILD_TOOL}로 다시 만든다"
+
+
+def _punct_hints(text: str) -> "list[tuple[str, str]]":
+    """설명 값의 비ASCII 문장 부호와 대체 힌트. 인라인 코드 안은 뺀다."""
+    text = re.sub(r"`[^`\n]*`", "", text)
+    return [(ch, hint) for ch, hint in NON_ASCII_PUNCT.items() if ch in text]
 
 
 def _rel(root: Path, path: Path) -> str:
@@ -42,10 +51,11 @@ def check_index_files(root: Path) -> list[Finding]:
     색인 폴더에 INDEX.md가 없으면 경고. 쪽 내용이 render_all과 다르거나(줄바꿈은
     LF로 맞춰 비교), 필요한 쪽이 없거나, 필요한 쪽 밖의 쪽 파일이 있으면 위반.
     색인 폴더가 아닌 폴더(규범 폴더 포함)의 INDEX*.md, INDEX.yaml은 위반이다.
-    reference/ 하위 폴더는 원본 자료라 보지 않되 규범 폴더 reference/AGENTS/는
-    본다. 중첩 저장소 안은 content_dirs가
-    이미 뺀다. 색인 폴더 판정이 IndexFormatError를 내면 위반 1건만 내고 끝낸다.
-    렌더가 IndexFormatError를 내면 위반 1건을 내고 내용 비교만 건너뛴다.
+    reference/ 하위 폴더는 원본 자료라 보지 않는다. 다만 규범 폴더
+    reference/AGENTS/와 그 아래는 본다(iter_md_files와 같은 예외). 중첩 저장소
+    안은 content_dirs가 이미 뺀다. 색인 폴더 판정이 IndexFormatError를 내면
+    위반 1건만 내고 끝낸다. 렌더가 IndexFormatError를 내면 위반 1건을 내고 내용
+    비교만 건너뛴다.
     """
     out: list[Finding] = []
     try:
@@ -59,7 +69,8 @@ def check_index_files(root: Path) -> list[Finding]:
         pages = None
     for d in content_dirs(root):
         if d not in dirs:
-            if in_reference_subfolder(root, d) and not in_norms_dir(root, d):
+            if (in_reference_subfolder(root, d)
+                    and d.relative_to(root).parts[1] != NORMS_DIR_NAME):
                 continue  # 원본 자료 안의 색인 파일은 원본의 일부다
             for p in sorted(d.iterdir()):
                 if is_index_file(p.name):
@@ -73,7 +84,7 @@ def check_index_files(root: Path) -> list[Finding]:
         if not first.is_file():
             out.append(Finding(
                 WARNING, "index", _rel(root, d),
-                f"색인 {INDEX_NAME} 없음. {BUILD_HINT}",
+                f"색인 {INDEX_NAME} 없음. {BUILD_TOOL}로 만든다",
             ))
         if pages is None:
             continue
@@ -122,11 +133,19 @@ def _check_front_matter_descriptions(root: Path, paths: "list[Path]") -> list[Fi
                 f"{e.line}행 description 형식 오류 - {e.message}. 색인에 설명이 빠진다",
             ))
             continue
-        if desc is not None and len(desc) > INDEX_DESC_LIMIT:
+        if desc is None:
+            continue
+        if len(desc) > INDEX_DESC_LIMIT:
             out.append(Finding(
                 WARNING, "index-source", _rel(root, p),
                 f"{_description_line(p)}행 description {len(desc)}자 "
                 f"(> {INDEX_DESC_LIMIT}). 한두 문장으로 줄인다",
+            ))
+        for ch, hint in _punct_hints(desc):
+            out.append(Finding(
+                WARNING, "index-source", _rel(root, p),
+                f"{_description_line(p)}행 description의 비ASCII 문장 부호 "
+                f"'{ch}' (U+{ord(ch):04X}) - {hint}",
             ))
     return out
 
@@ -138,8 +157,11 @@ def check_index_sources(root: Path) -> list[Finding]:
     INDEX.yaml 항목의 대상 부재, reference/ 밖에서 md 문서를 가리키는 항목,
     동명 문서가 있는 폴더 항목, 알 수 없는 키, 설명 길이 초과, reference/
     항목의 status 누락이나 어휘 밖 값, reference/ 직속의 미등록 항목,
-    순차 분류로 선언된 폴더 INDEX.yaml의 "." 밖 항목을 경고한다.
-    "." 항목의 structure 키는 키 검사와 대상 부재 검사에서 뺀다.
+    순차 분류로 선언된 폴더 INDEX.yaml의 "." 밖 항목, reference/ 밖 항목의
+    쓰이지 않는 status 키, 설명(description, "."의 structure)의 비ASCII 문장
+    부호를 경고한다. 생성 색인 쪽은 항목 20에서 빠지므로 문장 부호는 고칠 수
+    있는 원본 위치에서 알린다. "." 항목의 structure 키는 키 검사와 대상 부재
+    검사에서 뺀다.
     INDEX.yaml 형식 오류는 check_index_files가 위반으로 내므로 여기서는
     그 파일(색인 폴더 판정이 실패하면 전부)을 건너뛴다.
     """
@@ -167,7 +189,13 @@ def check_index_sources(root: Path) -> list[Finding]:
                 f'{lines.get(name, 0)}행 "{name}" - {message}',
             ))
 
+        def punct(name: str, key: str, value: "str | None") -> None:
+            for ch, hint in _punct_hints(value or ""):
+                warn(name, f"{key}의 비ASCII 문장 부호 '{ch}' "
+                           f"(U+{ord(ch):04X}) - {hint}")
+
         if SELF_KEY in data:
+            punct(SELF_KEY, STRUCTURE_KEY, data[SELF_KEY].get(STRUCTURE_KEY))
             for name in data:
                 if name != SELF_KEY:
                     warn(name, '순차 분류로 선언한 폴더의 "." 밖 항목. '
@@ -199,6 +227,9 @@ def check_index_sources(root: Path) -> list[Finding]:
             desc = fields.get("description")
             if desc is not None and len(desc) > INDEX_DESC_LIMIT:
                 warn(name, f"설명 {len(desc)}자 (> {INDEX_DESC_LIMIT})")
+            punct(name, "description", desc)
+            if not in_ref and "status" in fields:
+                warn(name, "쓰이지 않는 키 status. 처리 상태는 reference/ 항목에만 둔다")
             if in_ref:
                 status = fields.get("status")
                 if status is None:

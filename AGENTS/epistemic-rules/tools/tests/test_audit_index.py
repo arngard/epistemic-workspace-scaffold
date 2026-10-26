@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import _audit_core  # noqa: E402
 from _audit_core import VIOLATION, WARNING, iter_md_files  # noqa: E402
 from audit import run_audit  # noqa: E402
+from audit_content import check_ascii_punctuation  # noqa: E402
 from audit_frontmatter import check_front_matter  # noqa: E402
 from audit_index import check_index_files, check_index_sources  # noqa: E402
 from audit_structure import (  # noqa: E402
@@ -23,6 +24,7 @@ FM_MARKER_DESC = "---\ndescription: 스캐폴드 상태 - 미작성\n---\n"
 FM_FULL = ("---\ndate created: 2026-01-01\n"
            "date modified: 2026-01-01\ntags: [test]\n---\n본문\n")
 LONG = "가나다라마바사아자차" * 21
+DASH = "\u2014"
 
 
 class IndexAuditTest(unittest.TestCase):
@@ -158,6 +160,36 @@ class IndexAuditTest(unittest.TestCase):
         self.write("reference/AGENTS/INDEX.md", "x\n")
         self.assertIn((VIOLATION, "reference/AGENTS/INDEX.md"),
                       self.found(check_index_files))
+
+    def test_reference_raw_norms_dir_ignored(self):
+        self.write("reference/raw/AGENTS/INDEX.md", "x\n")
+        paths = [f.path for f in check_index_files(self.root)]
+        self.assertFalse([p for p in paths if p.startswith("reference/raw")])
+
+    def test_missing_warning_names_tool(self):
+        (self.root / "s/INDEX.md").unlink()
+        found = check_index_files(self.root)
+        self.assertIn("build_index.py", found[0].message)
+
+    def test_punct_reported_at_source_not_page(self):
+        self.write("s/y.md", "---\ndescription: a%sb\n---\n" % DASH)
+        build(self.root)
+        self.assertIn(DASH, (self.root / "s/INDEX.md").read_text("utf-8"))
+        self.assertEqual(check_ascii_punctuation(self.root), [])
+        found = self.sources()
+        self.assertEqual([f.path for f in found], ["s/y.md"])
+        self.assertIn("2행", found[0].message)
+
+    def test_punct_in_yaml_description(self):
+        self.write("INDEX.yaml",
+                   '"LICENSE":\n  description: a%sb\n' % DASH)
+        found = self.sources()
+        self.assertEqual([f.path for f in found], ["INDEX.yaml"])
+        self.assertIn("1행", found[0].message)
+
+    def test_status_outside_reference_unused(self):
+        self.write("INDEX.yaml", '"LICENSE":\n  status: 처리됨\n')
+        self.assertEqual(len(self.sources()), 1)
 
     def test_run_audit_includes_index(self):
         (self.root / "s/INDEX.md").unlink()

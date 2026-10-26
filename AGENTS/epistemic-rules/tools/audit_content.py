@@ -69,9 +69,13 @@ def check_ascii_punctuation(root: Path) -> list[Finding]:
     경고 수준으로 둔다 - 위반 격상은 규약 SSOT 소유자 결정.
 
     파일당 문자 종류별 1건만 보고한다 (같은 문자 반복은 소음이라 접는다).
+    생성 색인 쪽 파일은 사용자가 고칠 수 없으므로 빼고, 그 원본인 description은
+    항목 28이 원본 위치에서 검사한다.
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
+        if INDEX_PAGE_RE.match(path.name):
+            continue
         rel = str(path.relative_to(root))
         text = FRONT_MATTER_RE.sub("", read(path))
         text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
