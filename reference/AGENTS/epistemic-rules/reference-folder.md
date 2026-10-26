@@ -6,13 +6,13 @@ tags: [agents, 절차, ingest, epistemic-rules]
 
 # `reference/` 폴더 처리
 
-> [ingest-workflow.md](../ingest-workflow.md)의 하위 절차.
+> [ingest-workflow.md](../../../AGENTS/epistemic-rules/ingest-workflow.md)의 하위 절차.
 
-`reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). see: [`reference/AGENTS.md`](../../../reference/AGENTS.md).
+`reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). see: [`reference/AGENTS.md`](../../AGENTS.md).
 
 ## 처리 여부 식별
 
-[`reference/AGENTS.md`](../../../reference/AGENTS.md)가 처리 진척의 SSOT다. 별도 처리 로그 파일은 두지 않는다.
+[`reference/AGENTS.md`](../../AGENTS.md)가 처리 진척의 SSOT다. 별도 처리 로그 파일은 두지 않는다.
 
 기록 형식은 워크스페이스가 정한다. 자료가 적으면 건별 인벤토리 표가 단순하고, 자료가 계속 쌓이는 영역은 단계별 진행 지점만 남기는 방식이 기록량을 상수로 묶는다. 어느 쪽이든 그 디스크립터에 형식과 갱신 규칙을 명시한다.
 
@@ -33,9 +33,9 @@ tags: [agents, 절차, ingest, epistemic-rules]
 미처리 항목 발견 시:
 
 1. 자료 내용을 읽고 어떤 카테고리, 노드에 통합할지 판단.
-2. 명확하면 [ingest-workflow.md](../ingest-workflow.md) "표준 시퀀스"로 통합 후 derived 노드에 raw 파일을 `ref:` 표지로 링크한다 (`ref: [<file>](<상대 경로>/reference/<file>)`). 그 자료까지 처리했음을 진척 기록에 반영한다.
+2. 명확하면 [ingest-workflow.md](../../../AGENTS/epistemic-rules/ingest-workflow.md) "표준 시퀀스"로 통합 후 derived 노드에 raw 파일을 `ref:` 표지로 링크한다 (`ref: [<file>](<상대 경로>/reference/<file>)`). 그 자료까지 처리했음을 진척 기록에 반영한다.
 3. 모호하거나 사용자 의도가 불분명하면 처리를 보류하고 그 사실을 진척 기록에 남긴 뒤 사용자에게 의견을 묻는다. 보류 항목이 기록에서 조용히 사라지지 않게 한다.
 
 ## Raw 자료 자체는 immutable
 
-처리 후에도 `reference/` 안의 파일은 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md) "점검 항목").
+처리 후에도 `reference/` 안의 파일은 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../../../AGENTS/epistemic-rules/agent-roles/epistemic-auditor.md) "점검 항목").

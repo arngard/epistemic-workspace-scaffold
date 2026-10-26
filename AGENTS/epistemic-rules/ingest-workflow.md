@@ -53,7 +53,7 @@ tags: [agents, 절차, ingest, epistemic-rules]
 
 ## 하위 문서
 
-- [reference-folder.md](ingest-workflow/reference-folder.md): `reference/` 폴더 자료의 처리 절차. `reference/`에 자료가 들어왔거나 세션 시작 시 대조할 때 읽는다.
+- [reference-folder.md](../../reference/AGENTS/epistemic-rules/reference-folder.md): `reference/` 폴더 자료의 처리 절차. `reference/`에 자료가 들어왔거나 세션 시작 시 대조할 때 읽는다.
 
 ## 참고
 

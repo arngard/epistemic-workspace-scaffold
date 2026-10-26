@@ -16,7 +16,7 @@ tags: [규칙, epistemic-rules]
 
 ## 작업 수행 원칙
 
-넘겨짚지 않기, 단순함 우선, 외과적 변경, 목표 주도, 기억보다 실제 상태. 전체 SSOT는 [AGENTS/epistemic-rules/working-principles.md](working-principles.md), 코드 작업에는 [AGENTS/epistemic-rules/coding-guidelines.md](coding-guidelines.md)가 추가 적용된다.
+넘겨짚지 않기, 단순함 우선, 외과적 변경, 목표 주도, 기억보다 실제 상태. 전체 SSOT는 [AGENTS/epistemic-rules/working-principles.md](working-principles.md), 코드 작업에는 [implementation/AGENTS/epistemic-rules/coding-guidelines.md](../../implementation/AGENTS/epistemic-rules/coding-guidelines.md)가 추가 적용된다.
 
 ## 문서 변경
 

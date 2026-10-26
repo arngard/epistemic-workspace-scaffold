@@ -57,12 +57,12 @@ see: [unit-task.md](unit-task.md)(단위 작업 정의와 재귀 쪼개짐), [TA
 
 ## 코드 작업의 경우
 
-코드를 다루는 단위 작업에는 본 원칙에 더해 코드 특유의 항목이 적용된다. [coding-guidelines.md](coding-guidelines.md) 참조.
+코드를 다루는 단위 작업에는 본 원칙에 더해 코드 특유의 항목이 적용된다. [coding-guidelines.md](../../implementation/AGENTS/epistemic-rules/coding-guidelines.md) 참조.
 
 ## 참고
 
 - see: [unit-task-workflow.md](unit-task-workflow.md) - 단위 작업 운영 흐름.
-- see: [coding-guidelines.md](coding-guidelines.md) - 코드 작업 전용 지침.
+- see: [coding-guidelines.md](../../implementation/AGENTS/epistemic-rules/coding-guidelines.md) - 코드 작업 전용 지침.
 - see: [original-protection-principle.md](original-protection-principle.md) - 원본 보호 원칙.
 - see: [design-principles.md](design-principles.md) - 설계 원칙(tiebreaker).
 - see: [ingest-workflow.md](ingest-workflow.md) - 정보 유입 처리.
