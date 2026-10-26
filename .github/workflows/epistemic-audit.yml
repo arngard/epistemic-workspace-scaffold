@@ -1,6 +1,6 @@
 # 에피스테믹 워크스페이스 기계 감사 (CI 연동).
-# AGENTS/tools/audit.py를 push, pull request 시점에 실행한다.
-# 스크립트 자체는 도구 중립(Python 표준 라이브러리만)이며, 상세는 AGENTS/tool-environment.md 참조.
+# AGENTS/epistemic-rules/tools/audit.py를 push, pull request 시점에 실행한다.
+# 스크립트 자체는 도구 중립(Python 표준 라이브러리만)이며, 상세는 AGENTS/epistemic-rules/tools.md 참조.
 name: epistemic-audit
 
 on:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # 파이썬 인터프리터를 명시적으로 확보한다. tool-environment.md의 크로스
+      # 파이썬 인터프리터를 명시적으로 확보한다. tools.md의 크로스
       # 플랫폼 실행 안내(python/py)와 정합 - 러너 기본 python3에 암묵 의존하지 않는다.
       - uses: actions/setup-python@v5
         with:
@@ -27,7 +27,7 @@ jobs:
         run: |
           # 감사 결과를 job summary로 노출한다 - 초록 체크만으로는 경고가 안 보인다.
           echo '```text' >> "$GITHUB_STEP_SUMMARY"
-          python AGENTS/tools/audit.py . | tee -a "$GITHUB_STEP_SUMMARY"
+          python AGENTS/epistemic-rules/tools/audit.py . | tee -a "$GITHUB_STEP_SUMMARY"
           status=${PIPESTATUS[0]}
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           exit "$status"

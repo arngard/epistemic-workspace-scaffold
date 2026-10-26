@@ -8,7 +8,7 @@ tags: [ontology]
 
 > "우리 도메인에 어떤 것들이 존재하고, 어떤 관계를 맺는가" - 도메인 개념 정의.
 > 같은 단어를 두 사람(또는 두 문서)이 다른 뜻으로 쓸 수 있는 경우에만 정의한다.
-> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (ref: [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터").
+> 참조 폴더이므로 자기설명적 파일명이 인덱스를 대신한다. "어떤 문서가 존재하는가"의 SSOT는 파일시스템이다 (ref: [AGENTS/epistemic-rules/folder-structure.md](../../AGENTS/epistemic-rules/folder-structure.md) "폴더 구조와 디스크립터").
 
 ## 고유 규칙
 
@@ -24,7 +24,7 @@ tags: [ontology]
 
 ## 용어 도입 전 검증
 
-새 용어를 온톨로지에 편입하거나 다른 문서에서 채택하기 전 다음을 확인한다. 이 검증을 건너뛰면 이후 이름 사후 일괄 교체 비용이 크다 (ref: [AGENTS/document-units.md](../../AGENTS/document-units.md) "이름과 식별자의 안정성").
+새 용어를 온톨로지에 편입하거나 다른 문서에서 채택하기 전 다음을 확인한다. 이 검증을 건너뛰면 이후 이름 사후 일괄 교체 비용이 크다 (ref: [AGENTS/epistemic-rules/document-units.md](../../AGENTS/epistemic-rules/document-units.md) "이름과 식별자의 안정성").
 
 - 타사 제품, 툴의 고유명사인가. 그렇다면 우리 용어로 내재화하지 않는다. 외부 대면 명칭은 별도 결정 대상.
 - 일반어와 의미가 어긋나지 않는가. "시스템 이벤트"가 OS 이벤트로 해석되는 식의 혼동이 없는지.
@@ -33,4 +33,4 @@ tags: [ontology]
 
 ## 스캐폴드 샘플
 
-`sample-term.md`는 용어 정의 문서의 위치와 형식을 보여주는 튜토리얼용 샘플이다. 실제 작성 시 삭제하거나 교체한다. 본 폴더는 워크스페이스 자기 도메인의 용어를 담는다 - 작업 방법론 개념(단위 작업, 워크플로우 등)은 도메인이 아니라 메타이므로 [AGENTS/unit-task.md](../../AGENTS/unit-task.md) 등 AGENTS/에 둔다.
+`sample-term.md`는 용어 정의 문서의 위치와 형식을 보여주는 튜토리얼용 샘플이다. 실제 작성 시 삭제하거나 교체한다. 본 폴더는 워크스페이스 자기 도메인의 용어를 담는다 - 작업 방법론 개념(단위 작업, 워크플로우 등)은 도메인이 아니라 메타이므로 [AGENTS/epistemic-rules/unit-task.md](../../AGENTS/epistemic-rules/unit-task.md) 등 AGENTS/에 둔다.

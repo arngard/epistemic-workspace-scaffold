@@ -1,15 +1,15 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [architecture]
 ---
 
 # 설계 명세 디스크립터
 
 > "우리가 어떻게 만들겠다" - 최종 설계의 스니펫. 현재 상태의 도면.
-> 코드의 구조 결정뿐 아니라 이 인스턴스 고유의 운영 절차 명세도 여기 둔다 (ref: [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) "`AGENTS/`와 `architecture/`의 경계").
+> 코드의 구조 결정뿐 아니라 도메인의 운영 절차 명세와 이 인스턴스의 환경에 결부된 명세도 여기 둔다. 인스턴스 고유의 워크스페이스 운영 규범은 여기가 아니라 해당 `AGENTS/`의 묶음 옆 낱개 문서에 둔다 (ref: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](../../AGENTS/epistemic-rules/how-to-separate-docs-folders.md) "`AGENTS/`와 `architecture/`의 경계").
 > 설계의 맥락은 [knowledge/](../knowledge/AGENTS.md)와 [strategy/](../strategy/AGENTS.md) 참조.
-> 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (ref: [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
+> 디스크립터에 파일별 안내 표를 두는 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (ref: [AGENTS/epistemic-rules/folder-structure.md](../../AGENTS/epistemic-rules/folder-structure.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
 
 ## 작성 스타일
 
@@ -23,6 +23,6 @@ tags: [architecture]
 
 | 파일 | 설명 | 언제 읽는가 |
 |------|------|-------------|
-| [core-constraints.md](core-constraints.md) | 설계 원칙 및 핵심 제약. 스캐폴드 상태 - 제약 목록 작성 필요 | 설계 결정, 구현 착수 전 |
-| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [AGENTS/](../../AGENTS/AGENTS.md) 참조 | 코드 작성, 빌드 설정 시 |
+| [core-constraints.md](core-constraints.md) | 핵심 제약. 스캐폴드 상태 - 제약 목록 작성 필요 | 설계 결정, 구현 착수 전 |
+| [conventions.md](conventions.md) | 프로젝트 고유 코드, 빌드 규약의 자리 (현재는 Git 규약 포인터만). 워크스페이스 공통 규약은 [epistemic-rules.md](../../AGENTS/epistemic-rules.md) 참조 | 코드 작성, 빌드 설정 시 |
 | [sample-spec.md](sample-spec.md) | 설계 명세 문서의 위치와 형식을 보여주는 튜토리얼용 샘플. 실제 작성 시 삭제하거나 교체한다 | 첫 명세 작성 시 |

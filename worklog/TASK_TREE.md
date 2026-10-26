@@ -47,7 +47,7 @@ tags: [worklog]
 > ```
 
 - [ ] 워크스페이스 초기 세팅
-  - 설명: 이 단계의 모든 "선정/작성" 작업은 인간 입력 없이 채울 수 없다. AI는 각 작업 전에 필요한 정보를 인간에게 인터뷰하여 확보한다. 추측으로 채우지 않는다. ref: [AGENTS.md](../AGENTS.md) "비협상 게이트".
+  - 설명: 이 단계의 모든 "선정/작성" 작업은 인간 입력 없이 채울 수 없다. AI는 각 작업 전에 필요한 정보를 인간에게 인터뷰하여 확보한다. 추측으로 채우지 않는다. ref: [epistemic-rules.md](../AGENTS/epistemic-rules.md) "비협상 게이트".
   - [ ] 상류 연결과 채택 방식 기록
     - 설명: 스캐폴드 이력을 받았다면 원본을 `upstream` 원격으로 연결한다. 고른 방식과 이유를 [epistemic-structure/strategy/](../epistemic-structure/strategy/AGENTS.md)에 남긴다. 날짜 처리는 고른 방식에 따라 다르다.
   - [ ] 워크스페이스 폴더 이름을 프로젝트에 맞게 변경
@@ -55,7 +55,7 @@ tags: [worklog]
   - [ ] 문서 날짜 처리
     - 설명: 상류와 연결했다면 날짜를 바꾸지 않는다(바꾸면 상류 머지마다 충돌한다). 이력 없이 가져왔다면 `date created`를 시작일로 갱신할 수 있다. `date modified`는 내용을 바꿀 때만 갱신한다.
   - [ ] 워크스페이스 정체 특수화
-    - 설명: [AGENTS.md](../AGENTS.md) "이 워크스페이스의 정체" 절을 도메인 정체성으로 특수화한다. 그 밖의 계승 자산은 [AGENTS/instance-specialization.md](../AGENTS/instance-specialization.md)를 따른다.
+    - 설명: [AGENTS.md](../AGENTS.md) "이 워크스페이스의 정체" 절을 도메인 정체성으로 특수화한다. 그 밖의 계승 자산은 [AGENTS/epistemic-rules/instance-specialization.md](../AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
   - [ ] README와 LICENSE 정리
     - 설명: 스캐폴드 소개문인 README.md, README.en.md를 이 워크스페이스의 소개로 교체하고(상류를 받으면 충돌 유의), LICENSE를 정한다.
   - [ ] 감사 주기 값 검토
