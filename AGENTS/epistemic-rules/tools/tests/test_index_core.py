@@ -1,21 +1,32 @@
 """_index_core의 YAML 부분집합 파서와 설명 읽기 시험."""
 
 import os
+import re
 import sys
 import tempfile
+import unicodedata
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import _audit_core  # noqa: E402
 from _audit_core import (  # noqa: E402
-    INDEX_NAME, INDEX_PAGE_RE, INDEX_YAML_NAME, is_index_file)
+    INDEX_NAME, INDEX_PAGE_RE, INDEX_YAML_NAME, SIZE_LIMIT_NODE,
+    is_index_file, text_size)
 from _index_core import (  # noqa: E402
     BYPRODUCT_NAMES, INDEX_DESC_LIMIT, INDEX_KEYS, REFERENCE_STATUSES,
-    SELF_KEY, STRUCTURE_KEY, IndexFormatError, front_matter_description,
-    is_byproduct, load_index_yaml, parse_scalar, quote_scalar)
+    SELF_KEY, STRUCTURE_KEY, Entry, IndexFormatError, entry_paths,
+    front_matter_description, index_dirs, is_byproduct, list_entries,
+    load_index_yaml, page_name, parse_scalar, quote_scalar, render_all,
+    render_pages, sequential_structure)
+from audit_links import (  # noqa: E402
+    check_link_text, check_link_whitespace, check_links)
 
 FM_DESC = "---\ndescription: 짧은 설명\n---\n"
+FM = "---\ndescription: 문서 설명\n---\n본문\n"
+FM_LONG_DESC = ("---\ndescription: "
+                + "가나다라마바사아자차" * 15 + "\n---\n")
 
 
 class IndexNameTest(unittest.TestCase):
@@ -314,6 +325,294 @@ class YamlTest(unittest.TestCase):
             self.write("c.md", body)
             with self.assertRaises(IndexFormatError, msg=body):
                 front_matter_description(self.root / "c.md")
+
+
+class RenderTest(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name)
+        self.write("AGENTS.md", FM)
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS/epistemic-rules.md", FM)
+        self.write("s.md", FM)
+        self.write("s/AGENTS.md", FM)
+        self.write("s/x.md", FM)
+        self.write("LICENSE", "x\n")
+        self.write(".hidden", "x\n")
+        self.write("INDEX.yaml", '"LICENSE":\n  description: 사용 허가\n')
+        self.write("reference/AGENTS.md", FM)
+        self.write("reference/r.pdf", "x\n")
+
+    def write(self, name, text):
+        p = self.root / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text, encoding="utf-8")
+        return p
+
+    def rels(self, dirs):
+        return [d.relative_to(self.root).as_posix() for d in dirs]
+
+    def page(self, rel):
+        return render_all(self.root)[self.root / rel]
+
+    def test_dirs(self):
+        rels = [d.relative_to(self.root).as_posix() for d in index_dirs(self.root)]
+        self.assertEqual(rels, [".", "reference", "s"])
+
+    def test_entries_root(self):
+        names = [e.name for e in list_entries(self.root, self.root)]
+        self.assertEqual(names, ["LICENSE", "reference/", "s.md"])
+
+    def test_pair_merged(self):
+        e = [e for e in list_entries(self.root, self.root) if e.name == "s.md"][0]
+        self.assertEqual([t for _, t in e.links], ["s.md", "s/INDEX.md"])
+
+    def test_unregistered(self):
+        e = list_entries(self.root, self.root / "reference")[0]
+        self.assertEqual(e.status, "미등록")
+
+    def test_render_twice_equal(self):
+        self.assertEqual(render_all(self.root), render_all(self.root))
+
+    def test_nfd_name_renders_nfc(self):
+        self.write(unicodedata.normalize("NFD", "s/가.md"), FM)
+        text = render_all(self.root)[self.root / "s/INDEX.md"]
+        self.assertIn("[가.md](가.md)", text)  # 표시와 링크 대상 모두 NFC
+        self.assertEqual(text, unicodedata.normalize("NFC", text))
+
+    def test_split(self):
+        for i in range(120):
+            self.write(f"s/doc-{i:03}.md", FM_LONG_DESC)
+        pages = render_pages(self.root, self.root / "s")
+        self.assertGreater(len(pages), 1)
+        for p in pages:
+            self.assertLessEqual(len(re.sub(r"\s", "", p)), SIZE_LIMIT_NODE)
+        self.assertIn("(INDEX2.md)", pages[0])
+
+    def test_rendered_passes_link_checks(self):
+        self.write("s/a b.md", FM)
+        for path, text in render_all(self.root).items():
+            path.write_text(text, encoding="utf-8")
+        for check in (check_links, check_link_text, check_link_whitespace):
+            self.assertEqual(check(self.root), [], check.__name__)
+
+    def test_sequential_top(self):
+        self.write("s/INDEX.yaml", '".":\n  structure: 날짜순\n')
+        self.write("s/2026-05/AGENTS.md", FM)  # 남은 옛 디스크립터
+        pages = render_pages(self.root, self.root / "s")
+        self.assertEqual(len(pages), 1)
+        self.assertIn("날짜순", pages[0])
+        self.assertNotIn("x.md", pages[0])
+        dirs = [d.relative_to(self.root).as_posix()
+                for d in index_dirs(self.root)]
+        self.assertNotIn("s/2026-05", dirs)
+
+    def test_nested_repo_is_entry_only(self):
+        self.write("impl/AGENTS.md", FM)
+        self.write("impl/sub/.git", "gitdir: x\n")
+        self.write("impl/sub/AGENTS.md", FM)
+        dirs = [d.relative_to(self.root).as_posix()
+                for d in index_dirs(self.root)]
+        self.assertNotIn("impl/sub", dirs)
+        names = [e.name for e in list_entries(self.root, self.root / "impl")]
+        self.assertEqual(names, ["sub/"])
+        self.assertNotIn(self.root / "impl/sub/INDEX.md", render_all(self.root))
+
+    # 아래는 브리프 밖에서 판정과 계획 결정을 고정하는 시험이다.
+
+    def test_page_name(self):
+        self.assertEqual(page_name(1), "INDEX.md")
+        self.assertEqual(page_name(2), "INDEX2.md")
+        self.assertEqual(page_name(12), "INDEX12.md")
+
+    def test_root_page_layout(self):
+        text = self.page("INDEX.md")
+        lines = text.split("\n")
+        self.assertTrue(lines[0].startswith("<!--"))
+        self.assertIn("# 색인", lines)
+        self.assertIn("- [LICENSE](LICENSE) - 사용 허가", lines)
+        # R8: 짝 없는 색인 폴더
+        self.assertIn("- [reference/](reference/INDEX.md)", lines)
+        self.assertIn("- [s.md](s.md), [s/INDEX.md](s/INDEX.md) - 문서 설명",
+                      lines)
+        self.assertTrue(text.endswith("\n") and not text.endswith("\n\n"))
+        self.assertNotIn("\r", text)
+        self.assertNotIn("앞 쪽", text)
+
+    def test_sub_title(self):
+        self.assertIn("# s 색인", self.page("s/INDEX.md").split("\n"))
+
+    def test_pair_with_indexless_folder(self):
+        # R8: 색인이 없는 폴더와의 동명 쌍
+        self.write("t.md", FM)
+        self.write("t/y.md", FM)
+        e = [e for e in list_entries(self.root, self.root) if e.name == "t.md"][0]
+        self.assertEqual(e.links, (("t.md", "t.md"), ("t/", "t/")))
+        self.assertIn("- [t.md](t.md), [t/](t/) - 문서 설명",
+                      self.page("INDEX.md").split("\n"))
+
+    def test_folder_description_from_yaml(self):
+        self.write("u/y.md", FM)
+        self.write("INDEX.yaml", '"LICENSE":\n  description: a\n'
+                   '"u/":\n  description: 폴더 설명\n')
+        self.assertIn("- [u/](u/) - 폴더 설명", self.page("INDEX.md"))
+
+    def test_operational_files_excluded(self):
+        for name in ("INDEX.md", "INDEX2.md", "s/INDEX.md", ".git/x",
+                     "node_modules/a.js", "__pycache__/a.pyc", "Thumbs.db",
+                     "desktop.ini", "a.md~", "Icon\r"):
+            self.write(name, "x\n")
+        names = [e.name for e in list_entries(self.root, self.root)]
+        self.assertEqual(names, ["LICENSE", "reference/", "s.md"])
+
+    def test_symlink_excluded(self):
+        try:
+            os.symlink(str(self.root / "LICENSE"), str(self.root / "lnk"))
+        except (OSError, NotImplementedError):
+            self.skipTest("심링크를 만들 수 없다")
+        names = [e.name for e in list_entries(self.root, self.root)]
+        self.assertNotIn("lnk", names)
+
+    def test_empty_folder(self):
+        self.write("e/AGENTS.md", FM)
+        text = self.page("e/INDEX.md")
+        self.assertIn("(항목 없음)", text.split("\n"))
+
+    def test_reference_status_and_md_desc(self):
+        self.write("reference/a.md", FM)
+        self.write("reference/INDEX.yaml",
+                   '"r.pdf":\n  description: 원문\n  status: 처리됨\n'
+                   '"a.md":\n  description: 자료\n')
+        es = {e.name: e for e in list_entries(self.root, self.root / "reference")}
+        self.assertEqual(es["r.pdf"].status, "처리됨")
+        self.assertEqual(es["r.pdf"].description, "원문")
+        self.assertIsNone(es["a.md"].status)
+        self.assertEqual(es["a.md"].description, "자료")  # front matter 아님
+        text = self.page("reference/INDEX.md")
+        self.assertIn("- [r.pdf](r.pdf) - `처리됨` 원문", text)
+        self.assertIn("- [a.md](a.md) - 자료", text)
+
+    def test_unregistered_rendered(self):
+        self.assertIn("- [r.pdf](r.pdf) - `미등록`",
+                      self.page("reference/INDEX.md").split("\n"))
+
+    def test_reference_subfolder_not_index_dir(self):
+        # R5: reference/X/ 이하는 색인 폴더가 아니다
+        self.write("reference/raw/AGENTS.md", FM)
+        self.write("reference/raw/INDEX.yaml", "깨진 내용\n")
+        self.assertNotIn("reference/raw", self.rels(index_dirs(self.root)))
+        e = [e for e in list_entries(self.root, self.root / "reference")
+             if e.name == "raw/"][0]
+        self.assertEqual(e.links, (("raw/", "raw/"),))
+        self.assertNotIn(self.root / "reference/raw/INDEX.md",
+                         render_all(self.root))
+
+    def test_norms_and_implementation(self):
+        self.write("implementation/AGENTS.md", FM)
+        self.write("implementation/AGENTS/x.md", FM)
+        self.write("implementation/app/AGENTS.md", FM)
+        self.write("AGENTS/sub/AGENTS.md", FM)
+        rels = self.rels(index_dirs(self.root))
+        self.assertIn("implementation", rels)
+        for rel in ("implementation/app", "implementation/AGENTS",
+                    "AGENTS", "AGENTS/sub"):
+            self.assertNotIn(rel, rels)
+        names = [e.name for e in
+                 list_entries(self.root, self.root / "implementation")]
+        self.assertEqual(names, ["app/"])
+
+    def test_link_encoding(self):
+        self.write("s/a(1)#[x]?%.pdf", "x\n")
+        self.write("s/한글 이름.md", FM)
+        es = {e.name: e for e in list_entries(self.root, self.root / "s")}
+        self.assertEqual(es["a(1)#[x]?%.pdf"].links[0][1],
+                         "a%281%29%23%5Bx%5D%3F%25.pdf")
+        self.assertEqual(es["한글 이름.md"].links[0][1], "한글%20이름.md")
+        text = self.page("s/INDEX.md")
+        self.assertIn("[a(1)#\\[x\\]?%.pdf](a%281%29", text)
+
+    def test_bad_front_matter_desc_is_none(self):
+        self.write("s/b.md", "---\ndescription: a: b\n---\n")
+        es = {e.name: e for e in list_entries(self.root, self.root / "s")}
+        self.assertIsNone(es["b.md"].description)
+
+    def test_bad_yaml_raises(self):
+        self.write("INDEX.yaml", "a:\n")
+        with self.assertRaises(IndexFormatError):
+            list_entries(self.root, self.root)
+        with self.assertRaises(IndexFormatError):
+            render_all(self.root)
+
+    def test_sequential_structure(self):
+        self.assertIsNone(sequential_structure(self.root / "s"))
+        self.write("s/INDEX.yaml", '".":\n  structure: 날짜순\n')
+        self.assertEqual(sequential_structure(self.root / "s"), "날짜순")
+
+    def test_sequential_page_layout(self):
+        self.write("s/INDEX.yaml", '".":\n  structure: 날짜순\n')
+        self.write("s/2026-05/AGENTS.md", FM)
+        text = self.page("s/INDEX.md")
+        lines = text.split("\n")
+        self.assertIn("# s 색인", lines)
+        self.assertIn("날짜순", lines)
+        self.assertFalse([ln for ln in lines if ln.startswith("- ")])
+        self.assertNotIn(self.root / "s/2026-05/INDEX.md",
+                         render_all(self.root))
+
+    def test_split_pages(self):
+        for i in range(120):
+            self.write(f"s/doc-{i:03}.md", FM_LONG_DESC)
+        pages = render_pages(self.root, self.root / "s")
+        n = len(pages)
+        all_rel = render_all(self.root)
+        for k in range(1, n + 1):
+            self.assertEqual(all_rel[self.root / "s" / page_name(k)],
+                             pages[k - 1])
+            self.assertLessEqual(text_size(pages[k - 1]), SIZE_LIMIT_NODE)
+        self.assertNotIn(self.root / "s" / page_name(n + 1), all_rel)
+        self.assertIn("# s 색인 2쪽", pages[1].split("\n"))
+        self.assertIn("다음 쪽 [INDEX2.md](INDEX2.md)", pages[0])
+        self.assertNotIn("앞 쪽", pages[0])
+        self.assertIn("앞 쪽 [INDEX.md](INDEX.md)", pages[1])
+        listed = sum(p.count("\n- [") for p in pages)
+        self.assertEqual(listed, 121)  # doc 120건과 x.md
+
+    def test_oversized_entry_alone(self):
+        self.write("s/big.md", "---\ndescription: "
+                   + "가" * (SIZE_LIMIT_NODE + 10) + "\n---\n")
+        pages = render_pages(self.root, self.root / "s")
+        self.assertEqual(len(pages), 2)
+        self.assertEqual(pages[0].count("\n- ["), 1)
+
+    def test_entry_paths(self):
+        self.write("impl/AGENTS.md", FM)
+        self.write("impl/sub/.git", "gitdir: x\n")
+        self.write("q/AGENTS.md", FM)
+        self.write("q/INDEX.yaml", '".":\n  structure: 날짜순\n')
+        self.write("q/2026.md", FM)
+        paths = entry_paths(self.root)
+        self.assertEqual(paths, sorted(paths))
+        rels = self.rels(paths)
+        for rel in ("LICENSE", "s.md", "s", "s/x.md", "reference",
+                    "reference/r.pdf", "impl", "impl/sub", "q"):
+            self.assertIn(rel, rels)
+        for rel in ("AGENTS.md", ".hidden", "INDEX.yaml", "q/2026.md",
+                    "AGENTS", "s/AGENTS.md"):
+            self.assertNotIn(rel, rels)
+
+    def test_entry_is_frozen(self):
+        e = Entry("a", (("a", "a"),), None, None)
+        with self.assertRaises(Exception):
+            e.name = "b"
+
+    def test_nested_cache_cleared(self):
+        # 중첩 저장소 판정은 프로세스 캐시를 쓴다. 캐시를 비우면 반영된다.
+        index_dirs(self.root)
+        self.write("s/AGENTS.md", FM)
+        self.write("s/.git", "gitdir: x\n")
+        _audit_core._nested_repo_cache.clear()
+        self.assertNotIn("s", self.rels(index_dirs(self.root)))
 
 
 if __name__ == "__main__":

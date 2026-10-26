@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""폴더 색인 - YAML 부분집합 파서와 설명 읽기.
+"""폴더 색인 - YAML 부분집합 파서, 설명 읽기, 색인 렌더러.
 
 색인 설명의 출처는 두 곳이다. md 문서는 front matter의 description 줄,
 그 밖의 항목과 폴더는 폴더의 INDEX.yaml이다. 표준 라이브러리에 YAML
@@ -19,15 +19,34 @@ INDEX.yaml:
 - 예약 항목 "."는 폴더 자신이다. 키는 structure 하나만 두고 값이 비면 안 된다.
 - 알 수 없는 키는 오류가 아니라 그대로 담는다. 경고는 감사가 한다.
 
+색인 렌더러:
+- 색인을 두는 폴더(index_dirs)는 감사 순회 content_dirs 가운데 규범 폴더가
+  아니고 AGENTS.md가 있는 폴더다. 중첩 저장소 안, reference/ 하위 폴더,
+  순차 분류 최상위로 선언된 폴더의 자손은 들지 않는다.
+- 항목은 폴더 직속 항목에서 점 파일, 운영 파일(AGENTS.md, CLAUDE.md,
+  AGENTS/, 색인 쪽 파일, INDEX.yaml), EXEMPT_DIRS 이름, 심볼릭 링크,
+  OS와 편집기 부산물을 뺀 전부다. 중첩 저장소 폴더는 항목 하나로만 보인다.
+- 이름은 NFC로 바꾸고 코드 포인트 순으로 정렬한다. 링크 대상은 공백,
+  %, (, ), [, ], <, >, #, ?, 역슬래시만 퍼센트 인코딩하고 한글은 그대로 둔다.
+- 표시 텍스트의 [, ], 역슬래시는 역슬래시로 이스케이프한다. 이스케이프한
+  "\\]"가 든 줄은 감사의 링크 정규식(LINK_RE, LINK_TEXT_RE)이 링크로 보지
+  않으므로 링크 실존, 표시 텍스트, 공백 링크 검사 밖으로 빠진다.
+- 쪽 분량은 감사 분량 검사와 같은 text_size로 재고 한도는 SIZE_LIMIT_NODE다.
+- 렌더 함수는 파일을 쓰지 않는다. 쓰기는 생성 진입점 하나가 맡는다.
+
 생성기와 감사는 같은 상수와 함수를 쓴다.
 """
 
 import re
 import unicodedata
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from _audit_core import FRONT_MATTER_RE, read
+from _audit_core import (
+    DESCRIPTOR_NAME, EXEMPT_DIRS, FRONT_MATTER_RE, INDEX_NAME,
+    INDEX_YAML_NAME, NORMS_DIR_NAME, REFERENCE_DIR, SIZE_LIMIT_NODE,
+    content_dirs, in_norms_dir, is_index_file, nfc, read, text_size)
 
 # 항목 필드로 허용하는 키.
 INDEX_KEYS = ("description", "status")
@@ -230,3 +249,301 @@ def load_index_yaml(path: Path) -> "dict[str, dict[str, str]]":
             raise IndexFormatError(
                 '"." 항목은 비지 않은 structure 키 하나만 둔다', self_line, path)
     return data
+
+
+# --- 색인 렌더러 ---
+
+# 색인 항목에서 빼는 운영 파일. 규범 폴더(AGENTS/)와 색인 파일은 따로 판정한다.
+OPERATION_FILES = frozenset({DESCRIPTOR_NAME, "CLAUDE.md"})
+# reference/ 직속 항목이 INDEX.yaml에 없을 때 보이는 상태.
+UNREGISTERED = "미등록"
+
+# 쪽 머리말. 생성 파일임과 설명을 고치는 곳을 알린다.
+INDEX_HEADER = (
+    "<!-- 생성 파일이다. 손으로 고치지 않는다."
+    " 설명은 각 문서 front matter의 description과"
+    " 폴더의 INDEX.yaml에서 고친 뒤"
+    " 생성 도구 build_index.py로 다시 만든다. -->")
+ROOT_TITLE = "# 색인"
+DIR_TITLE_FMT = "# {path} 색인"
+PAGE_SUFFIX_FMT = " {n}쪽"
+NAV_PREV_FMT = "앞 쪽 [{name}]({name})"
+NAV_NEXT_FMT = "다음 쪽 [{name}]({name})"
+NAV_SEP = ", "
+# 항목 줄: "- [a.md](a.md)", 링크가 둘이면 쉼표로 잇고 설명은 " - " 뒤에 둔다.
+LINK_FMT = "[{text}]({target})"
+LINK_SEP = ", "
+ENTRY_FMT = "- {links}"
+ENTRY_TAIL_FMT = " - {tail}"
+STATUS_FMT = "`{status}`"
+EMPTY_LIST = "(항목 없음)"
+
+# 링크 대상에서 퍼센트 인코딩하는 문자. 한글 등 나머지는 그대로 둔다.
+_ENCODE = {c: "%%%02X" % ord(c) for c in " %()[]<>#?\\"}
+# 표시 텍스트에서 역슬래시로 이스케이프하는 문자.
+_DISPLAY_ESCAPE = {c: "\\" + c for c in "[]\\"}
+
+
+@dataclass(frozen=True)
+class Entry:
+    """색인 항목 한 줄.
+
+    name은 NFC 표시 이름이고 폴더는 끝에 /를 붙인다. 동명 쌍은 X.md다.
+    links는 (표시 텍스트, 인코딩한 대상)의 튜플이다.
+    """
+
+    name: str
+    links: "tuple[tuple[str, str], ...]"
+    description: "Optional[str]"
+    status: "Optional[str]"
+
+
+def page_name(n: int) -> str:
+    """n번째 쪽 파일 이름. 1이면 INDEX.md, 그 밖은 INDEX<n>.md."""
+    return INDEX_NAME if n == 1 else "INDEX%d.md" % n
+
+
+def encode_target(name: str) -> str:
+    """링크 대상 이름을 정해진 문자만 퍼센트 인코딩한다."""
+    return "".join(_ENCODE.get(c, c) for c in name)
+
+
+def _escape_display(text: str) -> str:
+    return "".join(_DISPLAY_ESCAPE.get(c, c) for c in text)
+
+
+def sequential_structure(d: Path) -> "Optional[str]":
+    """폴더 INDEX.yaml의 "." 항목 structure 값. 선언이 없으면 None.
+
+    INDEX.yaml 형식 오류는 IndexFormatError로 올린다.
+    """
+    own = load_index_yaml(d / INDEX_YAML_NAME).get(SELF_KEY)
+    if own is None:
+        return None
+    return nfc(own[STRUCTURE_KEY])
+
+
+def _in_reference_subfolder(root: Path, d: Path) -> bool:
+    """reference/X/ 이하 폴더면 참. 원본 자료라 색인을 두지 않는다."""
+    parts = d.relative_to(root).parts
+    return len(parts) >= 2 and parts[0] == REFERENCE_DIR
+
+
+def index_dirs(root: Path) -> "list[Path]":
+    """색인을 두는 폴더. 순서는 content_dirs를 따른다(루트가 먼저).
+
+    content_dirs가 중첩 저장소 안과 implementation/ 하위 프로젝트를 이미
+    뺀다. 순차 분류 최상위로 선언된 폴더 자신은 들고 그 자손은 빠진다.
+    선언은 색인 후보 폴더의 INDEX.yaml에서만 읽는다.
+    """
+    out: "list[Path]" = []
+    tops: "list[Path]" = []
+    for d in content_dirs(root):
+        if any(t in d.parents for t in tops):
+            continue
+        if in_norms_dir(root, d) or _in_reference_subfolder(root, d):
+            continue
+        if not (d / DESCRIPTOR_NAME).is_file():
+            continue
+        out.append(d)
+        if sequential_structure(d) is not None:
+            tops.append(d)
+    return out
+
+
+def _entry_children(d: Path) -> "list[Path]":
+    """폴더 d의 색인 항목이 되는 직속 항목의 디스크 경로(정렬)."""
+    out: "list[Path]" = []
+    for p in d.iterdir():
+        name = p.name
+        if name.startswith(".") or name in EXEMPT_DIRS:
+            continue
+        if p.is_symlink():
+            continue
+        if name in OPERATION_FILES or is_index_file(name):
+            continue
+        if is_byproduct(name):
+            continue
+        if name == NORMS_DIR_NAME and p.is_dir():
+            continue
+        out.append(p)
+    return sorted(out)
+
+
+def entry_paths(root: Path) -> "list[Path]":
+    """모든 색인 폴더의 항목 디스크 경로(정렬). 동명 쌍은 둘 다 든다.
+
+    순차 분류 최상위로 선언된 폴더는 항목을 나열하지 않으므로 뺀다.
+    생성기가 git 무시 항목을 확인할 때 쓴다.
+    """
+    out: "list[Path]" = []
+    for d in index_dirs(root):
+        if sequential_structure(d) is None:
+            out.extend(_entry_children(d))
+    return sorted(out)
+
+
+def _md_description(path: Path) -> "Optional[str]":
+    """md 문서의 front matter 설명. 형식 오류는 설명 없음으로 둔다."""
+    try:
+        return front_matter_description(path)
+    except IndexFormatError:
+        return None
+
+
+def _clean(text: "Optional[str]") -> "Optional[str]":
+    if text is None or not text.strip():
+        return None
+    return nfc(text)
+
+
+def _folder_link(name: str, indexed: bool,
+                 paired: bool) -> "tuple[str, str]":
+    """하위 폴더 링크. 색인 폴더면 X/INDEX.md, 아니면 X/를 가리킨다."""
+    target = encode_target(name) + "/"
+    if not indexed:
+        return (name + "/", target)
+    target += INDEX_NAME
+    return (name + "/" + INDEX_NAME if paired else name + "/", target)
+
+
+def _list_entries(root: Path, d: Path,
+                  indexed: "set[Path]") -> "list[Entry]":
+    yaml = load_index_yaml(d / INDEX_YAML_NAME)
+    in_ref = d == root / REFERENCE_DIR
+    files: "dict[str, Path]" = {}
+    dirs: "dict[str, Path]" = {}
+    for p in _entry_children(d):
+        (dirs if p.is_dir() else files)[nfc(p.name)] = p
+
+    def describe(key: str, path: Path) -> "tuple[Optional[str], Optional[str]]":
+        item = yaml.get(key)
+        status = None
+        if in_ref:
+            status = UNREGISTERED if item is None else item.get("status")
+        if key.endswith(".md") and not in_ref:
+            desc = _md_description(path)
+        else:
+            desc = None if item is None else item.get("description")
+        return _clean(desc), _clean(status)
+
+    entries: "list[Entry]" = []
+    paired: "set[str]" = set()
+    for name, path in files.items():
+        links = [(name, encode_target(name))]
+        stem = name[:-3] if name.endswith(".md") else None
+        if stem and stem in dirs:
+            paired.add(stem)
+            links.append(_folder_link(stem, dirs[stem] in indexed, True))
+        desc, status = describe(name, path)
+        entries.append(Entry(name, tuple(links), desc, status))
+    for name, path in dirs.items():
+        if name in paired:
+            continue
+        desc, status = describe(name + "/", path)
+        link = _folder_link(name, path in indexed, False)
+        entries.append(Entry(name + "/", (link,), desc, status))
+    return sorted(entries, key=lambda e: e.name)
+
+
+def list_entries(root: Path, d: Path) -> "list[Entry]":
+    """폴더 d의 색인 항목(이름의 코드 포인트 순).
+
+    설명은 md 문서면 front matter description(형식 오류면 None), 그 밖의
+    항목과 폴더, reference/의 md 자료는 그 폴더 INDEX.yaml에서 읽는다.
+    동명 쌍(X.md와 X/)은 한 항목으로 합치고 X.md의 설명을 쓴다.
+    reference/ 직속 항목은 INDEX.yaml에 없으면 status가 "미등록"이다.
+    INDEX.yaml 형식 오류는 IndexFormatError로 올린다.
+    """
+    return _list_entries(root, d, set(index_dirs(root)))
+
+
+def _entry_line(e: Entry) -> str:
+    links = LINK_SEP.join(
+        LINK_FMT.format(text=_escape_display(text), target=target)
+        for text, target in e.links)
+    line = ENTRY_FMT.format(links=links)
+    tail = []
+    if e.status:
+        tail.append(STATUS_FMT.format(status=e.status))
+    if e.description:
+        tail.append(e.description)
+    if tail:
+        line += ENTRY_TAIL_FMT.format(tail=" ".join(tail))
+    return nfc(line)
+
+
+def _title(root: Path, d: Path, n: int) -> str:
+    if d == root:
+        title = ROOT_TITLE
+    else:
+        title = DIR_TITLE_FMT.format(path=nfc(d.relative_to(root).as_posix()))
+    if n > 1:
+        title += PAGE_SUFFIX_FMT.format(n=n)
+    return title
+
+
+def _nav(n: int, has_prev: bool, has_next: bool) -> str:
+    parts = []
+    if has_prev:
+        parts.append(NAV_PREV_FMT.format(name=page_name(n - 1)))
+    if has_next:
+        parts.append(NAV_NEXT_FMT.format(name=page_name(n + 1)))
+    return NAV_SEP.join(parts)
+
+
+def _page(blocks: "list[str]") -> str:
+    """빈 줄로 블록을 잇고 LF, 끝 줄바꿈 하나, NFC로 맞춘다."""
+    return nfc("\n\n".join(b for b in blocks if b) + "\n")
+
+
+def _render(root: Path, d: Path, indexed: "set[Path]") -> "list[str]":
+    structure = sequential_structure(d)
+    if structure is not None:
+        return [_page([INDEX_HEADER, _title(root, d, 1), structure])]
+    lines = [_entry_line(e) for e in _list_entries(root, d, indexed)]
+    if not lines:
+        return [_page([INDEX_HEADER, _title(root, d, 1), EMPTY_LIST])]
+    # 쪽마다 앞뒤 쪽 링크가 모두 있다고 치고 남는 분량을 앞에서부터 채운다.
+    groups: "list[list[str]]" = []
+    i = 0
+    while i < len(lines):
+        n = len(groups) + 1
+        fixed = (text_size(INDEX_HEADER) + text_size(_title(root, d, n))
+                 + text_size(_nav(max(n, 2), True, True)))
+        budget = SIZE_LIMIT_NODE - fixed
+        group = [lines[i]]
+        used = text_size(lines[i])
+        i += 1
+        while i < len(lines) and used + text_size(lines[i]) <= budget:
+            used += text_size(lines[i])
+            group.append(lines[i])
+            i += 1
+        groups.append(group)
+    total = len(groups)
+    pages = []
+    for n, group in enumerate(groups, start=1):
+        nav = _nav(n, n > 1, n < total) if total > 1 else ""
+        pages.append(_page(
+            [INDEX_HEADER, _title(root, d, n), nav, "\n".join(group)]))
+    return pages
+
+
+def render_pages(root: Path, d: Path) -> "list[str]":
+    """폴더 d의 색인 쪽 내용 목록. 첫 원소가 INDEX.md다.
+
+    순차 분류 최상위로 선언된 폴더는 머리말, 제목, 구성 설명 한 문단의
+    한 쪽만 내고 항목을 나열하지 않는다.
+    """
+    return _render(root, d, set(index_dirs(root)))
+
+
+def render_all(root: Path) -> "dict[Path, str]":
+    """만들어야 할 모든 색인 쪽 파일의 절대 경로와 내용. 파일을 쓰지 않는다."""
+    dirs = index_dirs(root)
+    indexed = set(dirs)
+    out: "dict[Path, str]" = {}
+    for d in dirs:
+        for n, text in enumerate(_render(root, d, indexed), start=1):
+            out[d / page_name(n)] = text
+    return out

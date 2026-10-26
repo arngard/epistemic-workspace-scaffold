@@ -17,8 +17,7 @@ def check_size(root: Path) -> list[Finding]:
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
-        body = body_of(path)
-        length = len(re.sub(r"\s", "", body))
+        length = text_size(body_of(path))
         if has_date_prefix(path):
             limit = SIZE_LIMIT_TEMPORAL
         elif path.name == DESCRIPTOR_NAME:

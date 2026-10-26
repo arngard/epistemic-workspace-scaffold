@@ -168,6 +168,14 @@ def nfc(text: str) -> str:
     return unicodedata.normalize("NFC", text)
 
 
+def text_size(text: str) -> int:
+    """분량 검사의 분량. 공백 문자를 뺀 글자 수다.
+
+    감사 분량 검사와 색인 쪽 나누기가 같은 함수를 써서 둘이 어긋나지 않는다.
+    """
+    return len(re.sub(r"\s", "", text))
+
+
 _nested_repo_cache: dict[Path, tuple[Path, ...]] = {}
 
 
