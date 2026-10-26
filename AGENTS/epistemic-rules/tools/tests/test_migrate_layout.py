@@ -1,5 +1,7 @@
 """migrate_layout.py의 경로 대응과 텍스트 변환 시험."""
 
+import contextlib
+import io
 import os
 import subprocess
 import sys
@@ -9,8 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from _index_core import IndexFormatError, load_index_yaml  # noqa: E402
 from migrate_layout import (  # noqa: E402
-    _inverse_path, _repair_links, map_path, migrate, rewrite_links, rewrite_mentions)
+    _inverse_path, _repair_links, convert_reference_table, main, map_path, migrate,
+    rewrite_links, rewrite_mentions)
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -139,8 +143,10 @@ class RepositoryHeadTest(unittest.TestCase):
     def test_dry_run_on_repository_is_noop(self):
         rep = migrate(REPO_ROOT, dry_run=True)
         self.assertEqual(rep.moved, [])
-        self.assertEqual(rep.rewritten, [])
+        # 자료 표 변환 대상인 reference/AGENTS.md만 바뀔 수 있다.
+        self.assertEqual([p for p in rep.rewritten if p != "reference/AGENTS.md"], [])
         self.assertEqual(rep.conflicts, [])
+        self.assertEqual(rep.unconverted, [])
 
 class RewriteMentionsTest(unittest.TestCase):
     def test_paths_replaced(self):
@@ -305,6 +311,76 @@ class MigrateTest(unittest.TestCase):
             self.assertIn("AGENTS/a.md", rep.rewritten)
 
 
+    def test_reference_table_converted_once(self):
+        files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/a.pdf": "x\n"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root)
+            self.assertEqual(len(rep.converted), 1)
+            self.assertEqual(rep.unconverted, [])
+            data = load_index_yaml(root / "reference/INDEX.yaml")
+            self.assertEqual(data["a.pdf"], {"description": "보고서", "status": "처리 대기"})
+            text = (root / "reference/AGENTS.md").read_text(encoding="utf-8")
+            self.assertNotIn("등록된 자료", text)
+            _git(root, "add", "-A")
+            before = _snapshot(root)
+            again = migrate(root)
+            self.assertEqual(again.converted, [])
+            self.assertEqual(again.unconverted, [])
+            self.assertEqual(_snapshot(root), before)
+
+    def test_old_reference_table_converted(self):
+        files = {"_reference/AGENTS.md": TABLE_ONE_ROW}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            migrate(root)
+            data = load_index_yaml(root / "reference/INDEX.yaml")
+            self.assertEqual(list(data), ["a.pdf"])
+
+    def test_reference_table_dry_run(self):
+        files = {"reference/AGENTS.md": TABLE_ONE_ROW}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            before = _snapshot(root)
+            rep = migrate(root, dry_run=True)
+            self.assertEqual(len(rep.converted), 1)
+            self.assertEqual(_snapshot(root), before)
+
+    def test_existing_index_yaml_is_conflict(self):
+        files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/INDEX.yaml": "# 기존\n"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            for dry in (True, False):
+                rep = migrate(root, dry_run=dry)
+                self.assertEqual(rep.converted, [])
+                self.assertEqual(len(rep.unconverted), 1)
+                self.assertEqual(rep.unconverted[0][0], "reference/AGENTS.md")
+            self.assertEqual((root / "reference/AGENTS.md").read_text(encoding="utf-8"), TABLE_ONE_ROW)
+            self.assertEqual((root / "reference/INDEX.yaml").read_text(encoding="utf-8"), "# 기존\n")
+
+    def test_unparsable_table_left_untouched(self):
+        files = {"reference/AGENTS.md": TABLE_BAD_ROW}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root)
+            self.assertEqual(rep.converted, [])
+            self.assertEqual(len(rep.unconverted), 1)
+            self.assertFalse((root / "reference/INDEX.yaml").exists())
+            self.assertEqual((root / "reference/AGENTS.md").read_text(encoding="utf-8"), TABLE_BAD_ROW)
+
+    def _run_main(self, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return main([str(root), "--dry-run"])
+
+    def test_main_exit_code_on_unconverted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, {"reference/AGENTS.md": TABLE_BAD_ROW})
+            self.assertEqual(self._run_main(root), 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, {"reference/AGENTS.md": TABLE_ONE_ROW})
+            self.assertEqual(self._run_main(root), 0)
+
+
 NEW_FIXTURE = {
     "worklog/TASK_TREE.md": "[s](../epistemic-structure/strategy/x.md)\n",
     "epistemic-structure/strategy/x.md": "[t](../../worklog/TASK_TREE.md)\n",
@@ -399,6 +475,187 @@ class EdgeCaseTest(unittest.TestCase):
             self.assertIn(("_docs/_custom/x.md", 0, "옮길 대응이 없는 옛 경로 파일"), rep.residual)
             self.assertTrue((root / "_docs/README.md").is_file())
             self.assertTrue((root / "_docs/_custom/x.md").is_file())
+
+
+HEAD = "# 디스크립터\n\n설명 글.\n\n"
+TABLE_HEAD = (
+    "## 등록된 자료\n\n"
+    "| 파일 | 추가일 | 설명 | 상태 |\n"
+    "|------|--------|------|------|\n")
+TABLE_ONE_ROW = HEAD + TABLE_HEAD + "| [a.pdf](a.pdf) | 2026-05-03 | 보고서 | 처리 대기 |\n"
+TABLE_EMPTY = HEAD + TABLE_HEAD + "\n(아직 등록된 자료 없음.)\n"
+TABLE_BAD_ROW = (
+    HEAD + TABLE_HEAD
+    + "| [a.pdf](a.pdf) | 2026-05-03 | 보고서 | 처리 대기 |\n"
+    + "| b.pdf | 2026-05-04 | 열이 모자란 행 |\n")
+
+
+def _table(*rows, after=""):
+    return HEAD + TABLE_HEAD + "".join(r + "\n" for r in rows) + after
+
+
+class ReferenceTableTest(unittest.TestCase):
+    def test_convert(self):
+        body, yaml, bad = convert_reference_table(TABLE_ONE_ROW)
+        self.assertNotIn("등록된 자료", body)
+        self.assertIn('"a.pdf":\n  description: 보고서\n', yaml)
+        self.assertIn("  status: 처리 대기\n", yaml)
+        self.assertEqual(bad, [])
+
+    def test_body_keeps_other_text(self):
+        body, _y, _b = convert_reference_table(TABLE_ONE_ROW)
+        self.assertEqual(body, HEAD.rstrip("\n") + "\n")
+
+    def test_empty_table(self):
+        body, yaml, bad = convert_reference_table(TABLE_EMPTY)
+        self.assertNotIn("등록된 자료", body)
+        self.assertTrue(yaml.startswith("#"))
+        self.assertEqual(yaml.count("\n"), 1)
+        self.assertEqual(bad, [])
+
+    def test_header_only_table(self):
+        body, yaml, bad = convert_reference_table(_table())
+        self.assertNotIn("등록된 자료", body)
+        self.assertTrue(yaml.startswith("#"))
+
+    def test_unparsable_row_reported(self):
+        body, yaml, bad = convert_reference_table(TABLE_BAD_ROW)
+        self.assertEqual(body, TABLE_BAD_ROW)
+        self.assertEqual((yaml, len(bad)), ("", 1))
+
+    def test_no_section_noop(self):
+        self.assertEqual(convert_reference_table("본문\n")[:2], ("본문\n", ""))
+
+    def test_following_section_kept(self):
+        text = _table("| a.pdf | d | 글 | 처리됨 |", after="\n## 다음 절\n\n내용\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual(bad, [])
+        self.assertEqual(body, HEAD + "## 다음 절\n\n내용\n")
+
+    def test_derived_link_appended(self):
+        row = "| [a.pdf](a.pdf) | 2026-05-03 | 보고서 | 처리됨 ([노트](../k/n.md)) |"
+        _b, yaml, bad = convert_reference_table(_table(row))
+        self.assertEqual(bad, [])
+        self.assertEqual(self._load(yaml)["a.pdf"], {
+            "description": "보고서 ([노트](../k/n.md))", "status": "처리됨"})
+
+    def test_backticked_status_and_remainder_only(self):
+        row = "| `a.pdf` | d | | `사용자 의견 필요` [n](n.md) |"
+        _b, yaml, bad = convert_reference_table(_table(row))
+        self.assertEqual(bad, [])
+        self.assertEqual(self._load(yaml)["a.pdf"], {
+            "description": "[n](n.md)", "status": "사용자 의견 필요"})
+
+    def test_name_forms(self):
+        rows = [
+            "| [x y.pdf](x%20y.pdf) | d | 가 | 처리 대기 |",
+            "| `b.txt` | d | 나 | 보관용 |",
+            "| c.md | d | 다 | 처리 대기 |",
+            "| [dir](dir/) | d | 라 | 처리 대기 |",
+            "| [e](../reference/e.png) | d | 마 | 처리 대기 |",
+        ]
+        _b, yaml, bad = convert_reference_table(_table(*rows))
+        self.assertEqual(bad, [])
+        self.assertEqual(
+            list(self._load(yaml)), ["x y.pdf", "b.txt", "c.md", "dir", "e.png"])
+
+    def test_values_needing_quotes_round_trip(self):
+        rows = ['| a.pdf | d | "인용" 과 \\| 파이프: 값 | 처리 대기 |',
+                "| b.pdf | d | 123 | 처리 대기 |",
+                "| c.pdf | d | # 주석처럼 | 처리 대기 |"]
+        _b, yaml, bad = convert_reference_table(_table(*rows))
+        self.assertEqual(bad, [])
+        data = self._load(yaml)
+        self.assertEqual(data["a.pdf"]["description"], '"인용" 과 | 파이프: 값')
+        self.assertEqual(data["b.pdf"]["description"], "123")
+        self.assertEqual(data["c.pdf"]["description"], "# 주석처럼")
+
+    def test_quote_in_name(self):
+        _b, yaml, bad = convert_reference_table(_table('| a"b.pdf | d | 글 | 처리 대기 |'))
+        self.assertEqual(bad, [])
+        self.assertEqual(list(self._load(yaml)), ['a"b.pdf'])
+
+    def test_missing_description_column(self):
+        text = ("## 등록된 자료\n\n| 파일 | 상태 |\n|---|---|\n"
+                "| a.pdf | 처리됨 |\n")
+        _b, yaml, bad = convert_reference_table(text)
+        self.assertEqual(bad, [])
+        self.assertEqual(self._load(yaml)["a.pdf"], {"status": "처리됨"})
+
+    def test_reordered_columns(self):
+        text = ("## 등록된 자료\n\n| 상태 | 설명 | 파일 |\n|---|---|---|\n"
+                "| 처리됨 | 글 | a.pdf |\n")
+        _b, yaml, bad = convert_reference_table(text)
+        self.assertEqual(bad, [])
+        self.assertEqual(self._load(yaml)["a.pdf"], {"description": "글", "status": "처리됨"})
+
+    def test_bad_cases_leave_text(self):
+        cases = {
+            "unknown_status": "| a.pdf | d | 글 | 모름 |",
+            "empty_status": "| a.pdf | d | 글 | |",
+            "empty_name": "| | d | 글 | 처리 대기 |",
+            "nested_name": "| sub/a.pdf | d | 글 | 처리 대기 |",
+            "outside_link": "| [a](../../x.pdf) | d | 글 | 처리 대기 |",
+            "external_link": "| [a](https://e.com/a) | d | 글 | 처리 대기 |",
+            "two_links": "| [a](a) [b](b) | d | 글 | 처리 대기 |",
+            "glued_status": "| a.pdf | d | 글 | 처리 대기열 |",
+        }
+        for label, row in cases.items():
+            text = _table(row)
+            body, yaml, bad = convert_reference_table(text)
+            self.assertEqual((body, yaml, len(bad)), (text, "", 1), label)
+
+    def test_duplicate_name_reported(self):
+        rows = ["| a.pdf | d | 가 | 처리 대기 |", "| [a](a.pdf) | d | 나 | 처리됨 |"]
+        text = _table(*rows)
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual((body, yaml, len(bad)), (text, "", 1))
+
+    def test_all_bad_rows_listed(self):
+        rows = ["| a | d | 글 | 모름 |", "| b.pdf | d | 글 | 처리 대기 |", "| c | d |"]
+        _b, _y, bad = convert_reference_table(_table(*rows))
+        self.assertEqual(len(bad), 2)
+
+    def test_extra_text_in_section_reported(self):
+        text = _table("| a.pdf | d | 글 | 처리 대기 |", after="\n표 아래 덧붙인 글.\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual((body, yaml, len(bad)), (text, "", 1))
+
+    def test_missing_required_columns(self):
+        text = "## 등록된 자료\n\n| 이름 | 상태 |\n|---|---|\n| a | 처리됨 |\n"
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual((body, yaml, len(bad)), (text, "", 1))
+
+    def test_heading_in_code_fence_ignored(self):
+        text = "```\n## 등록된 자료\n```\n"
+        self.assertEqual(convert_reference_table(text)[:2], (text, ""))
+
+    def test_section_at_end_without_newline(self):
+        text = HEAD + TABLE_HEAD + "| a.pdf | d | 글 | 처리 대기 |"
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual(bad, [])
+        self.assertIn("a.pdf", yaml)
+
+    def test_idempotent(self):
+        body, _y, _b = convert_reference_table(TABLE_ONE_ROW)
+        self.assertEqual(convert_reference_table(body)[:2], (body, ""))
+
+    def test_crlf(self):
+        text = TABLE_ONE_ROW.replace("\n", "\r\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual(bad, [])
+        self.assertNotIn("등록된 자료", body)
+        self.assertEqual(self._load(yaml)["a.pdf"]["status"], "처리 대기")
+
+    def _load(self, yaml):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "INDEX.yaml"
+            with open(str(path), "w", encoding="utf-8", newline="") as f:
+                f.write(yaml)
+            try:
+                return load_index_yaml(path)
+            except IndexFormatError as e:
+                self.fail(str(e))
 
 
 if __name__ == "__main__":
