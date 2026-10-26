@@ -13,7 +13,8 @@ from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
 from _index_core import (
     INDEX_DESC_LIMIT, INDEX_KEYS, REFERENCE_STATUSES, SELF_KEY, STRUCTURE_KEY,
     UNREGISTERED,
-    IndexFormatError, entry_paths, front_matter_description, index_dirs,
+    IndexFormatError, entry_paths, front_matter_description, in_reference_subfolder,
+    index_dirs,
     index_yaml_lines, is_generated_page, list_entries, load_index_yaml,
     non_index_dirs, render_all)
 
@@ -74,7 +75,9 @@ def check_index_files(root: Path) -> list[Finding]:
         for p in sorted(d.iterdir()):
             if not is_index_file(p.name):
                 continue
+            # 생성기는 reference/ 하위(규범 폴더 포함)를 지우지 않으므로 기존 문구를 낸다.
             if (INDEX_PAGE_RE.match(p.name) and p.is_file()
+                    and not in_reference_subfolder(root, d)
                     and is_generated_page(p)):
                 message = ("색인 폴더가 아니게 된 폴더(순차 분류 선언의 하위, "
                            "AGENTS.md 없음)에 남은 생성 색인 쪽. "

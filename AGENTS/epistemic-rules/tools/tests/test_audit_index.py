@@ -130,6 +130,14 @@ class IndexAuditTest(unittest.TestCase):
         build(self.root)
         self.assertEqual(check_index_files(self.root), [])
 
+    def test_reference_norms_generated_page_message(self):
+        from _index_core import INDEX_HEADER
+        self.write("reference/AGENTS/INDEX.md", INDEX_HEADER + "\nx\n")
+        found = [f for f in check_index_files(self.root)
+                 if f.path == "reference/AGENTS/INDEX.md"]
+        self.assertEqual(len(found), 1)
+        self.assertIn("색인을 두지 않는 폴더", found[0].message)
+
     def test_hand_written_stray_page_message(self):
         self.write("t/INDEX.md", "x\n")
         found = [f for f in check_index_files(self.root) if f.path == "t/INDEX.md"]
