@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-10
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [agents, 역할, 감사, epistemic-rules]
 ---
 
@@ -46,7 +46,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - 입력은 본 레포의 최근 머지 커밋 목록과 그 본문, TASK_TREE의 활성, 후속 항목이다. 세션 기록과 상속된 상류 이력은 입력하지 않는다.
    - 세부 패턴: 격리 위반(메타 영역의 사실을 컨텐츠 영역에 기재), 자율 격상(메타 결정을 AI가 자율로 기재), 자율 머지(단위 작업 시작점 커밋 없이 머지된 흔적), 반복 정정(메타 변동에 따른 같은 컨텐츠의 단기 반복 수정), 분석적 쪼개기(미시 분류로 쪼갰다가 통합으로 정정), 단위 경계 오인(한 의미 단위의 자의 분할이나 무관한 단위의 병합).
 
-수행 순서와 보고 형식은 하위 문서 [epistemic-auditor/procedure.md](epistemic-auditor/procedure.md)를 따른다.
+수행 순서와 보고 형식은 하위 문서 [epistemic-auditor/procedure.md](epistemic-auditor/procedure.md)를 따른다. 감사자로서 감사를 수행할 때 읽는다.
 
 ## 호출 시점
 

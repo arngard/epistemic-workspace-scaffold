@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-10
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [agents, 단위 작업, epistemic-rules]
 ---
 
@@ -74,7 +74,7 @@ unit-task-workflow는 일반 프레임(진입/진행/종료 + 재귀)을 정의�
 
 분량이 크고 자체 완결적인 세부 규칙은 `unit-task/` 아래 하위 문서로 둔다.
 
-- [stage-authority.md](unit-task/stage-authority.md): 여러 단계로 나뉜 워크플로우에서 판정 권한을 두는 기준.
+- [stage-authority.md](unit-task/stage-authority.md): 여러 단계로 나뉜 워크플로우에서 판정 권한을 두는 기준. 여러 단계로 나뉜 절차나 에이전트 분업을 설계할 때 읽는다.
 
 ## 관련 문서
 

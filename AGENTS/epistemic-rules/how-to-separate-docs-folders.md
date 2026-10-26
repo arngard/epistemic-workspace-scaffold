@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [agents, 문서관리, 조직화, epistemic-rules]
 ---
 
@@ -26,7 +26,7 @@ tags: [agents, 문서관리, 조직화, epistemic-rules]
 
 ## `AGENTS/`와 `architecture/`의 경계
 
-둘 다 절차를 담을 수 있으나 축이 다르다. 모든 인스턴스에 동일하게 전파되는 보편 절차 패턴은 `AGENTS/`에, 이 인스턴스의 고유 대상이나 환경에 결부된 절차 명세는 `epistemic-structure/architecture/`에 둔다. 상속받은 `AGENTS/` 절차를 인스턴스에 맞게 늘릴 때의 방식은 [instance-specialization.md](instance-specialization.md)를 따른다.
+둘 다 절차를 담을 수 있으나 축이 다르다. `AGENTS/`는 워크스페이스 운영 규범의 자리다. 모든 인스턴스에 동일하게 전파되는 보편 규범과 절차 패턴은 상류 묶음에, 이 인스턴스에 고유한 워크스페이스 운영 규범은 해당 `AGENTS/`의 묶음 옆 낱개 문서에 둔다. `epistemic-structure/`는 도메인 콘텐츠와 도메인 운영의 자리이므로, 도메인의 운영 절차 명세와 이 인스턴스의 고유 대상이나 환경에 결부된 명세는 `epistemic-structure/architecture/`에 둔다. 상속받은 `AGENTS/` 절차를 인스턴스에 맞게 늘릴 때의 방식은 [instance-specialization.md](instance-specialization.md)를 따른다.
 
 ## 교차 링크
 
