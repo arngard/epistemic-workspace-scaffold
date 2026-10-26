@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-05
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [agents, 규칙, 구조, epistemic-rules]
 ---
 
@@ -15,7 +15,7 @@ tags: [agents, 규칙, 구조, epistemic-rules]
 - 폴더 분화: 폴더 직속 항목이 많아지면 하위 폴더로 분류한다. 의미 단위 분류가 기본이고, 동등한 값의 대량 나열(도서 목록 성격)이면 순차 분류(알파벳, 날짜)를 쓴다. 폴더 직속 파일 수 임계는 감사 스크립트가 검출해 분화를 권고한다.
 - 폴더 디스크립터: 폴더는 `AGENTS.md`를 가진다(예외는 아래 항목들). `AGENTS.md`는 그 폴더의 정체성과 규범(운영 규범, 관리 방식, 구조적 설명)을 맡고, 폴더의 항목 나열은 생성 색인 `INDEX.md`가 맡는다 (see: [folder-index.md](folder-index.md)). 루트 `AGENTS.md`는 전역 진입점, 폴더 `AGENTS.md`는 해당 서브트리의 로컬 안내이며, 규칙이 충돌하면 하위가 자기 서브트리에 우선한다. 상류 묶음이 있는 폴더의 `AGENTS.md`는 본문 첫 줄에서 그 요지를 가져온다(`@AGENTS/epistemic-rules.md`). `AGENTS.md`가 있는 폴더마다 내용이 `@AGENTS.md` 한 줄인 `CLAUDE.md`를 둔다. 저장소가 Claude Code의 읽기 대상을 설정할 수 없고 하위 폴더 `CLAUDE.md`는 그 폴더 파일을 다룰 때 불린다는 것이 문서화된 동작이라([tool-environment.md](tool-environment.md) "도구별 자동 참조 파일"), 이 한 줄이 폴더 `AGENTS.md`의 읽기를 보장한다. 폴더를 신설하면 디스크립터와 `CLAUDE.md`를 같은 커밋에 동반한다.
 - 규범 폴더: 각 폴더의 `AGENTS/`가 그 폴더 작업의 규범을 담는다. 상류 규범은 고정 이름 묶음(요지 `epistemic-rules.md`와 `epistemic-rules/`)에, 자손 규범은 그 옆의 낱개 문서에 둔다. 규범 폴더와 그 아래에는 `AGENTS.md`와 `CLAUDE.md`를 두지 않는다(`AGENTS/AGENTS/` 반복 방지). 상류 규범은 요지 트리거와 부모 문서 링크로, 자손 규범은 그 폴더 `AGENTS.md` 링크로 찾는다. 늘 필요한 규범은 가져오기(`@` 줄)로, 상황에 따른 규범은 링크로 둔다. 요지는 늘 읽히므로 짧게 쓰고 세부는 링크한다. 가져오기는 폴더 `AGENTS.md`와 묶음 요지에만 두고 세부 문서에는 두지 않는다. 펼침은 네 단계까지이며, 가장 깊은 사슬은 `CLAUDE.md` -> `AGENTS.md` -> 요지 -> 세부의 세 단계다.
-- 존재의 SSOT: "어떤 문서가 존재하는가"의 SSOT는 중앙 색인 표가 아니라 파일시스템이다. 색인은 파일시스템에서 생성되므로 수동 동기화 부채(등재 누락)가 원리적으로 소멸한다. 처리 대기 등 행동 유발 항목은 해당 폴더 디스크립터 상단에 유지한다. `reference/` 자료의 처리 상태는 `reference/INDEX.yaml`의 `status`에 둔다.
+- 존재의 SSOT: "어떤 문서가 존재하는가"의 SSOT는 중앙 색인 표가 아니라 파일시스템이다. 색인은 파일시스템에서 생성되므로 수동 동기화 부채(등재 누락)가 원리적으로 소멸한다. 처리 대기 등 행동 유발 항목은 디스크립터가 아니라 `INDEX.yaml`과 작업 트리에 둔다. `reference/` 자료의 처리 상태는 `reference/INDEX.yaml`의 `status`에 둔다.
 - 순차 분류: 날짜, 시각, 알파벳 나열처럼 구조가 자명한 분류는 분류 최상위에서 한꺼번에 요약하고 항목을 나열하지 않는다. 분류 최상위는 `INDEX.yaml`로 스스로 선언하고, 그 색인은 항목 대신 구성을 설명한다 (see: [folder-index.md](folder-index.md) "색인을 두는 폴더"). 그 아래 폴더에는 부모 문서와 `AGENTS.md`, `CLAUDE.md`를 두지 않는다.
 - `implementation/`과 `reference/` 예외: 폴더 분화 원칙과 디스크립터 의무는 `implementation/` 하위 프로젝트 내부(소스 트리)와 `reference/`의 자료 폴더 내부에 적용하지 않는다. 소스 트리는 코드 생태계의 관례(패키지 구조, 빌드 도구)가 지배하고, 자료 폴더는 자료의 내용이 담기는 자리다. 두 폴더 모두 본 규약의 소관은 바로 아래 층(직할 `AGENTS.md`, `CLAUDE.md`, 규범 폴더 `AGENTS/`)뿐이다.
 - 실체 0건 골격 폴더: 스캐폴드가 출고하는 표준 폴더(`epistemic-structure/` 4범주, `worklog/`, `reference/`, `implementation/` 등)는 디스크립터만 있고 실체(직속 문서)가 0건이어도 정상이다 - 첫 실체를 기다리는 상태다. `CLAUDE.md`와 규범 폴더는 실체로 세지 않는다. 폴더를 신설하면 첫 실체 1건을 같은 단위 작업에 포함한다는 [workflow.md](workflow.md) "문서 변경"의 규칙은 골격 표준 폴더의 출고 상태에는 적용되지 않는다. 감사 스크립트가 이 표준 폴더 목록을 실체 0건 검출의 예외로 관리한다.
