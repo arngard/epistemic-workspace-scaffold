@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-19
-date modified: 2026-10-10
+date modified: 2026-10-26
 tags: [agents, 역할, epistemic-rules]
 ---
 
@@ -20,7 +20,7 @@ tags: [agents, 역할, epistemic-rules]
 
 | 역할 | 목적 | 정의 |
 |------|------|------|
-| epistemic-auditor | 문서 정합성 감사. 보고만 하고 수정하지 않는다 | [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md) |
+| epistemic-auditor | 문서 정합성 감사. 보고만 하고 수정하지 않는다. 감사자 호출, 감사 판정 기준 확인 시 읽는다 | [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md) |
 
 ## 인스턴스 전용 감사자
 

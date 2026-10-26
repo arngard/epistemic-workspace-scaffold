@@ -20,7 +20,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 
 1. worklog/ 문서의 최신성 (git 상태 대비 의미 판단)
    - STATUS.md 레지스트리가 감사, 주기 작업의 실제 수행 이력을 반영하는가
-   - STATUS.md 레지스트리 각 행이 주기/트리거 조건을 충족한 채 수행되지 않고 있는가 (감사, 주기 작업의 지연 자체를 짚는다)
+   - STATUS.md 레지스트리 각 행이 주기 조건을 충족한 채 수행되지 않고 있는가 (감사, 주기 작업의 지연 자체를 짚는다)
    - TASK_TREE.md의 체크박스, 속성 노드가 현실을 반영하는가
 2. 잔여 형식 항목 (스크립트 미담당)
    - 고정 규격 문서(README, AGENTS 등)의 태그 중복 규칙 위반 여부
@@ -39,7 +39,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - TASK_TREE `[x]` 완료 루트의 과다 잔존
 4. 카테고리 배치 적절성 (의미 판단)
    - 각 `epistemic-structure/X/` 안의 문서가 그 카테고리의 정의에 부합하는가
-   - 판별 규칙은 [how-to-separate-docs-folders.md](../how-to-separate-docs-folders.md) "판별 규칙"을 그대로 적용한다
+   - 판별 규칙은 [범주 판별](../../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙"을 그대로 적용한다
    - 의미 판단이 들어가므로 항목 1, 2, 3, 5보다 신뢰도가 낮다. 모호한 사례는 "확실하지 않음"으로 처리
 5. 메타-컨텐츠 영역 혼동 (직전 7~10개 단위 작업의 행동 패턴)
    - 메타 영역(스캐폴드 자체 개발, 외부 컨테이너 관리, 운영 정책, 다른 인스턴스의 작업 이력)의 사실을 인스턴스 컨텐츠 영역에 기재했거나 메타 정책을 모른 채 컨텐츠 작업을 진행한 사례를 찾는다. 단위 작업은 커밋이 아니라 의미 단위로 본다 (ref: [unit-task.md](../unit-task.md)).
@@ -50,7 +50,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 
 ## 호출 시점
 
-- 새 세션 시작 시 트리거 조건을 충족하면 착수 전 호출 (see: [session-boundaries.md](../session-boundaries.md) "세션 시작"). 임계 조건의 SSOT는 STATUS 레지스트리의 주기/트리거 셀이다.
+- 새 세션 시작 시 트리거 조건을 충족하면 착수 전 호출 (see: [session-boundaries.md](../session-boundaries.md) "세션 시작"). 임계 조건의 SSOT는 `worklog/AGENTS/epistemic-rules/status-registry.md`의 "주기 조건" 표다.
   - 판정: `check_semantic_audit.py`로 한다 (see: [tools.md](../tools.md) "의미 감사 트리거 판정 스크립트"). 기준은 본 레포 자신의 클린 커밋 이후 새 커밋이 있고 마지막 수행이 임계 시간을 초과했는가이며, 그 커밋이 없으면 그 자체로 충족이다(최초 1회). 클린 커밋은 trailer를 줄 전체로 갖고(본문 속 언급 제외) 상류 머지로 흘러들지 않은 것만 인정한다.
   - 기준점 갱신: 호출 후 STATUS의 해당 행을 새 시각으로 갱신하고, 그 갱신과 발견 사항 정리(수정 또는 TASK_TREE 등재)를 담은 커밋에 trailer `Semantic-Audit: clean`을 남긴다. 작업 브랜치 경유로 main에 머지되면 머지 커밋에도 같은 trailer를 남긴다(기준점이 머지 이후를 가리키도록).
 - 긴 세션 종료 전, 큰 변경 후

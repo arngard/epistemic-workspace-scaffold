@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from migrate_layout import (  # noqa: E402
-    _repair_links, map_path, migrate, rewrite_links, rewrite_mentions)
+    _inverse_path, _repair_links, map_path, migrate, rewrite_links, rewrite_mentions)
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -48,6 +48,33 @@ class Phase2MapTest(unittest.TestCase):
     def test_mention_in_fence_reported(self):
         out, rep = rewrite_mentions("```\npython3 AGENTS/tools/audit.py .\n```\n")
         self.assertEqual([n for n, _ in rep], [2])
+
+
+class Phase2bMapTest(unittest.TestCase):
+    def test_chain_to_final(self):
+        self.assertEqual(
+            map_path("AGENTS/coding-guidelines.md"),
+            "implementation/AGENTS/epistemic-rules/coding-guidelines.md")
+        self.assertEqual(
+            map_path("AGENTS/ingest-workflow/reference-folder.md"),
+            "reference/AGENTS/epistemic-rules/reference-folder.md")
+        self.assertEqual(
+            map_path("AGENTS/epistemic-rules/coding-guidelines.md"),
+            "implementation/AGENTS/epistemic-rules/coding-guidelines.md")
+
+    def test_merged_doc_to_category_summary(self):
+        dst = "epistemic-structure/AGENTS/epistemic-rules.md"
+        self.assertEqual(map_path("AGENTS/epistemic-rules/how-to-separate-docs-folders.md"), dst)
+        self.assertEqual(map_path("AGENTS/how-to-separate-docs-folders.md"), dst)
+
+    def test_merged_doc_not_inverted(self):
+        dst = "epistemic-structure/AGENTS/epistemic-rules.md"
+        self.assertEqual(_inverse_path(dst), dst)
+
+    def test_sibling_unaffected(self):
+        self.assertEqual(
+            map_path("AGENTS/ingest-workflow.md"),
+            "AGENTS/epistemic-rules/ingest-workflow.md")
 
 
 class RewriteLinksTest(unittest.TestCase):

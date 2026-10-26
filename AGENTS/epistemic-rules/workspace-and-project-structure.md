@@ -36,19 +36,27 @@ tags: [agents, 워크스페이스, epistemic-rules]
 (workspace-root)/                      <- 워크스페이스 루트
 ├── AGENTS.md                           <- AI 에이전트 공통 지침 (모든 도구의 진입점)
 ├── AGENTS/                             <- 규범 폴더(상류 묶음 `epistemic-rules`)
+├── worklog.md                          <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
 ├── worklog/                            <- 작업 상태, 작업 트리
+├── reference.md
 ├── reference/                          <- 사용자가 dump한 raw 자료의 immutable 보관 영역
+├── epistemic-structure.md
 ├── epistemic-structure/                <- 코드로 표현할 수 없는 지식
+│   ├── ontology.md                     <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
 │   ├── ontology/                       <- 도메인 개념 정의 ("무엇이 존재하는가")
+│   ├── knowledge.md
 │   ├── knowledge/                      <- 외부 사실, 환경, 벤치마크 ("세상이 어떠한가")
+│   ├── strategy.md
 │   ├── strategy/                       <- 우리의 결정과 근거 ("왜 이렇게 하기로 했는가")
+│   ├── architecture.md
 │   └── architecture/                   <- 설계 명세 ("어떻게 만드는가")
+├── implementation.md
 └── implementation/                     <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
     ├── <project-A>/                    <- 각 프로젝트의 실제 소스 (또는 서브모듈 포인터 등)
     └── <project-B>/
 ```
 
-`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 참조. `reference/` 운용은 [`../../reference/AGENTS.md`](../../reference/AGENTS.md)와 [`ingest-workflow.md`](ingest-workflow.md) 참조.
+`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" 참조. `reference/` 운용은 [`../../reference/AGENTS.md`](../../reference/AGENTS.md)와 [`ingest-workflow.md`](ingest-workflow.md) 참조.
 
 워크스페이스 안의 단위 작업(자료 N건 묶음 ingest, 메타 결정, 정책 변경, 큰 마이그레이션 등)은 진입, 진행, 종료 흐름이 정해져 있다. 단위 작업의 정의는 [unit-task.md](unit-task.md) 참조. 단위 작업 시작 시 어떤 절차를 거쳐야 하는지는 [unit-task-workflow.md](unit-task-workflow.md) 참조. 워크로그(`worklog/`)의 TASK_TREE와 STATUS 레지스트리는 그 흐름의 진입, 종료 시점에서 갱신되는 운영 메타다. 완료 이력의 SSOT(single source of truth)는 git 이력이다.
 

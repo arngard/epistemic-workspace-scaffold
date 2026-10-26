@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-21
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [agents, 역할, 감사, epistemic-rules]
 ---
 
@@ -13,7 +13,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 1. 진입점 [AGENTS.md](../../../../AGENTS.md)와 그것이 가져오는 [epistemic-rules.md](../../../epistemic-rules.md) "이럴 때 읽는다"를 읽고 워크스페이스 구조를 파악한다.
 2. 최근 커밋(`git log --oneline -20` 등)과 STATUS 레지스트리, TASK_TREE를 대조해 워크로그 최신성을 본다.
 3. 형식 감사 `python3 -B AGENTS/epistemic-rules/tools/audit.py .`(윈도우는 `python` 또는 `py`)를 실행해 결과를 수집한다. 형식 항목을 손으로 재검사하지 않는다.
-4. [how-to-separate-docs-folders.md](../../how-to-separate-docs-folders.md)를 읽고 4범주 정의를 확인한 뒤, 각 `epistemic-structure/X/` 문서의 첫 단락이나 디스크립터 등록 설명으로 카테고리 부합 여부를 본다. 판정이 서지 않으면 본문을 더 읽고, 그래도 모호하면 "확실하지 않음"으로 둔다. 한 문서가 두 범주에 걸치면 같은 문서의 "교차 링크" 절에 따라 주 위치 하나를 정하고 나머지를 링크로 분리할 수 있는지 본다. 분리할 수 없거나 주 위치가 모호하면 "확실하지 않음"으로 보고한다.
+4. [epistemic-structure/AGENTS/epistemic-rules.md](../../../../epistemic-structure/AGENTS/epistemic-rules.md)를 읽고, 거기서 링크한 각 범주 요지의 "정의"로 4범주 정의를 확인한 뒤, 각 `epistemic-structure/X/` 문서의 첫 단락이나 디스크립터 등록 설명으로 카테고리 부합 여부를 본다. 판정이 서지 않으면 본문을 더 읽고, 그래도 모호하면 "확실하지 않음"으로 둔다. 한 문서가 두 범주에 걸치면 같은 문서의 "교차 링크" 절에 따라 주 위치 하나를 정하고 나머지를 링크로 분리할 수 있는지 본다. 분리할 수 없거나 주 위치가 모호하면 "확실하지 않음"으로 보고한다.
 5. git 맥락 검출 항목을 확인한다. 브랜치 속성의 실존은 `git branch -a`와 `git worktree list`로, `date closed` 문서의 본문 변경은 `git log -p`로, `reference/` 원본의 수정, 삭제, 이동은 `git -c core.quotepath=false log --first-parent --diff-filter=MDR --name-status <범위> -- reference/ ":(exclude)reference/AGENTS.md"`로 본다(`--first-parent`는 머지 커밋에서만 가한 수정도 잡는다). 범위는 직전 클린 커밋이 있으면 `<직전 클린 커밋>..HEAD`로, 없으면 상속 이력을 빼기 위해 `<상류>/main..HEAD`로 잡는다. 상류 원격이 없으면 이력 없이 가져온 워크스페이스로 보고 범위 지정 없이 본다. 스캐폴드 이력을 받았는데 상류 원격이 없다면 시작 상태가 갖춰지지 않은 것이므로 그 사실을 보고한다. 이동(R 행)은 파생 노드의 링크를 끊으므로 위반으로 보고한다. 머지 커밋이 나오면 `git log <머지>^1..<머지>^2`로 원인 커밋을 찾는다.
 6. 메타-컨텐츠 영역 혼동을 본 레포가 만든 머지와 그 본문으로 점검한다. 상류 원격이 있으면 `git log --first-parent --merges <상류>/main..HEAD`로 상속 이력을 빼고, 없으면 `git log --first-parent --merges`로 직전 7~10개 단위 작업에 해당하는 최근 머지를 본다. 쓸 만한 단서는 다음과 같다.
    - 커밋 메시지의 "정정", "되돌림", "revert", "롤백", "자율" 같은 키워드 빈도.

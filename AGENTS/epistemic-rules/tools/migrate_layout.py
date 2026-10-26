@@ -49,6 +49,20 @@ NORM_DOCS = (
 )
 NORM_DIRS = ("agent-roles", "ingest-workflow", "pr-workflow", "tools", "unit-task", "unit-task-workflow", "writing-style")
 PATH_MAP += [("AGENTS/" + n, "AGENTS/epistemic-rules/" + n) for n in NORM_DOCS + NORM_DIRS]
+# 폴더 묶음으로 나가는 규범. 앞 대응이 낳은 자리에서 최종 자리로 한 번 더 옮긴다.
+PATH_MAP += [
+    ("AGENTS/epistemic-rules/coding-guidelines.md",
+     "implementation/AGENTS/epistemic-rules/coding-guidelines.md"),
+    ("AGENTS/epistemic-rules/ingest-workflow/reference-folder.md",
+     "reference/AGENTS/epistemic-rules/reference-folder.md"),
+]
+# 지워지고 내용이 다른 문서에 합쳐진 규범. 링크만 합쳐진 문서로 돌리고, 합쳐진 문서는
+# 그 자리에서 옮겨 온 것이 아니므로 역대응(_inverse_path)에서 뺀다.
+MERGED_MAP = [
+    ("AGENTS/epistemic-rules/how-to-separate-docs-folders.md",
+     "epistemic-structure/AGENTS/epistemic-rules.md"),
+]
+PATH_MAP += MERGED_MAP
 
 # 본문에서 `_docs/` 없이 쓰인 옛 폴더 이름 -> 새 이름.
 _BARE_MAP = {
@@ -133,6 +147,8 @@ def _sub_outside_code(pattern, repl, text: str) -> str:
 def _inverse_path(rel: str) -> str:
     """새 경로를 옛 경로로 되돌린다. 대응하는 새 경로가 아니면 그대로 돌려준다."""
     for old, new in PATH_MAP:
+        if (old, new) in MERGED_MAP:
+            continue
         if rel == new:
             return old
         if not old.endswith(".md") and rel.startswith(new + "/"):

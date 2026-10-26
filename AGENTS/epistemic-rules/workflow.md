@@ -16,11 +16,11 @@ tags: [규칙, epistemic-rules]
 
 ## 작업 수행 원칙
 
-넘겨짚지 않기, 단순함 우선, 외과적 변경, 목표 주도, 기억보다 실제 상태. 전체 SSOT는 [AGENTS/epistemic-rules/working-principles.md](working-principles.md), 코드 작업에는 [AGENTS/epistemic-rules/coding-guidelines.md](coding-guidelines.md)가 추가 적용된다.
+넘겨짚지 않기, 단순함 우선, 외과적 변경, 목표 주도, 기억보다 실제 상태. 전체 SSOT는 [AGENTS/epistemic-rules/working-principles.md](working-principles.md), 코드 작업에는 [implementation/AGENTS/epistemic-rules/coding-guidelines.md](../../implementation/AGENTS/epistemic-rules/coding-guidelines.md)가 추가 적용된다.
 
 ## 문서 변경
 
-관심사의 규약 문서를 먼저 갱신하고 정합성(cross-reference)을 확인한다. 폴더나 절차를 신설하면 디스크립터와 첫 실체 1건을 같은 단위 작업에 동반하고, 이동, 리네임은 연쇄 갱신한다. 날짜 프리픽스 문서는 수정 전 종결(`date closed`) 여부를 확인한다. 문서 단위와 SSOT(신설, 1관심사, 분량)는 [AGENTS/epistemic-rules/document-units.md](document-units.md), 구조 규약은 [AGENTS/epistemic-rules/folder-structure.md](folder-structure.md), 문서 시간성은 [AGENTS/epistemic-rules/document-temporality.md](document-temporality.md), 모듈, 의존성, 운영 절차 변경은 [epistemic-structure/architecture/AGENTS.md](../../epistemic-structure/architecture/AGENTS.md).
+관심사의 규약 문서를 먼저 갱신하고 정합성(cross-reference)을 확인한다. 폴더나 절차를 신설하면 디스크립터와 첫 실체 1건을 같은 단위 작업에 동반하고, 이동, 리네임은 연쇄 갱신한다. 날짜 프리픽스 문서는 수정 전 종결(`date closed`) 여부를 확인한다. 문서 단위와 SSOT(신설, 1관심사, 분량)는 [AGENTS/epistemic-rules/document-units.md](document-units.md), 구조 규약은 [AGENTS/epistemic-rules/folder-structure.md](folder-structure.md), 문서 시간성은 [AGENTS/epistemic-rules/document-temporality.md](document-temporality.md), 모듈, 의존성, 도메인의 운영 절차 변경은 [epistemic-structure/architecture/AGENTS.md](../../epistemic-structure/architecture/AGENTS.md).
 
 ## 제품 지침 추출
 

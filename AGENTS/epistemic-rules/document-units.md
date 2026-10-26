@@ -28,6 +28,14 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 폴더 형태는 동명 문서-폴더 쌍(`X.md` + `X/`)을 쓴다 (sub: [workspace-and-project-structure.md](workspace-and-project-structure.md) "하위 문서 폴더 규칙"). 시간 축으로 자라나는 항목이면 하위 문서에 날짜 프리픽스를 붙여 히스토리 문서로 두고, 상위 문서는 현재적 문서로 남긴다 (ref: [document-temporality.md](document-temporality.md)).
 
+## 문서 분할 크기
+
+`strategy/` 아래의 개별 근거 문서(`why-*.md`)와 같이 "작은 단위로 쪼개기 쉬운" 문서는, 분할 크기를 잘못 잡으면 분리 후 흡수 또는 흡수 후 분리를 반복하는 수습이 반복된다.
+
+- 기본: 근거가 캐논 문서(예: `document-units.md`, `core-constraints.md` 등) 한 문단으로 녹일 수 있으면 별도 파일로 분리하지 않는다.
+- 분리 시점: 해당 근거가 다른 문서에서 독립적으로 반복 참조되거나, 본문이 캐논 문서의 흐름을 끊을 만큼 커질 때.
+- 의심스러우면 먼저 캐논 문서 안에 녹이고, 참조 필요성이 드러난 뒤 분리한다. 처음부터 과분화한 뒤 되돌리는 것(흡수)이 더 비싸다.
+
 ## 중복 금지
 
 같은 사실, 규칙, 설명은 하나의 SSOT 문서에만 두고 다른 문서는 링크로 연결한다.
@@ -38,6 +46,6 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 ## 이름과 식별자의 안정성
 
-여러 문서에서 참조되는 이름, 용어, 식별자는 시간이 지나면 바뀔 수 있다. 바뀔 수 있는 것을 여러 문서에 박제하면 이후 대량 갱신 부채가 쌓인다. 새 용어를 도입할 때의 검증은 [epistemic-structure/ontology/AGENTS.md](../../epistemic-structure/ontology/AGENTS.md) "용어 도입 전 검증" 참조.
+여러 문서에서 참조되는 이름, 용어, 식별자는 시간이 지나면 바뀔 수 있다. 바뀔 수 있는 것을 여러 문서에 박제하면 이후 대량 갱신 부채가 쌓인다. 새 용어를 도입할 때의 검증은 [epistemic-structure/ontology/AGENTS/epistemic-rules.md](../../epistemic-structure/ontology/AGENTS/epistemic-rules.md) "용어 도입 전 검증" 참조.
 
 계획 순서 식별자(Phase 1, Milestone 2 등)는 [worklog/TASK_TREE.md](../../worklog/TASK_TREE.md)와 프로젝트 개요 문서에만 두고, 나머지 문서에서는 "첫 출시", "후속 확장"처럼 의미 단위 표현으로 참조한다. 순서는 재편될 수 있지만 의미 단위는 덜 변한다.

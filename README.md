@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [소개]
 ---
 
@@ -22,13 +22,21 @@ tags: [소개]
 ```
 (workspace-root)/
 ├── AGENTS/               <- 에이전트 운영 규범 (진입점은 AGENTS.md)
+├── worklog.md            <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
 ├── worklog/              <- 작업 상태
+├── reference.md
 ├── reference/            <- 사용자가 dump한 raw 자료의 immutable 보관 영역
+├── epistemic-structure.md
 ├── epistemic-structure/  <- 코드로 표현할 수 없는 지식
+│   ├── ontology.md           <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
 │   ├── ontology/             <- 도메인 개념
+│   ├── knowledge.md
 │   ├── knowledge/            <- 외부 사실
+│   ├── strategy.md
 │   ├── strategy/             <- 결정과 근거
+│   ├── architecture.md
 │   └── architecture/         <- 설계 명세
+├── implementation.md
 └── implementation/       <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
     ├── <project-A>/
     └── <project-B>/
@@ -49,4 +57,4 @@ tags: [소개]
 
 - see: [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) - 설계 철학과 근거
 - see: [AGENTS/epistemic-rules/workspace-and-project-structure.md](AGENTS/epistemic-rules/workspace-and-project-structure.md) - 구조 근거
-- see: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](AGENTS/epistemic-rules/how-to-separate-docs-folders.md) - `epistemic-structure/` 분류 기준
+- see: [epistemic-structure/AGENTS/epistemic-rules.md](epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" - `epistemic-structure/` 분류 기준

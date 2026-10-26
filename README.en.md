@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-25
+date modified: 2026-10-26
 tags: [소개]
 ---
 
@@ -22,13 +22,21 @@ For the rationale, see [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENT
 ```
 (workspace-root)/
 ├── AGENTS/               <- Agent operating norms (entry point: AGENTS.md)
+├── worklog.md            <- Parent document: X.md introduces the same-name folder X/ (likewise below)
 ├── worklog/              <- Work status
+├── reference.md
 ├── reference/            <- Immutable raw materials dumped by the user
+├── epistemic-structure.md
 ├── epistemic-structure/  <- Knowledge not expressible in code
+│   ├── ontology.md           <- Parent document: X.md introduces the same-name folder X/ (likewise below)
 │   ├── ontology/             <- Domain concepts
+│   ├── knowledge.md
 │   ├── knowledge/            <- External facts
+│   ├── strategy.md
 │   ├── strategy/             <- Decisions and rationale
+│   ├── architecture.md
 │   └── architecture/         <- Design specifications
+├── implementation.md
 └── implementation/       <- Implementation projects (one subfolder per project)
     ├── <project-A>/
     └── <project-B>/
@@ -49,4 +57,4 @@ After obtaining it, rename the workspace folder to match your project, follow th
 
 - see: [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) - Design philosophy and rationale (Korean)
 - see: [AGENTS/epistemic-rules/workspace-and-project-structure.md](AGENTS/epistemic-rules/workspace-and-project-structure.md) - Structural rationale
-- see: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](AGENTS/epistemic-rules/how-to-separate-docs-folders.md) - Criteria for separating `epistemic-structure/` subfolders
+- see: [epistemic-structure/AGENTS/epistemic-rules.md](epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" - Criteria for separating `epistemic-structure/` subfolders

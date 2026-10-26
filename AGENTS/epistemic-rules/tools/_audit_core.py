@@ -93,7 +93,7 @@ WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 1
 # front matter 날짜 필드 값 형식 (yyyy-MM-dd). 필드 존재만 보면 잘못된 값이
 # 통과하므로 값도 검사한다.
 DATE_VALUE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 (ref: strategy/AGENTS.md
+# 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 (ref: strategy/AGENTS/epistemic-rules.md
 # "Front matter 속성"). 하위 폴더 문서와 디스크립터에는 강제하지 않는다.
 STRATEGY_DIR = "epistemic-structure/strategy"
 STRATEGY_FIELDS = ("importance", "urgency")
@@ -111,7 +111,7 @@ TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
 # 시각은 KST 기준이며 존 표기는 생략하는 것이 관례다. 관례를 어기고 " KST"를
 # 덧붙인 자식 기재도 깨지지 않게 접미를 선택적으로 허용한다.
 STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( KST)?$")
-STATUS_HEADER_CELLS = ["이름", "마지막 수행", "주기/트리거"]
+STATUS_HEADER_CELLS = ["이름", "마지막 수행"]
 STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
 # 비ASCII 문장 부호 검출 대상과 ASCII 대체 힌트 (ref: writing-style/ascii-punctuation.md).
 # 코드 펜스, 인라인 코드는 검사 전 제거하므로 규칙 자체의 백틱 예시, 코드,

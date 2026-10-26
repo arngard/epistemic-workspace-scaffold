@@ -15,6 +15,7 @@ from audit_structure import (  # noqa: E402
     check_claude_pointers, check_descriptors, check_empty_folders, check_name_collision,
     check_norms_dir_descriptors,
 )
+from audit_worklog import check_status_schema  # noqa: E402
 
 FM = "---\ndate created: 2026-01-01\ndate modified: 2026-01-01\ntags:\n  - test\n---\n"
 
@@ -94,6 +95,19 @@ class NormsDirTest(unittest.TestCase):
         self.write("reference/AGENTS.md", FM)
         self.write("reference/AGENTS/epistemic-rules.md", "본문만\n")
         self.assertIn("reference/AGENTS/epistemic-rules.md", [f.path for f in check_front_matter(self.root)])
+
+    def test_status_two_columns_clean(self):
+        self.write("worklog/STATUS.md", FM + "\n| 이름 | 마지막 수행 |\n|---|---|\n| 형식 감사 | 1990-01-01 00:00:00 |\n")
+        self.assertEqual(check_status_schema(self.root), [])
+
+    def test_status_legacy_columns_warn(self):
+        self.write(
+            "worklog/STATUS.md",
+            FM + "\n| 이름 | 마지막 수행 | 주기/트리거 |\n|---|---|---|\n| 형식 감사 | 1990-01-01 00:00:00 | 새 세션 |\n",
+        )
+        found = check_status_schema(self.root)
+        self.assertTrue(found)
+        self.assertEqual({f.severity for f in found}, {WARNING})
 
 
 if __name__ == "__main__":
