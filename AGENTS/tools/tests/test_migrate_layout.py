@@ -143,7 +143,7 @@ class MigrateTest(unittest.TestCase):
 
     def test_partial_tree(self):
         files = dict(FIXTURE)
-        files["_docs/_worklog/TASK_TREE.md"] = "[s](../_strategy/x.md)\n"
+        files["_docs/_worklog/child.md"] = "[s](../_strategy/x.md)\n"
         with tempfile.TemporaryDirectory() as tmp:
             root = _make_repo(tmp, files)
             (root / "worklog").mkdir()
@@ -153,7 +153,31 @@ class MigrateTest(unittest.TestCase):
             _git(root, "commit", "-q", "-m", "partial")
             rep = migrate(root)
             self.check_final(root)
+            self.assertEqual((root / "worklog/child.md").read_text(encoding="utf-8"),
+                             "[s](../epistemic-structure/strategy/x.md)\n")
+            self.assertIn(("_docs/_worklog/child.md", "worklog/child.md"), rep.moved)
             self.assertNotIn(("_docs/_worklog/TASK_TREE.md", "worklog/TASK_TREE.md"), rep.moved)
+            self.assertEqual(rep.conflicts, [])
+            before = _snapshot(root)
+            again = migrate(root)
+            self.assertEqual((again.moved, again.rewritten, again.conflicts), ([], [], []))
+            self.assertEqual(_snapshot(root), before)
+
+    def test_collision_keeps_old_file(self):
+        files = dict(FIXTURE)
+        files["_docs/_worklog/dup.md"] = "[s](../_strategy/x.md)\n"
+        files["worklog/dup.md"] = "already here\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root)
+            self.assertEqual(rep.conflicts, [("_docs/_worklog/dup.md", "worklog/dup.md")])
+            self.assertEqual((root / "worklog/dup.md").read_text(encoding="utf-8"), "already here\n")
+            self.assertEqual((root / "_docs/_worklog/dup.md").read_text(encoding="utf-8"),
+                             "[s](../../epistemic-structure/strategy/x.md)\n")
+            self.assertNotIn(("_docs/_worklog/dup.md", "worklog/dup.md"), rep.moved)
+            again = migrate(root)
+            self.assertEqual((again.moved, again.rewritten), ([], []))
+            self.assertEqual(again.conflicts, rep.conflicts)
 
     def test_dry_run(self):
         with tempfile.TemporaryDirectory() as tmp:

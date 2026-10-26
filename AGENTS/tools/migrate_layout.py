@@ -5,6 +5,8 @@
 마크다운 링크와 본문 언급을 새 경로로 바꾸는 순수 함수를 담는다.
 모든 경로 인자는 레포 루트 기준 POSIX 상대 경로다. import 시 부수 효과는 없다.
 migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸는 실행부다.
+추적되지 않는 내용(예: 추적 안 되는 _tmp/)은 옮기지 않는다. 대상 경로가 이미 추적 중이라 건너뛴 이동은
+Report.conflicts에 모으고, 옛 파일은 그대로 둔다. 명령행은 conflicts가 있으면 종료 코드 1, 없으면 0이다.
 """
 
 import argparse
@@ -154,6 +156,7 @@ class Report:
     moved: List[Tuple[str, str]] = field(default_factory=list)
     rewritten: List[str] = field(default_factory=list)
     residual: List[Tuple[str, int, str]] = field(default_factory=list)
+    conflicts: List[Tuple[str, str]] = field(default_factory=list)  # (옛 경로, 새 경로) 대상이 이미 있어 건너뜀
 
 
 def _tracked(root: Path) -> List[str]:
@@ -200,7 +203,11 @@ def migrate(root: Path, dry_run: bool = False) -> Report:
     plan = {}
     for rel in tracked:
         new = map_path(rel)
-        if new != rel and new not in present:
+        if new == rel:
+            continue
+        if new in present:
+            report.conflicts.append((rel, new))
+        else:
             plan[rel] = new
     for old, new in plan.items():
         report.moved.append((old, new))
@@ -243,7 +250,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     print("옛 경로가 남은 줄 (%d):" % len(rep.residual))
     for p, no, line in rep.residual:
         print("  %s:%d: %s" % (p, no, line))
-    return 0
+    print("대상이 이미 있어 옮기지 못한 파일 (%d):" % len(rep.conflicts))
+    for old, new in rep.conflicts:
+        print("  %s -> %s" % (old, new))
+    return 1 if rep.conflicts else 0
 
 
 if __name__ == "__main__":
