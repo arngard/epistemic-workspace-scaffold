@@ -14,6 +14,7 @@ from audit import run_audit  # noqa: E402
 from audit_content import check_ascii_punctuation  # noqa: E402
 from audit_frontmatter import check_front_matter  # noqa: E402
 from audit_index import check_index_files, check_index_sources  # noqa: E402
+from audit_links import check_reference_markers  # noqa: E402
 from audit_structure import (  # noqa: E402
     check_descriptors, check_empty_folders, check_name_collision,
     check_scaffold_state_markers)
@@ -105,6 +106,46 @@ class IndexAuditTest(unittest.TestCase):
         found = check_index_files(self.root)
         self.assertFalse([f for f in found
                           if f.path == "sub" or f.path.startswith("sub/")])
+
+    def test_embedded_clone_not_audited(self):
+        self.write("s/clone/.git/HEAD", "ref: refs/heads/main\n")
+        self.write("s/clone/AGENTS.md", FM)
+        self.write("s/clone/INDEX.md", "x\n")
+        _audit_core._nested_repo_cache.clear()
+        build(self.root)
+        self.assertEqual(check_index_files(self.root), [])
+        self.assertNotIn("clone", (self.root / "s/INDEX.md").read_text(
+            encoding="utf-8"))
+
+    def test_stale_generated_page_message(self):
+        self.write("s/t/AGENTS.md", FM)
+        build(self.root)
+        self.write("s/INDEX.yaml", '".":\n  structure: 날짜순\n')
+        stale = [f for f in check_index_files(self.root)
+                 if f.path == "s/t/INDEX.md"]
+        self.assertEqual(len(stale), 1)
+        self.assertEqual(stale[0].severity, VIOLATION)
+        self.assertIn("색인 폴더가 아니게 된", stale[0].message)
+        self.assertIn("build_index.py", stale[0].message)
+        build(self.root)
+        self.assertEqual(check_index_files(self.root), [])
+
+    def test_hand_written_stray_page_message(self):
+        self.write("t/INDEX.md", "x\n")
+        found = [f for f in check_index_files(self.root) if f.path == "t/INDEX.md"]
+        self.assertEqual(len(found), 1)
+        self.assertIn("색인을 두지 않는 폴더", found[0].message)
+
+    def test_reference_index_skips_ref_marker(self):
+        self.write("reference/INDEX.yaml",
+                   '"r.pdf":\n  description: 보고서 ([요약](../s/x.md))\n'
+                   "  status: 처리됨\n")
+        build(self.root)
+        self.assertIn("([요약](", (self.root / "reference/INDEX.md").read_text(
+            encoding="utf-8"))
+        self.assertEqual(
+            [f for f in check_reference_markers(self.root)
+             if f.path.startswith("reference/INDEX")], [])
 
     def test_reference_index_audited(self):
         paths = [p.relative_to(self.root).as_posix()

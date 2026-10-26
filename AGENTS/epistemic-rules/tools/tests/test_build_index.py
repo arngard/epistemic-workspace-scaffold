@@ -14,9 +14,13 @@ from pathlib import Path
 TOOLS = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, str(TOOLS))
 
-from build_index import build, ignored_entries, main  # noqa: E402
+from _index_core import INDEX_HEADER  # noqa: E402
+from build_index import (  # noqa: E402
+    HandWrittenIndexError, build, ignored_entries, main)
 
 FM = "---\ndescription: 문서 설명\n---\n본문\n"
+# 손으로 바꾼 생성 쪽(머리말은 남음).
+GEN = INDEX_HEADER + "\nx\n"
 HAS_GIT = shutil.which("git") is not None
 
 
@@ -60,7 +64,7 @@ class BuildTest(unittest.TestCase):
 
     def test_surplus_page_removed(self):
         build(self.root)
-        self.write("s/INDEX2.md", "x\n")
+        self.write("s/INDEX2.md", GEN)
         self.assertEqual(build(self.root), ["s/INDEX2.md"])
         self.assertFalse((self.root / "s/INDEX2.md").exists())
 
@@ -83,12 +87,12 @@ class BuildTest(unittest.TestCase):
 
     def test_changed_page_rewritten_only(self):
         build(self.root)
-        self.write("s/INDEX.md", "x\n")
+        self.write("s/INDEX.md", GEN)
         self.assertEqual(build(self.root), ["s/INDEX.md"])
 
     def test_dry_run_keeps_surplus(self):
         build(self.root)
-        self.write("s/INDEX2.md", "x\n")
+        self.write("s/INDEX2.md", GEN)
         self.assertEqual(build(self.root, dry_run=True), ["s/INDEX2.md"])
         self.assertTrue((self.root / "s/INDEX2.md").exists())
 
@@ -96,6 +100,64 @@ class BuildTest(unittest.TestCase):
         self.write("t/INDEX2.md", "x\n")
         build(self.root)
         self.assertTrue((self.root / "t/INDEX2.md").exists())
+
+    def test_sequential_declaration_removes_stale_pages(self):
+        self.write("s/t/AGENTS.md", FM)
+        build(self.root)
+        self.assertTrue((self.root / "s/t/INDEX.md").is_file())
+        self.write("s/INDEX.yaml", '".":\n  structure: 날짜순\n')
+        self.assertIn("s/t/INDEX.md", build(self.root))
+        self.assertFalse((self.root / "s/t/INDEX.md").exists())
+        self.assertEqual(build(self.root), [])
+
+    def test_removed_descriptor_removes_stale_pages(self):
+        build(self.root)
+        self.write("s/INDEX2.md", GEN)
+        (self.root / "s/AGENTS.md").unlink()
+        changed = build(self.root)
+        self.assertIn("s/INDEX.md", changed)
+        self.assertIn("s/INDEX2.md", changed)
+        self.assertFalse((self.root / "s/INDEX.md").exists())
+        self.assertFalse((self.root / "s/INDEX2.md").exists())
+
+    def test_stale_page_dry_run_kept(self):
+        build(self.root)
+        (self.root / "s/AGENTS.md").unlink()
+        self.assertIn("s/INDEX.md", build(self.root, dry_run=True))
+        self.assertTrue((self.root / "s/INDEX.md").exists())
+
+    def test_reference_subfolder_generated_page_kept(self):
+        self.write("reference/raw/INDEX.md", GEN)
+        self.write("reference/raw/AGENTS/INDEX.md", GEN)
+        build(self.root)
+        self.assertTrue((self.root / "reference/raw/INDEX.md").exists())
+        self.assertTrue((self.root / "reference/raw/AGENTS/INDEX.md").exists())
+
+    def test_hand_written_index_refused(self):
+        self.write("s/INDEX.md", "# 내 색인\n")
+        self.write("s/INDEX2.md", "# 내 둘째 쪽\n")
+        for extra in ((), ("--dry-run",)):
+            code, out, err = self.run_main(*extra)
+            self.assertEqual((code, out), (2, ""))
+            self.assertIn(" s/INDEX.md: ", err)
+            self.assertIn(" s/INDEX2.md: ", err)
+        self.assertFalse((self.root / "INDEX.md").exists())
+        self.assertEqual((self.root / "s/INDEX.md").read_text(encoding="utf-8"),
+                         "# 내 색인\n")
+        self.assertTrue((self.root / "s/INDEX2.md").exists())
+        with self.assertRaises(HandWrittenIndexError):
+            build(self.root)
+
+    def test_embedded_clone_not_entry(self):
+        self.write("s/clone/.git/HEAD", "ref: refs/heads/main\n")
+        self.write("s/clone/a.txt", "x\n")
+        self.write("s/sub/.git", "gitdir: x\n")
+        build(self.root)
+        text = (self.root / "s/INDEX.md").read_text(encoding="utf-8")
+        self.assertNotIn("clone", text)
+        self.assertIn("[sub/](sub/)", text)
+        self.assertFalse((self.root / "s/clone/INDEX.md").exists())
+        self.assertFalse((self.root / "s/sub/INDEX.md").exists())
 
     def test_main_prints_paths(self):
         code, out, err = self.run_main()
@@ -171,6 +233,50 @@ class IgnoredEntriesTest(unittest.TestCase):
         finally:
             os.environ.clear()
             os.environ.update(old)
+
+    def with_env(self):
+        old = dict(os.environ)
+        os.environ.clear()
+        os.environ.update(self.env)
+        self.addCleanup(lambda: (os.environ.clear(), os.environ.update(old)))
+
+    def run_main(self):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = main([str(self.root)])
+        return code, out.getvalue(), err.getvalue()
+
+    def test_ignored_embedded_clone_builds(self):
+        self.with_env()
+        for name in ("AGENTS.md", "implementation/AGENTS.md"):
+            p = self.root / name
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(FM, encoding="utf-8")
+        app = self.root / "implementation/app"
+        app.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=str(app), env=self.env,
+                       check=True)
+        (app / "main.py").write_text("x\n", encoding="utf-8")
+        (self.root / ".gitignore").write_text("implementation/app/\n",
+                                              encoding="utf-8")
+        code, out, err = self.run_main()
+        self.assertEqual(code, 0, err)
+        text = (self.root / "implementation/INDEX.md").read_text(
+            encoding="utf-8")
+        self.assertNotIn("app", text)
+
+    def test_ignored_gitlink_folder_message(self):
+        self.with_env()
+        (self.root / "AGENTS.md").write_text(FM, encoding="utf-8")
+        sub = self.root / "wt"
+        sub.mkdir()
+        (sub / ".git").write_text("gitdir: x\n", encoding="utf-8")
+        (self.root / ".gitignore").write_text("wt/\n", encoding="utf-8")
+        code, out, err = self.run_main()
+        self.assertEqual(code, 2)
+        self.assertIn("wt: ", err)
+        self.assertIn("중첩 저장소", err)
+        self.assertNotIn(".tmp/", err)
 
     def test_nfd_name_nfc_pattern(self):
         name = "\ube44\ubc00.txt"
@@ -282,12 +388,12 @@ class HookTest(unittest.TestCase):
 
     def test_untracked_surplus_page(self):
         self.install_tools()
-        self.write("INDEX2.md", "x\n")
+        self.write("INDEX2.md", GEN)
         self.assertIn("INDEX.md", self.committed_names())
         self.assertFalse((self.root / "INDEX2.md").exists())
 
     def test_tracked_surplus_page_removed(self):
-        self.write("INDEX2.md", "x\n")
+        self.write("INDEX2.md", GEN)
         self.assertEqual(self.commit("AGENTS.md", "a.md", "INDEX2.md"), 0)
         self.install_tools()
         self.write("b.md", FM)

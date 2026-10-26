@@ -26,7 +26,8 @@ INDEX.yaml:
   순차 분류 최상위로 선언된 폴더의 자손은 들지 않는다.
 - 항목은 폴더 직속 항목에서 점 파일, 운영 파일(AGENTS.md, CLAUDE.md,
   AGENTS/, 색인 쪽 파일, INDEX.yaml), EXEMPT_DIRS 이름, 심볼릭 링크,
-  OS와 편집기 부산물을 뺀 전부다. 중첩 저장소 폴더는 항목 하나로만 보인다.
+  OS와 편집기 부산물을 뺀 전부다. .git이 파일인 중첩 저장소(서브모듈, 연결된
+  worktree)는 항목 하나로만 보이고, .git이 폴더인 내장 클론은 항목에서 빠진다.
 - 이름은 NFC로 바꾸고 코드 포인트 순으로 정렬한다. 링크 대상은 공백,
   %, (, ), [, ], <, >, #, ?, 역슬래시만 퍼센트 인코딩하고 한글은 그대로 둔다.
 - 표시 텍스트의 [, ]는 역슬래시로 이스케이프한다. 이스케이프한 "\\]"가 든
@@ -306,6 +307,28 @@ _ENCODE = {c: "%%%02X" % ord(c) for c in " %()[]<>#?\\"}
 _DISPLAY_ESCAPE = {c: "\\" + c for c in "[]"}
 
 
+def is_generated_page(path: Path) -> bool:
+    """첫 줄이 생성 머리말(INDEX_HEADER)인 파일이면 참.
+
+    생성기가 지우거나 덮어써도 되는 색인 쪽인지 판정한다. 생성기와 감사가
+    함께 쓴다.
+    """
+    text = read(path)
+    if text.startswith("\ufeff"):
+        text = text[1:]
+    return text.split("\n", 1)[0].rstrip("\r") == INDEX_HEADER
+
+
+def is_embedded_clone(path: Path) -> bool:
+    """.git이 폴더인 하위 폴더(독립 내장 클론)면 참.
+
+    저장소 내용이 아니므로 색인 항목과 git 무시 확인에서 뺀다. .git이 파일인
+    서브모듈과 연결된 worktree는 여기에 들지 않는다.
+    """
+    git = path / ".git"
+    return path.is_dir() and git.is_dir() and not git.is_symlink()
+
+
 @dataclass(frozen=True)
 class Entry:
     """색인 항목 한 줄.
@@ -376,6 +399,22 @@ def index_dirs(root: Path) -> "list[Path]":
     return out
 
 
+def non_index_dirs(root: Path, dirs: "set[Path]"):
+    """색인을 두지 않는 감사 대상 폴더. dirs는 index_dirs의 결과다.
+
+    reference/ 자료 폴더는 원본 자료라 뺀다. 다만 규범 폴더 reference/AGENTS/와
+    그 아래는 든다. 감사의 "색인을 두지 않는 폴더의 색인 파일" 검사와 생성기의
+    남은 생성 쪽 지우기가 같은 순회를 쓴다.
+    """
+    for d in content_dirs(root):
+        if d in dirs:
+            continue
+        if (in_reference_subfolder(root, d)
+                and d.relative_to(root).parts[1] != NORMS_DIR_NAME):
+            continue
+        yield d
+
+
 def _entry_children(d: Path) -> "list[Path]":
     """폴더 d의 색인 항목이 되는 직속 항목의 디스크 경로(정렬)."""
     out: "list[Path]" = []
@@ -390,6 +429,8 @@ def _entry_children(d: Path) -> "list[Path]":
         if is_byproduct(name):
             continue
         if name == NORMS_DIR_NAME and p.is_dir():
+            continue
+        if is_embedded_clone(p):
             continue
         out.append(p)
     return sorted(out)

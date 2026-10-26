@@ -190,9 +190,12 @@ def check_reference_markers(root: Path) -> list[Finding]:
     인라인 코드를 한 글자 자리표로 바꾼 줄로 하고, 메시지에는 원래 줄을 인용한다.
     지우지 않고 자리표를 두는 것은 표지 뒤 대상이 인라인 코드일 때 꼬리가 비었다고
     오판하지 않기 위해서다.
+    생성 색인 쪽 파일은 사용자가 고칠 수 없으므로 뺀다(항목 20과 같은 원칙).
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
+        if INDEX_PAGE_RE.match(path.name):
+            continue
         rel = str(path.relative_to(root))
         text = FRONT_MATTER_RE.sub("", read(path))
         text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)

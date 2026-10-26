@@ -13,8 +13,9 @@ from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
 from _index_core import (
     INDEX_DESC_LIMIT, INDEX_KEYS, REFERENCE_STATUSES, SELF_KEY, STRUCTURE_KEY,
     UNREGISTERED,
-    IndexFormatError, entry_paths, front_matter_description, in_reference_subfolder,
-    index_dirs, index_yaml_lines, list_entries, load_index_yaml, render_all)
+    IndexFormatError, entry_paths, front_matter_description, index_dirs,
+    index_yaml_lines, is_generated_page, list_entries, load_index_yaml,
+    non_index_dirs, render_all)
 
 BUILD_TOOL = "AGENTS/epistemic-rules/tools/build_index.py"
 BUILD_HINT = f"{BUILD_TOOL}로 다시 만든다"
@@ -51,9 +52,11 @@ def check_index_files(root: Path) -> list[Finding]:
     색인 폴더에 INDEX.md가 없으면 경고. 쪽 내용이 render_all과 다르거나(줄바꿈은
     LF로 맞춰 비교), 필요한 쪽이 없거나, 필요한 쪽 밖의 쪽 파일이 있으면 위반.
     색인 폴더가 아닌 폴더(규범 폴더 포함)의 INDEX*.md, INDEX.yaml은 위반이다.
-    reference/ 하위 폴더는 원본 자료라 보지 않는다. 다만 규범 폴더
-    reference/AGENTS/와 그 아래는 본다(iter_md_files와 같은 예외). 중첩 저장소
-    안은 content_dirs가 이미 뺀다. 색인 폴더 판정이 IndexFormatError를 내면
+    그 가운데 생성 머리말로 시작하는 쪽은 색인 폴더에서 빠진 폴더에 남은
+    것이라 생성기로 지우라고 알린다. 순회는 생성기의 지우기와 같은
+    non_index_dirs다. reference/ 하위 폴더는 원본 자료라 보지 않는다. 다만
+    규범 폴더 reference/AGENTS/와 그 아래는 본다(iter_md_files와 같은 예외).
+    중첩 저장소 안은 content_dirs가 이미 뺀다. 색인 폴더 판정이 IndexFormatError를 내면
     위반 1건만 내고 끝낸다. 렌더가 IndexFormatError를 내면 위반 1건을 내고 내용
     비교만 건너뛴다.
     """
@@ -67,18 +70,21 @@ def check_index_files(root: Path) -> list[Finding]:
     except IndexFormatError as e:
         out.append(_format_error(root, e))
         pages = None
+    for d in non_index_dirs(root, dirs):
+        for p in sorted(d.iterdir()):
+            if not is_index_file(p.name):
+                continue
+            if (INDEX_PAGE_RE.match(p.name) and p.is_file()
+                    and is_generated_page(p)):
+                message = ("색인 폴더가 아니게 된 폴더(순차 분류 선언의 하위, "
+                           "AGENTS.md 없음)에 남은 생성 색인 쪽. "
+                           f"{BUILD_TOOL}로 지운다")
+            else:
+                message = ("색인을 두지 않는 폴더의 색인 파일. 색인은 AGENTS.md가 "
+                           "있는 폴더(규범 폴더 제외)에만 둔다")
+            out.append(Finding(VIOLATION, "index", _rel(root, p), message))
     for d in content_dirs(root):
         if d not in dirs:
-            if (in_reference_subfolder(root, d)
-                    and d.relative_to(root).parts[1] != NORMS_DIR_NAME):
-                continue  # 원본 자료 안의 색인 파일은 원본의 일부다
-            for p in sorted(d.iterdir()):
-                if is_index_file(p.name):
-                    out.append(Finding(
-                        VIOLATION, "index", _rel(root, p),
-                        "색인을 두지 않는 폴더의 색인 파일. 색인은 AGENTS.md가 "
-                        "있는 폴더(규범 폴더 제외)에만 둔다",
-                    ))
             continue
         first = d / INDEX_NAME
         if not first.is_file():
