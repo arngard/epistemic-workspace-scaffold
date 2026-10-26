@@ -42,7 +42,8 @@ def check_index_files(root: Path) -> list[Finding]:
     색인 폴더에 INDEX.md가 없으면 경고. 쪽 내용이 render_all과 다르거나(줄바꿈은
     LF로 맞춰 비교), 필요한 쪽이 없거나, 필요한 쪽 밖의 쪽 파일이 있으면 위반.
     색인 폴더가 아닌 폴더(규범 폴더 포함)의 INDEX*.md, INDEX.yaml은 위반이다.
-    reference/ 하위 폴더는 원본 자료라 보지 않고, 중첩 저장소 안은 content_dirs가
+    reference/ 하위 폴더는 원본 자료라 보지 않되 규범 폴더 reference/AGENTS/는
+    본다. 중첩 저장소 안은 content_dirs가
     이미 뺀다. 색인 폴더 판정이 IndexFormatError를 내면 위반 1건만 내고 끝낸다.
     렌더가 IndexFormatError를 내면 위반 1건을 내고 내용 비교만 건너뛴다.
     """
@@ -58,7 +59,7 @@ def check_index_files(root: Path) -> list[Finding]:
         pages = None
     for d in content_dirs(root):
         if d not in dirs:
-            if in_reference_subfolder(root, d):
+            if in_reference_subfolder(root, d) and not in_norms_dir(root, d):
                 continue  # 원본 자료 안의 색인 파일은 원본의 일부다
             for p in sorted(d.iterdir()):
                 if is_index_file(p.name):

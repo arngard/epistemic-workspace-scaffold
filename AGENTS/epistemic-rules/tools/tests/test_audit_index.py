@@ -153,6 +153,12 @@ class IndexAuditTest(unittest.TestCase):
         paths = [f.path for f in check_index_files(self.root)]
         self.assertFalse([p for p in paths if p.startswith("reference/raw")])
 
+    def test_reference_norms_dir_index_violation(self):
+        self.write("reference/AGENTS/epistemic-rules.md", FM)
+        self.write("reference/AGENTS/INDEX.md", "x\n")
+        self.assertIn((VIOLATION, "reference/AGENTS/INDEX.md"),
+                      self.found(check_index_files))
+
     def test_run_audit_includes_index(self):
         (self.root / "s/INDEX.md").unlink()
         cats = [(f.category, f.path) for f in run_audit(self.root)]
