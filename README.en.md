@@ -43,7 +43,7 @@ There are two ways to obtain the scaffold.
 
 If you received the scaffold history, the `upstream` connection is not optional; it is the starting state. Audits use it to tell upstream commits from your own. Record the chosen approach and its rationale as a decision document.
 
-After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `_docs/_worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md).
+After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/instance-specialization.md](AGENTS/instance-specialization.md).
 
 ## Further reading
 

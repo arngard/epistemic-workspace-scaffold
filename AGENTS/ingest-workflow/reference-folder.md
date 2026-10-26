@@ -4,15 +4,15 @@ date modified: 2026-10-25
 tags: [agents, 절차, ingest]
 ---
 
-# `_reference/` 폴더 처리
+# `reference/` 폴더 처리
 
 > [ingest-workflow.md](../ingest-workflow.md)의 하위 절차.
 
-`_reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). see: [`_reference/AGENTS.md`](../../_reference/AGENTS.md).
+`reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태 무관 (PDF, 이미지, 텍스트 메모, URL 모음 등). see: [`reference/AGENTS.md`](../../reference/AGENTS.md).
 
 ## 처리 여부 식별
 
-[`_reference/AGENTS.md`](../../_reference/AGENTS.md)가 처리 진척의 SSOT다. 별도 처리 로그 파일은 두지 않는다.
+[`reference/AGENTS.md`](../../reference/AGENTS.md)가 처리 진척의 SSOT다. 별도 처리 로그 파일은 두지 않는다.
 
 기록 형식은 워크스페이스가 정한다. 자료가 적으면 건별 인벤토리 표가 단순하고, 자료가 계속 쌓이는 영역은 단계별 진행 지점만 남기는 방식이 기록량을 상수로 묶는다. 어느 쪽이든 그 디스크립터에 형식과 갱신 규칙을 명시한다.
 
@@ -20,13 +20,13 @@ tags: [agents, 절차, ingest]
 
 세션 시작 시 또는 작업 중 트리거가 있을 때:
 
-1. `_reference/` 내용 listing.
+1. `reference/` 내용 listing.
 2. 디스크립터의 진척 기록과 대조.
 3. 기록이 처리됐다고 말하지 않는 자료가 폴더에 있으면 신규 미처리 자료다. 처리 절차를 시작한다.
 4. 기록이 가리키는 자료가 폴더에 없으면 raw 자료가 사라진 것. 사용자에게 짚는다.
 5. 미처리로 남은 항목은 처리 절차를 진행하거나 사용자에게 우선순위를 확인한다.
 
-보조 검증으로 본문에서 `_reference/<file>` 경로를 grep해 derived 노드의 존재를 교차 확인할 수 있다 (기록된 진척과 실제 cross-reference의 일치 점검).
+보조 검증으로 본문에서 `reference/<file>` 경로를 grep해 derived 노드의 존재를 교차 확인할 수 있다 (기록된 진척과 실제 cross-reference의 일치 점검).
 
 ## 미처리 항목 처리
 
@@ -38,4 +38,4 @@ tags: [agents, 절차, ingest]
 
 ## Raw 자료 자체는 immutable
 
-처리 후에도 `_reference/` 안의 파일은 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md) "점검 항목").
+처리 후에도 `reference/` 안의 파일은 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md) "점검 항목").

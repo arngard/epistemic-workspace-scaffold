@@ -16,7 +16,7 @@ tags: [agents, 코딩]
 - "버그를 고쳐라" -> 버그를 재현하는 테스트를 먼저 쓰고 통과시킨다.
 - "리팩터링하라" -> 전후로 테스트가 통과하는지 보장한다.
 
-단, 테스트는 타입이 닿지 못하는 행동, 회귀, 경계 조건을 고정하는 보완적 검증이다. [core-constraints.md](../_docs/_architecture/core-constraints.md) 설계 원칙의 강타입(correctness by construction)에 따라, 타입이 잡아야 할 오류를 테스트에 위임하지 않는다.
+단, 테스트는 타입이 닿지 못하는 행동, 회귀, 경계 조건을 고정하는 보완적 검증이다. [core-constraints.md](../epistemic-structure/architecture/core-constraints.md) 설계 원칙의 강타입(correctness by construction)에 따라, 타입이 잡아야 할 오류를 테스트에 위임하지 않는다.
 
 ## 코드의 단순함
 
@@ -38,5 +38,5 @@ tags: [agents, 코딩]
 ## 참고
 
 - see: [working-principles.md](working-principles.md) - 일반 작업 수행 원칙.
-- see: [core-constraints.md](../_docs/_architecture/core-constraints.md) - 설계 원칙(강타입). 원본 보호 원칙은 [original-protection-principle.md](original-protection-principle.md).
+- see: [core-constraints.md](../epistemic-structure/architecture/core-constraints.md) - 설계 원칙(강타입). 원본 보호 원칙은 [original-protection-principle.md](original-protection-principle.md).
 - see: [unit-task-workflow.md](unit-task-workflow.md) - 단위 작업 운영 흐름.

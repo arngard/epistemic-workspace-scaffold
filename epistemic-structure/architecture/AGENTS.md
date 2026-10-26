@@ -7,8 +7,8 @@ tags: [architecture]
 # 설계 명세 디스크립터
 
 > "우리가 어떻게 만들겠다" - 최종 설계의 스니펫. 현재 상태의 도면.
-> 코드의 구조 결정뿐 아니라 이 인스턴스 고유의 운영 절차 명세도 여기 둔다 (ref: [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) "`AGENTS/`와 `_architecture/`의 경계").
-> 설계의 맥락은 [_knowledge/](../_knowledge/AGENTS.md)와 [_strategy/](../_strategy/AGENTS.md) 참조.
+> 코드의 구조 결정뿐 아니라 이 인스턴스 고유의 운영 절차 명세도 여기 둔다 (ref: [AGENTS/how-to-separate-docs-folders.md](../../AGENTS/how-to-separate-docs-folders.md) "`AGENTS/`와 `architecture/`의 경계").
+> 설계의 맥락은 [knowledge/](../knowledge/AGENTS.md)와 [strategy/](../strategy/AGENTS.md) 참조.
 > 규범 폴더이므로 파일별 설명과 "언제 읽는가" 트리거를 명시한다 (ref: [AGENTS/folder-structure.md](../../AGENTS/folder-structure.md) "폴더 구조와 디스크립터"). 설계 명세는 구현 시 전체가 함께 참조되어 서로를 지지하는 정보다 - 존재를 모르면 위반 구현이 나온다.
 
 ## 작성 스타일
@@ -16,7 +16,7 @@ tags: [architecture]
 - 구현을 보고하는 해석, 분석문이 아니라 설계자 시각의 명세로, 선언문으로 쓴다. 구현에서 의미를 역추출했더라도 결과물은 명세로 기술하고, "코드에서 확인한" 같은 분석 메타 서술은 쓰지 않는다.
 - 절 제목은 명사 라벨보다 그 설계가 무엇을 이루는지의 선언으로 쓴다. 예: "리테일러 추가"가 아니라 "리테일러는 수평 확장 가능하다".
 - 항목이 여럿인 나열, 대조, 매핑은 줄글에 넣지 않고 목록이나 표로 쓴다. 줄글은 취지와 구조의 설명에 쓴다.
-- 각 설계 요소의 즉각적 취지(무엇을 위해 이렇게 두는가)는 명세에 함께 적는다. 그 너머의 결정 배경, 근거는 여기에 담지 않는다. 그건 `_strategy/`에 두고 `ref:`로 가리킨다.
+- 각 설계 요소의 즉각적 취지(무엇을 위해 이렇게 두는가)는 명세에 함께 적는다. 그 너머의 결정 배경, 근거는 여기에 담지 않는다. 그건 `strategy/`에 두고 `ref:`로 가리킨다.
 - 코드로 표현 가능한 인터페이스, 타입, 에러 계약은 코드 자체가 명세다. 이 폴더에는 그 외의 상위 구조 결정만 남긴다.
 
 ## 파일별 안내
