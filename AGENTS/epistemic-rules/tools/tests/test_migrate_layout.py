@@ -347,7 +347,8 @@ class MigrateTest(unittest.TestCase):
             self.assertEqual(_snapshot(root), before)
 
     def test_existing_index_yaml_is_conflict(self):
-        files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/INDEX.yaml": "# 기존\n"}
+        existing = '"b.pdf":\n  status: 처리됨\n'
+        files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/INDEX.yaml": existing}
         with tempfile.TemporaryDirectory() as tmp:
             root = _make_repo(tmp, files)
             for dry in (True, False):
@@ -356,7 +357,32 @@ class MigrateTest(unittest.TestCase):
                 self.assertEqual(len(rep.unconverted), 1)
                 self.assertEqual(rep.unconverted[0][0], "reference/AGENTS.md")
             self.assertEqual((root / "reference/AGENTS.md").read_text(encoding="utf-8"), TABLE_ONE_ROW)
-            self.assertEqual((root / "reference/INDEX.yaml").read_text(encoding="utf-8"), "# 기존\n")
+            self.assertEqual((root / "reference/INDEX.yaml").read_text(encoding="utf-8"), existing)
+
+    def test_shipped_empty_index_yaml_overwritten(self):
+        # 상류가 출고하는 reference/INDEX.yaml(머리 주석 한 줄)과 같은 내용이다.
+        shipped = (REPO_ROOT / "reference/INDEX.yaml").read_text(encoding="utf-8")
+        self.assertEqual(load_index_yaml(REPO_ROOT / "reference/INDEX.yaml"), {})
+        files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/INDEX.yaml": shipped}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root, dry_run=True)
+            self.assertEqual(rep.unconverted, [])
+            self.assertEqual(len(rep.converted), 1)
+            rep = migrate(root)
+            self.assertEqual(rep.unconverted, [])
+            data = load_index_yaml(root / "reference/INDEX.yaml")
+            self.assertEqual(list(data), ["a.pdf"])
+            self.assertNotIn("등록된 자료", (root / "reference/AGENTS.md").read_text(encoding="utf-8"))
+
+    def test_malformed_index_yaml_is_conflict(self):
+        files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/INDEX.yaml": "bad\n"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root)
+            self.assertEqual(rep.converted, [])
+            self.assertEqual(len(rep.unconverted), 1)
+            self.assertEqual((root / "reference/INDEX.yaml").read_text(encoding="utf-8"), "bad\n")
 
     def test_unparsable_table_left_untouched(self):
         files = {"reference/AGENTS.md": TABLE_BAD_ROW}
@@ -557,7 +583,27 @@ class ReferenceTableTest(unittest.TestCase):
         _b, yaml, bad = convert_reference_table(_table(*rows))
         self.assertEqual(bad, [])
         self.assertEqual(
-            list(self._load(yaml)), ["x y.pdf", "b.txt", "c.md", "dir", "e.png"])
+            list(self._load(yaml)), ["x y.pdf", "b.txt", "c.md", "dir/", "e.png"])
+
+    def test_folder_rows_keep_slash(self):
+        rows = [
+            "| [raw/](raw/) | d | 가 | 처리 대기 |",
+            "| plain/ | d | 나 | 처리됨 |",
+            "| `code/` | d | 다 | 보관용 |",
+            "| [x y/](x%20y/) | d | 라 | 처리 대기 |",
+        ]
+        _b, yaml, bad = convert_reference_table(_table(*rows))
+        self.assertEqual(bad, [])
+        self.assertEqual(
+            list(self._load(yaml)), ["raw/", "plain/", "code/", "x y/"])
+
+    def test_folder_row_bad_forms(self):
+        for row in ("| a//b/ | d | 글 | 처리 대기 |",
+                    "| / | d | 글 | 처리 대기 |",
+                    "| [a](../) | d | 글 | 처리 대기 |"):
+            text = _table(row)
+            body, yaml, bad = convert_reference_table(text)
+            self.assertEqual((body, yaml, len(bad)), (text, "", 1), row)
 
     def test_values_needing_quotes_round_trip(self):
         rows = ['| a.pdf | d | "인용" 과 \\| 파이프: 값 | 처리 대기 |',

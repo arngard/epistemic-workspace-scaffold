@@ -13,7 +13,9 @@ migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸
 링크 변환은 코드 펜스와 인라인 코드 구간 안의 예시 링크를 건드리지 않는다.
 reference/AGENTS.md에 "등록된 자료" 절의 표가 있으면 reference/INDEX.yaml(description, status)로
 옮기고 그 절을 지운다. 추가일 열은 버리고, 상태 칸에 어휘 뒤로 남은 글(derived 링크 등)은 설명 끝에
-덧붙인다. 읽지 못한 행이 있거나 INDEX.yaml이 이미 있으면 절을 건드리지 않고 Report.unconverted에 보고한다.
+덧붙인다. 폴더 행은 이름 끝의 /를 남긴다. 읽지 못한 행이 있거나 항목이 든 INDEX.yaml(형식 오류 포함)이
+이미 있으면 절을 건드리지 않고 Report.unconverted에 보고한다. 주석과 빈 줄뿐인 INDEX.yaml은 없는 것으로
+보고 덮어쓴다.
 unconverted가 있으면 명령행 종료 코드도 1이다.
 """
 
@@ -31,7 +33,7 @@ from typing import List, Optional, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _index_core import (  # noqa: E402
-    REFERENCE_STATUSES, IndexFormatError, quote_scalar)
+    REFERENCE_STATUSES, IndexFormatError, load_index_yaml, quote_scalar)
 
 # 옛 경로 -> 새 경로. 긴 접두어를 먼저 적용한다.
 PATH_MAP = [
@@ -344,17 +346,26 @@ def _split_row(line: str) -> List[str]:
 
 
 def _file_name(cell: str) -> Optional[str]:
-    """파일 칸에서 reference/ 직속 항목 이름을 얻는다. 얻을 수 없으면 None이다."""
+    """파일 칸에서 reference/ 직속 항목 이름을 얻는다. 얻을 수 없으면 None이다.
+
+    이름이 /로 끝나면 폴더 행이다. 끝 / 하나를 떼고 검사한 뒤 키에 다시 붙인다.
+    """
+    folder = False
     m = _CODE_CELL_RE.match(cell)
     if m:
         name = m.group(1).strip()
+        if name.endswith("/"):
+            folder, name = True, name[:-1]
     else:
         m = _LINK_CELL_RE.match(cell)
         if m:
             target = m.group(1).partition("#")[0]
             if not target or _SCHEME_RE.match(target):
                 return None
-            joined = posixpath.join(REFERENCE_DIR_NAME, urllib.parse.unquote(target))
+            decoded = urllib.parse.unquote(target)
+            if decoded.endswith("/"):
+                folder, decoded = True, decoded[:-1]
+            joined = posixpath.join(REFERENCE_DIR_NAME, decoded)
             norm = posixpath.normpath(joined)
             parts = norm.split("/")
             if len(parts) != 2 or parts[0] != REFERENCE_DIR_NAME:
@@ -362,12 +373,14 @@ def _file_name(cell: str) -> Optional[str]:
             name = parts[1]
         elif cell and not re.search(r"[\[\]`]", cell):
             name = cell
+            if name.endswith("/"):
+                folder, name = True, name[:-1]
         else:
             return None
     if not name or name in (".", "..") or "/" in name or "\\" in name \
             or "*" in name or "~" in name:
         return None
-    return unicodedata.normalize("NFC", name)
+    return unicodedata.normalize("NFC", name + ("/" if folder else ""))
 
 
 def _split_status(cell: str) -> Optional[Tuple[str, str]]:
@@ -567,10 +580,11 @@ def _move_untracked_tmp(root: Path, present, plan, report: Report, dry_run: bool
         os.rename(str(base), str(dest))
 
 
-def _convert_reference(root: Path, text: str, exists, report: Report, dry_run: bool) -> str:
+def _convert_reference(root: Path, text: str, report: Report, dry_run: bool) -> str:
     """reference/AGENTS.md 본문의 자료 표를 INDEX.yaml로 옮기고 새 본문을 돌려준다.
 
-    옮기지 못하면(읽지 못한 행, 기존 INDEX.yaml) 본문을 그대로 돌려주고 report.unconverted에 쌓는다.
+    옮기지 못하면(읽지 못한 행, 항목이 든 기존 INDEX.yaml) 본문을 그대로 돌려주고 report.unconverted에
+    쌓는다. 기존 INDEX.yaml이 주석과 빈 줄뿐이면(상류가 출고하는 파일) 없는 것으로 보고 덮어쓴다.
     dry_run이면 파일을 쓰지 않고 converted만 채운다.
     """
     body, yaml, bad = convert_reference_table(text)
@@ -578,7 +592,16 @@ def _convert_reference(root: Path, text: str, exists, report: Report, dry_run: b
         report.unconverted.append((REFERENCE_DESCRIPTOR, item))
     if bad or body == text:
         return text
-    if exists(REFERENCE_INDEX) or os.path.lexists(str(root / REFERENCE_INDEX)):
+    target = root / REFERENCE_INDEX
+    if os.path.islink(str(target)) or (os.path.lexists(str(target)) and not target.is_file()):
+        report.unconverted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX + "가 이미 있다"))
+        return text
+    try:
+        existing = load_index_yaml(target)
+    except IndexFormatError as e:
+        report.unconverted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX + " 형식 오류: " + e.message))
+        return text
+    if existing:
         report.unconverted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX + "가 이미 있다"))
         return text
     report.converted.append((REFERENCE_DESCRIPTOR, REFERENCE_INDEX))
@@ -652,7 +675,7 @@ def migrate(root: Path, dry_run: bool = False) -> Report:
         residual.sort()
         report.residual.extend((new, no, line) for no, line in residual)
         if new == REFERENCE_DESCRIPTOR:
-            out = _convert_reference(root, out, exists, report, dry_run)
+            out = _convert_reference(root, out, report, dry_run)
         if out != text:
             report.rewritten.append(new)
             if not dry_run:
