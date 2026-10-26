@@ -126,11 +126,16 @@ def main() -> int:
         print(f"Error: not a directory. 디렉토리가 아님 - {root}", file=sys.stderr)
         return UNDECIDABLE
 
+    # 실패한 파일을 메시지에 밝힌다. 조건 쪽 예외는 읽은 파일 경로를 담는다.
     try:
         last = parse_last_run(root)
+    except ValueError as exc:
+        print(f"Undecidable: {STATUS_REL.as_posix()} could not be parsed. 판정 불가: {exc}. 수동 판정 필요.", file=sys.stderr)
+        return UNDECIDABLE
+    try:
         threshold, trailer, source = parse_condition(root)
     except ValueError as exc:
-        print(f"Undecidable: STATUS could not be parsed. 판정 불가: {exc}. 수동 판정 필요.", file=sys.stderr)
+        print(f"Undecidable: condition file could not be parsed. 판정 불가: {exc}. 수동 판정 필요.", file=sys.stderr)
         return UNDECIDABLE
 
     code, _ = git(root, "rev-parse", "--git-dir")

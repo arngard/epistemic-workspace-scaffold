@@ -1,5 +1,7 @@
 """의미 감사 주기 조건의 출처 순서 시험 (자손 덮어쓰기, 옛 STATUS 셋째 칸, 상류 규칙)."""
 
+import contextlib
+import io
 import os
 import sys
 import tempfile
@@ -9,7 +11,8 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from check_semantic_audit import (  # noqa: E402
-    OVERRIDE_REL, RULE_REL, STATUS_REL, parse_condition, parse_last_run,
+    OVERRIDE_REL, RULE_REL, STATUS_REL, UNDECIDABLE, main, parse_condition,
+    parse_last_run,
 )
 
 HEAD = "| 이름 | 주기/트리거 |\n|---|---|\n"
@@ -73,6 +76,45 @@ class ConditionSourceTest(unittest.TestCase):
         self.write(str(STATUS_REL), status_2col("어제"))
         with self.assertRaises(ValueError):
             parse_last_run(self.root)
+
+
+class UndecidableMessageTest(unittest.TestCase):
+    """판정 불가 메시지는 파싱에 실패한 파일을 가리킨다."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name).resolve()
+
+    def write(self, rel, text):
+        p = self.root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text, encoding="utf-8")
+
+    def run_main(self):
+        err = io.StringIO()
+        argv = sys.argv
+        sys.argv = ["check_semantic_audit.py", str(self.root)]
+        try:
+            with contextlib.redirect_stderr(err):
+                code = main()
+        finally:
+            sys.argv = argv
+        return code, err.getvalue()
+
+    def test_bad_status_names_status(self):
+        self.write(str(STATUS_REL), status_2col("어제"))
+        self.write(str(RULE_REL), rule_text(47))
+        code, err = self.run_main()
+        self.assertEqual(code, UNDECIDABLE)
+        self.assertIn(STATUS_REL.as_posix() + " could not be parsed", err)
+
+    def test_missing_condition_not_blamed_on_status(self):
+        self.write(str(STATUS_REL), status_2col())
+        code, err = self.run_main()
+        self.assertEqual(code, UNDECIDABLE)
+        self.assertIn("condition file could not be parsed", err)
+        self.assertNotIn("STATUS could not be parsed", err)
 
 
 if __name__ == "__main__":
