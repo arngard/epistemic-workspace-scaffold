@@ -6,11 +6,13 @@ import sys
 import tempfile
 import unicodedata
 import unittest
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import _audit_core  # noqa: E402
+import _index_core  # noqa: E402
 from _audit_core import (  # noqa: E402
     INDEX_NAME, INDEX_PAGE_RE, INDEX_YAML_NAME, SIZE_LIMIT_NODE,
     is_index_file, text_size)
@@ -22,6 +24,7 @@ from _index_core import (  # noqa: E402
     render_pages, sequential_structure)
 from audit_links import (  # noqa: E402
     check_link_text, check_link_whitespace, check_links)
+from audit_structure import check_filename_portability  # noqa: E402
 
 FM_DESC = "---\ndescription: 짧은 설명\n---\n"
 FM = "---\ndescription: 문서 설명\n---\n본문\n"
@@ -392,6 +395,7 @@ class RenderTest(unittest.TestCase):
 
     def test_rendered_passes_link_checks(self):
         self.write("s/a b.md", FM)
+        self.write("s/a[1].md", FM)
         for path, text in render_all(self.root).items():
             path.write_text(text, encoding="utf-8")
         for check in (check_links, check_link_text, check_link_whitespace):
@@ -531,6 +535,43 @@ class RenderTest(unittest.TestCase):
         self.assertEqual(es["한글 이름.md"].links[0][1], "한글%20이름.md")
         text = self.page("s/INDEX.md")
         self.assertIn("[a(1)#\\[x\\]?%.pdf](a%281%29", text)
+
+    @unittest.skipIf(os.name == "nt", "윈도우는 역슬래시 이름을 못 만든다")
+    def test_backslash_name_is_portability_violation(self):
+        self.write("s/bs\\x.md", FM)
+        rels = [f.path for f in check_filename_portability(self.root)]
+        self.assertIn(os.path.join("s", "bs\\x.md"), rels)
+        es = {e.name: e for e in list_entries(self.root, self.root / "s")}
+        self.assertEqual(es["bs\\x.md"].links[0][1], "bs%5Cx.md")
+        self.assertIn("- [bs\\x.md](bs%5Cx.md)", self.page("s/INDEX.md"))
+
+    def test_nfc_collision_raises(self):
+        nfc_name = "s/" + unicodedata.normalize("NFC", "가.md")
+        nfd_name = "s/" + unicodedata.normalize("NFD", "가.md")
+        self.write(nfc_name, FM)
+        self.write(nfd_name, FM)
+        target = unicodedata.normalize("NFC", "가.md")
+        names = os.listdir(str(self.root / "s"))
+        same = [n for n in names
+                if unicodedata.normalize("NFC", n) == target]
+        if len(same) < 2:
+            self.skipTest("파일시스템이 NFC와 NFD 이름을 한 파일로 합친다")
+        with self.assertRaises(IndexFormatError) as cm:
+            list_entries(self.root, self.root / "s")
+        self.assertIsNotNone(cm.exception.path)
+        with self.assertRaises(IndexFormatError):
+            render_all(self.root)
+
+    def test_nfc_collision_raises_any_fs(self):
+        # 파일시스템과 무관하게 충돌 분기를 확인한다.
+        d = self.root / "s"
+        a = d / unicodedata.normalize("NFC", "가.md")
+        b = d / unicodedata.normalize("NFD", "가.md")
+        with mock.patch.object(_index_core, "_entry_children",
+                               return_value=[a, b]):
+            with self.assertRaises(IndexFormatError) as cm:
+                list_entries(self.root, d)
+        self.assertEqual(cm.exception.path, b)
 
     def test_bad_front_matter_desc_is_none(self):
         self.write("s/b.md", "---\ndescription: a: b\n---\n")

@@ -203,7 +203,7 @@ def check_filename_portability(root: Path) -> list[Finding]:
         if WINDOWS_FORBIDDEN_RE.search(name):
             out.append(Finding(
                 VIOLATION, "portability", rel,
-                '윈도우 금지 문자 포함 (< > : " | ? * 또는 제어 문자)',
+                '윈도우 금지 문자 포함 (< > : " | ? * \\ 또는 제어 문자)',
             ))
         if name != name.rstrip(" ."):
             out.append(Finding(VIOLATION, "portability", rel, "이름 끝의 공백/마침표 (윈도우에서 비정상)"))

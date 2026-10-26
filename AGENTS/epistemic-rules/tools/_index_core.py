@@ -28,9 +28,12 @@ INDEX.yaml:
   OS와 편집기 부산물을 뺀 전부다. 중첩 저장소 폴더는 항목 하나로만 보인다.
 - 이름은 NFC로 바꾸고 코드 포인트 순으로 정렬한다. 링크 대상은 공백,
   %, (, ), [, ], <, >, #, ?, 역슬래시만 퍼센트 인코딩하고 한글은 그대로 둔다.
-- 표시 텍스트의 [, ], 역슬래시는 역슬래시로 이스케이프한다. 이스케이프한
-  "\\]"가 든 줄은 감사의 링크 정규식(LINK_RE, LINK_TEXT_RE)이 링크로 보지
-  않으므로 링크 실존, 표시 텍스트, 공백 링크 검사 밖으로 빠진다.
+- 표시 텍스트의 [, ]는 역슬래시로 이스케이프한다. 이스케이프한 "\\]"가 든
+  줄은 감사의 링크 정규식(LINK_RE, LINK_TEXT_RE)이 링크로 보지 않으므로 링크
+  실존, 표시 텍스트, 공백 링크 검사 밖으로 빠진다. 역슬래시가 든 이름은
+  윈도우 금지 문자라 감사 이식성 검사가 위반으로 잡으므로 표시 텍스트에서
+  따로 이스케이프하지 않는다(링크 대상에서는 %5C로 인코딩한다).
+- NFC로 바꾸면 같아지는 두 디스크 이름이 한 폴더에 있으면 IndexFormatError다.
 - 쪽 분량은 감사 분량 검사와 같은 text_size로 재고 한도는 SIZE_LIMIT_NODE다.
 - 렌더 함수는 파일을 쓰지 않는다. 쓰기는 생성 진입점 하나가 맡는다.
 
@@ -281,7 +284,7 @@ EMPTY_LIST = "(항목 없음)"
 # 링크 대상에서 퍼센트 인코딩하는 문자. 한글 등 나머지는 그대로 둔다.
 _ENCODE = {c: "%%%02X" % ord(c) for c in " %()[]<>#?\\"}
 # 표시 텍스트에서 역슬래시로 이스케이프하는 문자.
-_DISPLAY_ESCAPE = {c: "\\" + c for c in "[]\\"}
+_DISPLAY_ESCAPE = {c: "\\" + c for c in "[]"}
 
 
 @dataclass(frozen=True)
@@ -413,8 +416,15 @@ def _list_entries(root: Path, d: Path,
     in_ref = d == root / REFERENCE_DIR
     files: "dict[str, Path]" = {}
     dirs: "dict[str, Path]" = {}
+    seen: "dict[str, Path]" = {}
     for p in _entry_children(d):
-        (dirs if p.is_dir() else files)[nfc(p.name)] = p
+        name = nfc(p.name)
+        if name in seen:
+            raise IndexFormatError(
+                "NFC로 같은 이름이 둘이다: %r, %r"
+                % (seen[name].name, p.name), 0, p)
+        seen[name] = p
+        (dirs if p.is_dir() else files)[name] = p
 
     def describe(key: str, path: Path) -> "tuple[Optional[str], Optional[str]]":
         item = yaml.get(key)
@@ -453,7 +463,8 @@ def list_entries(root: Path, d: Path) -> "list[Entry]":
     항목과 폴더, reference/의 md 자료는 그 폴더 INDEX.yaml에서 읽는다.
     동명 쌍(X.md와 X/)은 한 항목으로 합치고 X.md의 설명을 쓴다.
     reference/ 직속 항목은 INDEX.yaml에 없으면 status가 "미등록"이다.
-    INDEX.yaml 형식 오류는 IndexFormatError로 올린다.
+    INDEX.yaml 형식 오류는 IndexFormatError로 올린다. NFC로 바꾸면 같아지는
+    두 디스크 이름이 있어도 IndexFormatError다(path는 나중 경로).
     """
     return _list_entries(root, d, set(index_dirs(root)))
 

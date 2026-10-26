@@ -98,7 +98,7 @@ HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)\s*$", re.MULTILINE)
 ENUM_PREFIX_RE = re.compile(r"^\d+\.\s+")
 # URL 스킴은 2글자 이상으로 판별 - 윈도우 드라이브 문자(C: 등) 오인 방지
 SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]+:")
-WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\x00-\x1f]')
+WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\\\x00-\x1f]')
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {
     f"LPT{i}" for i in range(1, 10)
 }
