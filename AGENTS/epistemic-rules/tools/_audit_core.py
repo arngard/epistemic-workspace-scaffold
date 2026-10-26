@@ -24,13 +24,9 @@ EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "_
 # "폴더 구조와 디스크립터"). 같은 폴더의 CLAUDE.md가 @AGENTS.md로 가져온다.
 DESCRIPTOR_NAME = "AGENTS.md"
 
-# 아직 실제 내용으로 채워지지 않은 스캐폴드 출고 상태를 알리는 마커. 디스크립터
-# 안내와 대상 파일 양쪽에 같은 문구가 있어야 정합이다.
+# 아직 실제 내용으로 채워지지 않은 스캐폴드 출고 상태를 알리는 마커. 문서
+# front matter의 description과 본문 양쪽에 같은 문구가 있어야 정합이다.
 SCAFFOLD_STATE_MARKER = "스캐폴드 상태"
-
-# 골격이 기본으로 파일별 안내 표를 두는 폴더 (folder-structure.md "폴더 구조와
-# 디스크립터"). 하위 폴더도 같이 취급한다. 그 외 폴더는 디스크립터의 파일별 안내 표 존재로 판별.
-NORMATIVE_DIRS = ("epistemic-structure/architecture",)
 
 # 규범 폴더 이름과 상류 규범 묶음 이름. 규범 폴더는 어느 깊이에서든 이름이
 # AGENTS인 폴더와 그 아래 전부이며, 폴더 디스크립터와 CLAUDE.md 포인터를 두지 않는다.
@@ -75,7 +71,7 @@ SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
 SIZE_LIMIT_TEMPORAL = 10000   # 히스토리 문서(날짜 프리픽스)는 누적이 본질
 # 진입층(루트 AGENTS.md)과 폴더 디스크립터(AGENTS.md)는 구조적으로 길어진다 -
 # 진입층은 요지 가져오기/정체성/고유 규범과 덮어쓰기 목록을 한 파일에 담고,
-# 디스크립터는 파일별 안내 표가 폴더 직속 항목 수에 비례한다. 상황별 트리거
+# 디스크립터는 폴더의 규칙과 하위 구성을 한 파일에 담는다. 상황별 트리거
 # 목록은 루트 요지 AGENTS/epistemic-rules.md "이럴 때 읽는다"에 있고, 요지는
 # 일반 임계를 따른다 (ref: document-units.md "분량 보조 지표").
 SIZE_LIMIT_DESCRIPTOR = 5000  # 진입층/폴더 디스크립터(AGENTS.md) 완화 임계
@@ -236,6 +232,8 @@ def iter_md_files(root: Path):
     소스 폴더 구조는 코드 생태계 관례가 지배한다 (ref: folder-structure.md
     "폴더 구조와 디스크립터" implementation 예외). 직할 AGENTS.md와
     그 하위 문서 폴더 AGENTS/만 검사한다.
+    reference/와 implementation/ 직속의 생성 색인 쪽 파일(INDEX.md, INDEX2.md
+    ...)은 감사 대상이다. 그 하위 폴더의 색인 쪽 파일은 대상이 아니다.
     도구 전용 폴더, 중첩 git 레포, 심링크 제외는 is_excluded가 담당한다.
     """
     ref_descriptor = (root / REFERENCE_DIR / DESCRIPTOR_NAME).resolve()
@@ -243,6 +241,12 @@ def iter_md_files(root: Path):
         if is_excluded(root, path):
             continue
         parts = path.relative_to(root).parts
+        if (
+            len(parts) == 2 and parts[0] in (REFERENCE_DIR, IMPLEMENTATION_DIR)
+            and INDEX_PAGE_RE.match(parts[1])
+        ):
+            yield path
+            continue
         if (
             parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_descriptor
             and not (len(parts) >= 3 and parts[1] == NORMS_DIR_NAME)
@@ -383,7 +387,7 @@ def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: s
          [AGENTS/epistemic-rules/folder-structure.md](../../AGENTS/epistemic-rules/folder-structure.md).
       3. 폴더 표기(/로 끝남)의 폴더명이 대상 경로 성분에 존재 -
          [knowledge/](../knowledge/AGENTS.md).
-    셋 다 아니면 부재 파일을 지칭하는 오도로 본다 (daily.md, strategy/INDEX.md).
+    셋 다 아니면 부재 파일을 지칭하는 오도로 본다 (daily.md, strategy/overview.md).
     """
     disp_norm = disp.rstrip("/")
     disp_base = disp_norm.rsplit("/", 1)[-1]
@@ -442,31 +446,3 @@ def content_dirs(root: Path):
             continue
         yield path
 
-
-def is_normative_dir(root: Path, d: Path) -> bool:
-    """골격이 기본으로 파일별 안내 표를 두는 폴더(하위 포함) 또는 파일별 안내 표를 가진 폴더인지 판별.
-
-    파일별 안내 표 판별: 디스크립터의 마크다운 표 행에 폴더 직속 md 파일로의
-    링크가 하나라도 있으면 그 폴더는 파일별 안내를 운영하는 것으로 본다.
-    """
-    rel = d.relative_to(root).as_posix() if d != root else "."
-    for base in NORMATIVE_DIRS:
-        if rel == base or rel.startswith(base + "/"):
-            return True
-    descriptor = d / DESCRIPTOR_NAME
-    if not descriptor.exists():
-        return False
-    direct_md_names = {
-        p.name for p in d.iterdir()
-        if p.is_file() and p.suffix == ".md"
-        and p.name != DESCRIPTOR_NAME and p.name not in EXEMPT_FILENAMES
-    }
-    if not direct_md_names:
-        return False
-    for line in body_of(descriptor).splitlines():
-        if not line.lstrip().startswith("|"):
-            continue
-        for name in direct_md_names:
-            if name in line or urllib.parse.quote(name) in line:
-                return True
-    return False

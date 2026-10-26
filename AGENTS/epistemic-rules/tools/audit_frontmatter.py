@@ -14,6 +14,8 @@ def check_front_matter(root: Path) -> list[Finding]:
     for path in iter_md_files(root):
         if path.name in EXEMPT_FILENAMES:
             continue
+        if INDEX_PAGE_RE.match(path.name):
+            continue  # 생성 색인 쪽 파일은 front matter를 두지 않는다
         text = read(path)
         match = FRONT_MATTER_RE.match(text)
         rel = str(path.relative_to(root))

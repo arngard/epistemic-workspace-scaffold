@@ -254,6 +254,24 @@ def load_index_yaml(path: Path) -> "dict[str, dict[str, str]]":
     return data
 
 
+def index_yaml_lines(path: Path) -> "dict[str, int]":
+    """INDEX.yaml 항목 이름(NFC)마다 이름 줄의 줄 번호. 감사 보고에 쓴다.
+
+    형식 검사는 하지 않는다. load_index_yaml이 통과한 파일에 부른다.
+    """
+    out: "dict[str, int]" = {}
+    text = read(path).replace("\r\n", "\n")
+    for no, line in enumerate(text.split("\n"), start=1):
+        m = _NAME_LINE_RE.match(line.lstrip("\ufeff"))
+        if m:
+            try:
+                name = unicodedata.normalize("NFC", _unescape(m.group(1)))
+            except IndexFormatError:
+                continue
+            out.setdefault(name, no)
+    return out
+
+
 # --- 색인 렌더러 ---
 
 # 색인 항목에서 빼는 운영 파일. 규범 폴더(AGENTS/)와 색인 파일은 따로 판정한다.
@@ -326,8 +344,11 @@ def sequential_structure(d: Path) -> "Optional[str]":
     return nfc(own[STRUCTURE_KEY])
 
 
-def _in_reference_subfolder(root: Path, d: Path) -> bool:
-    """reference/X/ 이하 폴더면 참. 원본 자료라 색인을 두지 않는다."""
+def in_reference_subfolder(root: Path, d: Path) -> bool:
+    """reference/X/ 이하 폴더면 참. 원본 자료라 색인을 두지 않는다.
+
+    생성기의 색인 폴더 판정과 감사의 "색인을 두지 않는 폴더" 검사가 함께 쓴다.
+    """
     parts = d.relative_to(root).parts
     return len(parts) >= 2 and parts[0] == REFERENCE_DIR
 
@@ -344,7 +365,7 @@ def index_dirs(root: Path) -> "list[Path]":
     for d in content_dirs(root):
         if any(t in d.parents for t in tops):
             continue
-        if in_norms_dir(root, d) or _in_reference_subfolder(root, d):
+        if in_norms_dir(root, d) or in_reference_subfolder(root, d):
             continue
         if not (d / DESCRIPTOR_NAME).is_file():
             continue

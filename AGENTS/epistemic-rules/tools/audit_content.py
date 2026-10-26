@@ -13,7 +13,8 @@ def check_size(root: Path) -> list[Finding]:
     """문서 유형별 분량 임계.
 
     히스토리 문서(날짜 프리픽스)는 시간순 누적이 본질이라 완화, 진입층/디스크립터
-    (AGENTS.md)는 색인/파일별 안내 표라 완화, 그 외 일반 노드는 기본 임계.
+    (AGENTS.md)는 폴더 규칙과 하위 구성을 한 파일에 담아 완화, 그 외 일반 노드는
+    기본 임계. 생성 색인 쪽 파일도 일반 임계를 받아 쪽 나누기 오류를 잡는다.
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
