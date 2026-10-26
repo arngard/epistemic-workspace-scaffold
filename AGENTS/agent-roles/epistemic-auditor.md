@@ -38,7 +38,7 @@ tags: [agents, 역할, 감사]
    - `date closed` 히스토리 문서의 본문 변경(동결 위반 - 후속 문서 링크 추가와 정합 유지 수정은 허용, ref: [document-temporality.md](../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
    - TASK_TREE `[x]` 완료 루트의 과다 잔존
 4. 카테고리 배치 적절성 (의미 판단)
-   - 각 `_docs/_X/` 안의 문서가 그 카테고리의 정의에 부합하는가
+   - 각 `epistemic-structure/X/` 안의 문서가 그 카테고리의 정의에 부합하는가
    - 판별 규칙은 [how-to-separate-docs-folders.md](../how-to-separate-docs-folders.md) "판별 규칙"을 그대로 적용한다
    - 의미 판단이 들어가므로 항목 1, 2, 3, 5보다 신뢰도가 낮다. 모호한 사례는 "확실하지 않음"으로 처리
 5. 메타-컨텐츠 영역 혼동 (직전 7~10개 단위 작업의 행동 패턴)

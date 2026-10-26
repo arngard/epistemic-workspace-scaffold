@@ -4,7 +4,7 @@ date modified: 2026-07-04
 tags: [docs]
 ---
 
-# `_docs/` 디스크립터
+# `epistemic-structure/` 디스크립터
 
 > 코드로 표현할 수 없는 지식의 보관 영역. 워크로그와 4개 인식론적 카테고리로 구성된다.
 > 새 문서의 카테고리 판별 기준은 [AGENTS/how-to-separate-docs-folders.md](../AGENTS/how-to-separate-docs-folders.md) 참조.

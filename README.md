@@ -21,15 +21,15 @@ tags: [소개]
 
 ```
 (workspace-root)/
-├── _docs/             <- 코드로 표현할 수 없는 지식
-│   ├── _ontology/         <- 도메인 개념
-│   ├── _knowledge/        <- 외부 사실
-│   ├── _strategy/         <- 결정과 근거
-│   ├── _architecture/     <- 설계 명세
-│   └── _worklog/          <- 작업 상태
-├── _reference/        <- 사용자가 dump한 raw 자료의 immutable 보관 영역
-├── AGENTS/            <- 에이전트 운영 규범 (진입점은 AGENTS.md)
-└── _implementation/   <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
+├── AGENTS/               <- 에이전트 운영 규범 (진입점은 AGENTS.md)
+├── worklog/              <- 작업 상태
+├── reference/            <- 사용자가 dump한 raw 자료의 immutable 보관 영역
+├── epistemic-structure/  <- 코드로 표현할 수 없는 지식
+│   ├── ontology/             <- 도메인 개념
+│   ├── knowledge/            <- 외부 사실
+│   ├── strategy/             <- 결정과 근거
+│   └── architecture/         <- 설계 명세
+└── implementation/       <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
     ├── <project-A>/
     └── <project-B>/
 ```
@@ -49,4 +49,4 @@ tags: [소개]
 
 - see: [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - 설계 철학과 근거
 - see: [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - 구조 근거
-- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - `_docs/` 분류 기준
+- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - `epistemic-structure/` 분류 기준

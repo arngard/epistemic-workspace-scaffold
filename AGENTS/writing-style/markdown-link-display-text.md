@@ -12,7 +12,7 @@ tags: [agents, 규칙, 문서관리]
 
 - 대상 파일명(basename): `[AGENTS.md](daily/AGENTS.md)`.
 - 대상 파일의 루트 기준 완전 경로: `[AGENTS/folder-structure.md](../../AGENTS/folder-structure.md)`. 대상은 상대 경로로 두고 표시텍스트로 워크스페이스 내 절대 위치를 보이는 관례.
-- 폴더를 가리키는 링크의 폴더명: `[knowledge/](../_knowledge/AGENTS.md)` (대상은 그 폴더의 디스크립터).
+- 폴더를 가리키는 링크의 폴더명: `[knowledge/](../knowledge/AGENTS.md)` (대상은 그 폴더의 디스크립터).
 
 부당한 것은 실존하지 않는 파일을 지칭하는 표기다.
 

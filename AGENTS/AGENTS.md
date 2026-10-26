@@ -66,5 +66,5 @@ tags: [agents]
 | [why-epistemic-workspace.md](why-epistemic-workspace.md) | 문서를 인식론적 4범주로 나누는 이유 - 문제, 전제, 접근 (스캐폴드 설계 철학) | 스캐폴드 취지 의문 시, 신규 진입자 온보딩 |
 | [why-agents-md-not-conventions-md.md](why-agents-md-not-conventions-md.md) | AI 진입점을 AGENTS.md로 하고 CONVENTIONS.md를 쓰지 않는 이유 | 진입점 구조 의문 시 |
 | [workspace-and-project-structure.md](workspace-and-project-structure.md) | 워크스페이스 구조: scaffolding 네이밍, 최상위 폴더 배치, 문서와 코드의 역할 분담 | 폴더 배치, 구현 프로젝트 등록 시 |
-| [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) | _docs/ 하위 폴더 분류 기준 (판별 규칙, AGENTS/와 architecture/의 경계, 교차 링크) | 문서 카테고리 판별 시 |
+| [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) | epistemic-structure/ 하위 폴더 분류 기준 (판별 규칙, AGENTS/와 architecture/의 경계, 교차 링크) | 문서 카테고리 판별 시 |
 | [why-scaffolding-not-single-file.md](why-scaffolding-not-single-file.md) | 워크스페이스 scaffolding으로 정보를 분류하는 이유 | scaffolding 구조 의문 시 |

@@ -21,15 +21,15 @@ For the rationale, see [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-
 
 ```
 (workspace-root)/
-├── _docs/             <- Knowledge not expressible in code
-│   ├── _ontology/         <- Domain concepts
-│   ├── _knowledge/        <- External facts
-│   ├── _strategy/         <- Decisions and rationale
-│   ├── _architecture/     <- Design specifications
-│   └── _worklog/          <- Work status
-├── _reference/        <- Immutable raw materials dumped by the user
-├── AGENTS/            <- Agent operating norms (entry point: AGENTS.md)
-└── _implementation/   <- Implementation projects (one subfolder per project)
+├── AGENTS/               <- Agent operating norms (entry point: AGENTS.md)
+├── worklog/              <- Work status
+├── reference/            <- Immutable raw materials dumped by the user
+├── epistemic-structure/  <- Knowledge not expressible in code
+│   ├── ontology/             <- Domain concepts
+│   ├── knowledge/            <- External facts
+│   ├── strategy/             <- Decisions and rationale
+│   └── architecture/         <- Design specifications
+└── implementation/       <- Implementation projects (one subfolder per project)
     ├── <project-A>/
     └── <project-B>/
 ```
@@ -49,4 +49,4 @@ After obtaining it, rename the workspace folder to match your project, follow th
 
 - see: [AGENTS/why-epistemic-workspace.md](AGENTS/why-epistemic-workspace.md) - Design philosophy and rationale (Korean)
 - see: [AGENTS/workspace-and-project-structure.md](AGENTS/workspace-and-project-structure.md) - Structural rationale
-- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - Criteria for separating `_docs/` subfolders
+- see: [AGENTS/how-to-separate-docs-folders.md](AGENTS/how-to-separate-docs-folders.md) - Criteria for separating `epistemic-structure/` subfolders

@@ -4,7 +4,7 @@ date modified: 2026-10-25
 tags: [agents, 문서관리, 조직화]
 ---
 
-# _docs/ 하위 폴더 구분 기준
+# epistemic-structure/ 하위 폴더 구분 기준
 
 ## 폴더별 역할
 
