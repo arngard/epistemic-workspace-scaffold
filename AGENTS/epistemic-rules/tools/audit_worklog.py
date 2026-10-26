@@ -1,6 +1,7 @@
 """워크로그(STATUS, TASK_TREE) 검사.
 
 공용 인프라는 _audit_core, 오케스트레이션은 audit.py.
+STATUS 표는 이름, 마지막 수행 두 칸이다. 주기 조건은 worklog 규범 문서가 담는다.
 """
 import re
 import urllib.parse

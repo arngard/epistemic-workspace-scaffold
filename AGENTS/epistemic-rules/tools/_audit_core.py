@@ -111,7 +111,7 @@ TASK_TREE_ATTR_KEYS = ("설명", "상태 상세", "외부 참조", "브랜치")
 # 시각은 KST 기준이며 존 표기는 생략하는 것이 관례다. 관례를 어기고 " KST"를
 # 덧붙인 자식 기재도 깨지지 않게 접미를 선택적으로 허용한다.
 STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( KST)?$")
-STATUS_HEADER_CELLS = ["이름", "마지막 수행", "주기/트리거"]
+STATUS_HEADER_CELLS = ["이름", "마지막 수행"]
 STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
 # 비ASCII 문장 부호 검출 대상과 ASCII 대체 힌트 (ref: writing-style/ascii-punctuation.md).
 # 코드 펜스, 인라인 코드는 검사 전 제거하므로 규칙 자체의 백틱 예시, 코드,
