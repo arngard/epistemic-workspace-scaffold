@@ -39,7 +39,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - TASK_TREE `[x]` 완료 루트의 과다 잔존
 4. 카테고리 배치 적절성 (의미 판단)
    - 각 `epistemic-structure/X/` 안의 문서가 그 카테고리의 정의에 부합하는가
-   - 판별 규칙은 [how-to-separate-docs-folders.md](../how-to-separate-docs-folders.md) "판별 규칙"을 그대로 적용한다
+   - 판별 규칙은 [범주 판별](../../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙"을 그대로 적용한다
    - 의미 판단이 들어가므로 항목 1, 2, 3, 5보다 신뢰도가 낮다. 모호한 사례는 "확실하지 않음"으로 처리
 5. 메타-컨텐츠 영역 혼동 (직전 7~10개 단위 작업의 행동 패턴)
    - 메타 영역(스캐폴드 자체 개발, 외부 컨테이너 관리, 운영 정책, 다른 인스턴스의 작업 이력)의 사실을 인스턴스 컨텐츠 영역에 기재했거나 메타 정책을 모른 채 컨텐츠 작업을 진행한 사례를 찾는다. 단위 작업은 커밋이 아니라 의미 단위로 본다 (ref: [unit-task.md](../unit-task.md)).

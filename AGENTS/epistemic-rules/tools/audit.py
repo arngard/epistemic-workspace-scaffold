@@ -37,7 +37,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       공백 든 자연어 문구, 타이틀은 제외하되 날짜 문서, 폴더 이름은 검사.
       폐지 파일명 잔재 오도를 검출)
  18. 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 - 경고
-     (importance, urgency. ref: strategy/AGENTS.md. 하위 폴더/디스크립터 제외)
+     (importance, urgency. ref: strategy/AGENTS/epistemic-rules.md. 하위 폴더/디스크립터 제외)
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
      (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
  20. 비ASCII 문장 부호 (em dash, 화살표, 가운뎃점, 말줄임표, 둥근 따옴표) - 경고

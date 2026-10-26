@@ -30,4 +30,4 @@ tags: [agents, 문서관리, 철학, epistemic-rules]
 ## 참고
 
 - see: [why-scaffolding-not-single-file.md](why-scaffolding-not-single-file.md) - 단일 파일이 아니라 분류하는 이유.
-- see: [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) - 4범주 분류 기준.
+- see: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) - 4범주 분류 기준.

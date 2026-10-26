@@ -36,14 +36,14 @@ tags: [agents, 절차, ingest, epistemic-rules]
    - 두 진술을 모두 보존하고 차이를 명시한다 (예: "같은 출처가 시점 T1에 ...라고 했지만 시점 T2에 ...로 갱신", "A는 ...라고 주장, B는 반대 주장").
    - 동일 주체의 시간차 진술 변화는 해당 노드에 시점과 함께 누적.
    - 충돌 의미가 모호하면 사용자에게 짚어 묻는다 - AI가 단정하지 않는다.
-5. 카테고리 결정: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 판별 규칙 적용.
+5. 카테고리 결정: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" 적용.
 6. 노드 결정: 기존 노드에 추가 vs 신규 노드 생성. 기존 노드의 주제 응집성을 깨면 신규로 분리 (한 문서는 한 관심사 원칙).
 7. 교차 참조 갱신: 같은 정보가 여러 노드에 걸쳐 있으면 노드 간 마크다운 링크로 연결한다. 워크스페이스가 양방향 그래프 패턴을 채택했다면 그 양방향 의무도 같은 단계에서 처리한다.
-8. 디스크립터 점검: 참조 폴더는 자기설명적 파일명이 인덱스를 대신하므로 별도 등재가 없다. 규범 문서를 신설했으면 해당 폴더 디스크립터의 파일별 안내에 설명과 읽기 트리거를 등재한다. 규범 폴더(`AGENTS/`)의 규범은 상류면 묶음 요지의 트리거에, 자손이면 그 폴더 `AGENTS.md`에 등재한다 (ref: [instance-specialization.md](instance-specialization.md) "특수화 방식"). `reference/` 자료를 처리했으면 그 영역의 처리 진척 기록을 갱신한다 (ref: [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터").
+8. 디스크립터 점검: 규범 문서를 신설했으면 상류 규범은 그 묶음 요지의 트리거나 부모 문서 본문에, 자손 규범은 그 폴더 `AGENTS.md`에 링크한다 (ref: [instance-specialization.md](instance-specialization.md) "특수화 방식"). 디스크립터에 파일별 안내 표를 두는 폴더에 문서를 신설했으면 그 표에도 설명과 읽기 트리거를 등재한다. `reference/` 자료를 처리했으면 그 영역의 처리 진척 기록을 갱신한다 (ref: [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터").
 9. 종료 전 빠뜨림 검사: 위 단계 중 누락이 있는지 자체 review.
    - 출처, 시점, 주체를 빠뜨렸는가?
    - 기존 노드 검색을 했는가? 충돌 검사를 했는가?
-   - 디스크립터 갱신(파일별 안내 표, `reference/` 처리 상태)을 했는가?
+   - 규범 문서 링크(묶음 요지의 트리거나 부모 문서 본문, 자손 규범은 폴더 `AGENTS.md`)와 디스크립터 갱신(파일별 안내 표, `reference/` 처리 상태)을 했는가?
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 
@@ -59,5 +59,5 @@ tags: [agents, 절차, ingest, epistemic-rules]
 
 - see: [session-boundaries.md](session-boundaries.md) "세션 시작" - 본 워크플로의 트리거 위치
 - ref: [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트" - 사실/의견 주체 분리 원칙
-- sub: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) - 카테고리 판별 규칙
+- sub: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) - 카테고리 판별 규칙
 - see: [`reference/AGENTS.md`](../../reference/AGENTS.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태

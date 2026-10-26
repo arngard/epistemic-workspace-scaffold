@@ -49,4 +49,4 @@ After obtaining it, rename the workspace folder to match your project, follow th
 
 - see: [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) - Design philosophy and rationale (Korean)
 - see: [AGENTS/epistemic-rules/workspace-and-project-structure.md](AGENTS/epistemic-rules/workspace-and-project-structure.md) - Structural rationale
-- see: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](AGENTS/epistemic-rules/how-to-separate-docs-folders.md) - Criteria for separating `epistemic-structure/` subfolders
+- see: [epistemic-structure/AGENTS/epistemic-rules.md](epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" - Criteria for separating `epistemic-structure/` subfolders

@@ -93,7 +93,7 @@ WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 1
 # front matter 날짜 필드 값 형식 (yyyy-MM-dd). 필드 존재만 보면 잘못된 값이
 # 통과하므로 값도 검사한다.
 DATE_VALUE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 (ref: strategy/AGENTS.md
+# 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 (ref: strategy/AGENTS/epistemic-rules.md
 # "Front matter 속성"). 하위 폴더 문서와 디스크립터에는 강제하지 않는다.
 STRATEGY_DIR = "epistemic-structure/strategy"
 STRATEGY_FIELDS = ("importance", "urgency")

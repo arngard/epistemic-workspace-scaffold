@@ -49,4 +49,4 @@ tags: [소개]
 
 - see: [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) - 설계 철학과 근거
 - see: [AGENTS/epistemic-rules/workspace-and-project-structure.md](AGENTS/epistemic-rules/workspace-and-project-structure.md) - 구조 근거
-- see: [AGENTS/epistemic-rules/how-to-separate-docs-folders.md](AGENTS/epistemic-rules/how-to-separate-docs-folders.md) - `epistemic-structure/` 분류 기준
+- see: [epistemic-structure/AGENTS/epistemic-rules.md](epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" - `epistemic-structure/` 분류 기준

@@ -56,7 +56,7 @@ def check_front_matter(root: Path) -> list[Finding]:
 def check_strategy_fields(root: Path) -> list[Finding]:
     """전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 검사 (경고).
 
-    strategy/AGENTS.md가 일반 필수 필드 외에 요구하는 importance/urgency를
+    strategy/AGENTS/epistemic-rules.md가 일반 필수 필드 외에 요구하는 importance/urgency를
     검사한다.
     하위 폴더 문서와 디스크립터에는 강제하지 않는다. 경고 수준으로 두는 것은
     자식/메타 레포의 채택 여부가 정책 결정이기 때문 - 상향(위반) 여부는 사용자
@@ -79,7 +79,7 @@ def check_strategy_fields(root: Path) -> list[Finding]:
             if not re.search(rf"^{re.escape(field)}\s*:", body, re.MULTILINE):
                 out.append(Finding(
                     WARNING, "strategy", str(p.relative_to(root)),
-                    f"전략 문서 추가 필수 속성 누락 - {field} (ref: strategy/AGENTS.md)",
+                    f"전략 문서 추가 필수 속성 누락 - {field} (ref: strategy/AGENTS/epistemic-rules.md)",
                 ))
     return out
 
