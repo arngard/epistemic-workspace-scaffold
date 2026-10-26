@@ -143,8 +143,8 @@ class RepositoryHeadTest(unittest.TestCase):
     def test_dry_run_on_repository_is_noop(self):
         rep = migrate(REPO_ROOT, dry_run=True)
         self.assertEqual(rep.moved, [])
-        # 자료 표 변환 대상인 reference/AGENTS.md만 바뀔 수 있다.
-        self.assertEqual([p for p in rep.rewritten if p != "reference/AGENTS.md"], [])
+        self.assertEqual(rep.rewritten, [])
+        self.assertEqual(rep.converted, [])
         self.assertEqual(rep.conflicts, [])
         self.assertEqual(rep.unconverted, [])
 
