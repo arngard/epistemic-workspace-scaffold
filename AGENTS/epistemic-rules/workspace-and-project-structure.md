@@ -21,7 +21,7 @@ tags: [agents, 워크스페이스, epistemic-rules]
 
 ### 하위 문서 폴더 규칙
 
-어떤 문서가 길어져서 여러 하위 문서로 쪼개야 할 때, 상위 문서와 같은 이름의 폴더를 만들어 하위 문서를 넣는다. 예: `AGENTS.md`의 하위 문서들은 `AGENTS/`에 둔다.
+어떤 문서가 길어져서 여러 하위 문서로 쪼개야 할 때, 상위 문서와 같은 이름의 폴더를 만들어 하위 문서를 넣는다. 예: `pr-workflow.md`의 하위 문서들은 `pr-workflow/`에 둔다.
 
 - 분류용 하위 폴더도 부모 문서를 둔다(`X.md` + `X/`). 부모 문서 없이 디스크립터만 둔 분류 폴더는 쓰지 않는다. 날짜, 시각, 알파벳 같은 순차 분류는 예외다 (ref: [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터").
 - 자식 파일명에 부모 이름을 프리픽스로 반복하지 않는다. 폴더 경로가 계층 맥락을 준다. 하이픈 나열(`X-sub.md`)이나 부모명과 다른 폴더명(`X.md` + `other/`)은 쓰지 않는다.
@@ -48,7 +48,7 @@ tags: [agents, 워크스페이스, epistemic-rules]
     └── <project-B>/
 ```
 
-`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 참조. `reference/` 운용은 [`../reference/AGENTS.md`](../../reference/AGENTS.md)와 [`ingest-workflow.md`](ingest-workflow.md) 참조.
+`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [how-to-separate-docs-folders.md](how-to-separate-docs-folders.md) 참조. `reference/` 운용은 [`../../reference/AGENTS.md`](../../reference/AGENTS.md)와 [`ingest-workflow.md`](ingest-workflow.md) 참조.
 
 워크스페이스 안의 단위 작업(자료 N건 묶음 ingest, 메타 결정, 정책 변경, 큰 마이그레이션 등)은 진입, 진행, 종료 흐름이 정해져 있다. 단위 작업의 정의는 [unit-task.md](unit-task.md) 참조. 단위 작업 시작 시 어떤 절차를 거쳐야 하는지는 [unit-task-workflow.md](unit-task-workflow.md) 참조. 워크로그(`worklog/`)의 TASK_TREE와 STATUS 레지스트리는 그 흐름의 진입, 종료 시점에서 갱신되는 운영 메타다. 완료 이력의 SSOT(single source of truth)는 git 이력이다.
 
