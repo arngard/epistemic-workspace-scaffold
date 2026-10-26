@@ -36,6 +36,18 @@ NORMATIVE_DIRS = ("epistemic-structure/architecture",)
 # AGENTS인 폴더와 그 아래 전부이며, 폴더 디스크립터와 CLAUDE.md 포인터를 두지 않는다.
 NORMS_DIR_NAME = "AGENTS"
 BUNDLE_NAME = "epistemic-rules"
+# 폴더 색인 파일 이름. 쪽이 둘 이상이면 INDEX2.md, INDEX3.md 순이다.
+# INDEX.yaml은 색인이 읽는 설명 원본이다.
+INDEX_NAME = "INDEX.md"
+INDEX_YAML_NAME = "INDEX.yaml"
+INDEX_PAGE_RE = re.compile(r"^INDEX(?:[2-9]|[1-9]\d+)?\.md$")
+
+
+def is_index_file(name: str) -> bool:
+    """색인 쪽 파일(INDEX.md, INDEX2.md ...)이나 INDEX.yaml이면 참."""
+    return bool(INDEX_PAGE_RE.match(name)) or name == INDEX_YAML_NAME
+
+
 # 폴더 CLAUDE.md의 표준 내용 - 같은 폴더의 AGENTS.md를 가져온다.
 CLAUDE_POINTER = "@AGENTS.md"
 # 가져오기 줄: 줄 전체가 공백 없는 @경로. 문장 속 @경로는 가져오기 검사 대상이 아니다.
