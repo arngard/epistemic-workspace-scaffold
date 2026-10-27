@@ -114,8 +114,55 @@ class EdgeTest(ConditionSourceBase):
 
     def test_fenced_status_row_ignored(self):
         self.write(STATUS_REL, "```\n" + status_2col("2026-10-26 09:00:00") + "```\n")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             parse_last_run(self.root)
+        self.assertIn(STATUS_REL.as_posix(), str(cm.exception))
+
+    def test_unclosed_fence_override_no_fallback(self):
+        self.write(OVERRIDE_REL, "```\nexample\n" + rule_text(1))
+        self.write(RULE_REL, rule_text(47))
+        with self.assertRaises(ValueError) as cm:
+            parse_condition(self.root)
+        self.assertIn(OVERRIDE_REL.as_posix(), str(cm.exception))
+
+    def test_unclosed_fence_status_names_status(self):
+        self.write(STATUS_REL, "```\n" + status_2col())
+        with self.assertRaises(ValueError) as cm:
+            parse_last_run(self.root)
+        self.assertIn(STATUS_REL.as_posix(), str(cm.exception))
+
+    def test_unclosed_fence_main_undecidable(self):
+        self.write(STATUS_REL, status_2col())
+        self.write(OVERRIDE_REL, "```\n" + rule_text(1))
+        self.write(RULE_REL, rule_text(47))
+        err = io.StringIO()
+        argv = sys.argv
+        sys.argv = ["check_semantic_audit.py", str(self.root)]
+        try:
+            with contextlib.redirect_stderr(err):
+                code = main()
+        finally:
+            sys.argv = argv
+        self.assertEqual(code, UNDECIDABLE)
+        self.assertIn(OVERRIDE_REL.as_posix(), err.getvalue())
+
+    def test_long_fence_not_closed_by_short_run(self):
+        text = "````\n```\n" + rule_text(1) + "````\n"
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
+
+    def test_long_closer_closes_short_fence(self):
+        text = "```\n" + rule_text(1) + "`````\n\n" + rule_text(24)
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[::2], (24, OVERRIDE_REL))
+
+    def test_closer_with_info_string_does_not_close(self):
+        text = "```\n```md\n" + rule_text(1) + "```\n"
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
 
     def test_table_without_audit_row_falls_through(self):
         self.write(OVERRIDE_REL, HEAD + row("형식 감사", "push 시"))
