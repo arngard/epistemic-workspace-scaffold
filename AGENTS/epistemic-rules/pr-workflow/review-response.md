@@ -1,7 +1,7 @@
 ---
 date created: 2026-07-06
 date modified: 2026-10-25
-tags: [agents, 워크플로우, git, epistemic-rules]
+tags: [agents, 절차, git, epistemic-rules]
 ---
 
 # 리뷰 코멘트 응답

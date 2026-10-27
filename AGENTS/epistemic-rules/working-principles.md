@@ -1,7 +1,7 @@
 ---
 date created: 2026-07-02
 date modified: 2026-10-25
-tags: [agents, 작업원칙, epistemic-rules]
+tags: [agents, 원칙, epistemic-rules]
 ---
 
 # 작업 수행 원칙
