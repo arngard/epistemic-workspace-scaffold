@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from _index_core import IndexFormatError, load_index_yaml  # noqa: E402
 from migrate_layout import (  # noqa: E402
-    _inverse_path, _repair_links, convert_reference_table, main, map_path, migrate,
-    rewrite_links, rewrite_mentions)
+    INDEX_YAML_HEADER, _inverse_path, _repair_links, convert_reference_table, main, map_path,
+    migrate, rewrite_links, rewrite_mentions)
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -136,17 +136,30 @@ class CodeSpanLinkTest(unittest.TestCase):
         self.assertEqual(out, "`[s](../../AGENTS.md)` [t](../../../AGENTS.md)\n")
 
 
+def _has_upstream_remote(root):
+    """git 원격 upstream이 있으면 참. 자손 저장소는 상류를 이 이름의 원격으로 둔다."""
+    out = subprocess.run(["git", "remote"], cwd=str(root), stdout=subprocess.PIPE,
+                         stderr=subprocess.DEVNULL, universal_newlines=True).stdout
+    return "upstream" in out.split()
+
+
 @unittest.skipUnless((REPO_ROOT / ".git").exists(), "git 작업 트리 밖")
 class RepositoryHeadTest(unittest.TestCase):
-    """이 저장소 자체에 다시 돌려도 옮기거나 바꿀 것이 없다."""
+    """이 저장소 자체에 다시 돌려도 옮기거나 변환할 것이 없다.
+
+    자손 저장소에는 옛 폴더 이름을 일부러 적은 지시문이 있을 수 있어, 본문을 바꿀 파일과
+    옛 경로가 남은 줄의 비어 있음은 상류 저장소 자신(upstream 원격이 없는 저장소)에서만 확인한다.
+    """
 
     def test_dry_run_on_repository_is_noop(self):
         rep = migrate(REPO_ROOT, dry_run=True)
         self.assertEqual(rep.moved, [])
-        self.assertEqual(rep.rewritten, [])
         self.assertEqual(rep.converted, [])
         self.assertEqual(rep.conflicts, [])
         self.assertEqual(rep.unconverted, [])
+        if not _has_upstream_remote(REPO_ROOT):
+            self.assertEqual(rep.rewritten, [])
+            self.assertEqual(rep.residual, [])
 
 class RewriteMentionsTest(unittest.TestCase):
     def test_paths_replaced(self):
@@ -360,12 +373,13 @@ class MigrateTest(unittest.TestCase):
             self.assertEqual((root / "reference/INDEX.yaml").read_text(encoding="utf-8"), existing)
 
     def test_shipped_empty_index_yaml_overwritten(self):
-        # 상류가 출고하는 reference/INDEX.yaml(머리 주석 한 줄)과 같은 내용이다.
-        shipped = (REPO_ROOT / "reference/INDEX.yaml").read_text(encoding="utf-8")
-        self.assertEqual(load_index_yaml(REPO_ROOT / "reference/INDEX.yaml"), {})
+        # 상류가 출고하는 reference/INDEX.yaml은 머리 주석 한 줄이다. 자료를 등록한 저장소에서도
+        # 시험이 같게 돌도록 저장소의 파일 대신 도구의 머리 주석 상수를 쓴다.
+        shipped = INDEX_YAML_HEADER
         files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/INDEX.yaml": shipped}
         with tempfile.TemporaryDirectory() as tmp:
             root = _make_repo(tmp, files)
+            self.assertEqual(load_index_yaml(root / "reference/INDEX.yaml"), {})
             rep = migrate(root, dry_run=True)
             self.assertEqual(rep.unconverted, [])
             self.assertEqual(len(rep.converted), 1)
