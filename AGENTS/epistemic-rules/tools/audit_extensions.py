@@ -1,8 +1,9 @@
 """감사 확장 지점: 루트 AGENTS/audit-checks/의 확장 검사를 실행한다.
 
 확장은 저장소 루트의 AGENTS/audit-checks/ 바로 아래에 둔 *.py 파일이다.
-이름이 _나 .으로 시작하는 파일은 도우미로 보고 실행하지 않으며, 하위 폴더는
-보지 않는다. 심볼릭 링크인 확장 파일이나 확장 폴더는 실행하지 않고 경고 1건으로
+이름이 _나 .으로 시작하는 파일과 폴더는 도우미로 보고 조용히 넘긴다. 그 밖의
+.py가 아닌 파일과 하위 폴더는 실행하지 않고 하나마다 경고 1건(범주 ext)으로
+알린다. 심볼릭 링크인 확장 파일이나 확장 폴더도 실행하지 않고 경고 1건으로
 알린다. 계약은 프로세스 경계의 텍스트 형식이다.
 
 - 실행: [sys.executable, "-B", <파일>, <루트>]. 작업 폴더는 루트이고 환경
@@ -36,6 +37,10 @@ TOOLS_ENV = "EPISTEMIC_AUDIT_TOOLS"
 STDERR_LIMIT = 200
 
 _SEVERITIES = {"violation": VIOLATION, "warning": WARNING}
+# 실행하지 않는 항목의 경고 문구. 확장 폴더 바로 아래의 *.py 파일만 실행한다.
+_ONLY_PY = "확장 폴더 바로 아래의 *.py 파일만 실행한다"
+_SKIP_DIR = f"하위 폴더라 실행하지 않음. {_ONLY_PY}"
+_SKIP_SUFFIX = f"확장자가 .py가 아니라 실행하지 않음. {_ONLY_PY}"
 
 
 class _BadOutput(Exception):
@@ -43,7 +48,7 @@ class _BadOutput(Exception):
 
 
 def _extension_files(root: Path) -> "tuple[list[Path], list[Finding]]":
-    """실행할 확장 파일(이름 순)과 실행하지 않는 심볼릭 링크의 경고를 돌려준다."""
+    """실행할 확장 파일(이름 순)과 실행하지 않는 항목의 경고를 돌려준다."""
     folder = root / EXTENSION_DIR_REL
     if folder.is_symlink():
         return [], [Finding(
@@ -55,13 +60,18 @@ def _extension_files(root: Path) -> "tuple[list[Path], list[Finding]]":
     files: list[Path] = []
     warnings: list[Finding] = []
     for p in sorted(folder.iterdir(), key=lambda q: q.name):
-        if p.suffix != ".py" or p.name.startswith(("_", ".")):
+        if p.name.startswith(("_", ".")):
             continue
-        if p.is_symlink():
+        rel = f"{EXTENSION_DIR_REL}/{p.name}"
+        if p.suffix == ".py" and p.is_symlink():
             warnings.append(Finding(
-                WARNING, f"ext:{p.stem}", f"{EXTENSION_DIR_REL}/{p.name}",
+                WARNING, f"ext:{p.stem}", rel,
                 "확장 파일이 심볼릭 링크라 실행하지 않음",
             ))
+        elif p.is_dir():
+            warnings.append(Finding(WARNING, "ext", rel, _SKIP_DIR))
+        elif p.suffix != ".py":
+            warnings.append(Finding(WARNING, "ext", rel, _SKIP_SUFFIX))
         elif p.is_file():
             files.append(p)
     return files, warnings

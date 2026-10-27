@@ -22,7 +22,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 [tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위는 front matter와 시간성, 문서 분량, 워크로그(STATUS, TASK_TREE) 스키마, 폴더와 디스크립터, 폴더 색인, 링크와 섹션 참조, 참조 표지, 파일명 이식성과 날짜 프리픽스 구분자, 문장 부호, 태그 표기, 상류 묶음의 출처 태그와 동일성이다. 자손의 확장 검사도 실행한다. 점검 항목 목록의 SSOT는 audit.py 모듈 docstring의 "점검 항목"이며 여기에 다시 나열하지 않는다. 의미 판단과 git 맥락 검출은 감사자 몫이다 (see: [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md)).
 
-- 임계값은 보수적 초기값으로 두고 운영하며 조정한다. 공용 인프라 `tools/_audit_core.py` 상단의 상수로 관리한다.
+- 임계값은 공용 인프라 `tools/_audit_core.py` 상단의 상수이고 상류가 운영하며 조정한다. 상속한 저장소는 이 상수를 고치지 않는다(항목 30). 다른 값이 필요하면 경고를 의식적으로 수용하거나 상류에 변경을 제안한다.
 - `.tmp/`는 에이전트의 임시 작업 공간이다. gitignore 대상이며 감사에서 제외된다.
 - 실행: 새 세션 시작 시와 push, PR 시. 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/audit.py .` (윈도우는 `python` 또는 `py`). push와 pull request 시점에는 GitHub Actions([.github/workflows/epistemic-audit.yml](../../.github/workflows/epistemic-audit.yml))가 실행한다. 새 세션 시작 시의 실행 의무는 [session-boundaries.md](session-boundaries.md) "세션 시작".
 - 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS(operating system)에 의존하지 않는다. git에도 의존하지 않는다.
@@ -33,7 +33,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 [tools/build_index.py](tools/build_index.py)는 폴더 색인을 만든다. 규칙과 훅 동작은 [folder-index.md](folder-index.md) "생성과 확인".
 
-- 실행: 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/build_index.py .` (윈도우는 `python` 또는 `py -3`). `--dry-run`은 바뀔 경로만 낸다. `--bundle-manifest`는 색인 대신 상류 묶음 목록만 만든다.
+- 실행: 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/build_index.py .` (윈도우는 `python` 또는 `py -3`). `--dry-run`은 바뀔 경로만 낸다. `--bundle-manifest`는 색인 대신 상류 묶음 목록만 만든다. 상류 저장소는 묶음 파일을 바꾼 커밋에서 목록도 다시 만든다. 잊으면 항목 30 위반으로 감사가 실패한다.
 - 종료 코드: 성공 0, 형식 오류나 git 무시 파일 등으로 실패 2.
 - 커밋 전 훅 연결(클론마다 한 번): `git config core.hooksPath AGENTS/epistemic-rules/tools/hooks`. 훅은 색인만 다시 만들고 상류 묶음 목록은 만들지 않는다.
 

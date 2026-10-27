@@ -302,6 +302,28 @@ class SourceTagTest(BundleCase):
         self.assertEqual(check_source_tags(self.root), [])
 
 
+class MaterialScopeTest(BundleCase):
+    def test_items_29_and_30_share_scope(self):
+        # 자료 폴더 안의 사본과 클론은 두 검사 모두 보지 않고, 자료 폴더의
+        # 규범 폴더는 두 검사 모두 본다. 새 문서는 출처 태그가 없고 목록에도
+        # 없으므로, 보는 문서마다 두 검사가 위반을 1건씩 낸다.
+        for rel in ("reference/raw/AGENTS/epistemic-rules/a.md",
+                    "reference/raw/AGENTS/epistemic-rules.md",
+                    "implementation/p/AGENTS/epistemic-rules.md",
+                    "implementation/p/AGENTS/epistemic-rules/c.md",
+                    "reference/AGENTS/epistemic-rules/b.md",
+                    "implementation/AGENTS/epistemic-rules.md",
+                    "reference/AGENTS.md", "implementation/AGENTS.md"):
+            self.write(rel, FM_NO_SRC)
+        seen29 = {f.path for f in check_source_tags(self.root)
+                  if f.severity == VIOLATION}
+        seen30 = set(self.paths(VIOLATION))
+        expected = {str(Path("reference/AGENTS/epistemic-rules/b.md")),
+                    str(Path("implementation/AGENTS/epistemic-rules.md"))}
+        self.assertEqual(seen29, expected)
+        self.assertEqual(seen30, expected)
+
+
 class BuildManifestTest(BundleCase):
     def test_written_then_noop(self):
         self.append("AGENTS/epistemic-rules/x.md", "y\n")

@@ -264,14 +264,50 @@ class ExtensionTest(unittest.TestCase):
         self.ext(".h.py", "raise SystemExit(1)\n")
         self.assertEqual(run_extensions(self.root), [])
 
-    def test_non_py_not_run(self):
+    def triples(self):
+        return [(f.severity, f.category, f.path)
+                for f in run_extensions(self.root)]
+
+    def test_non_py_warns_and_not_run(self):
         self.ext("a.txt", "raise SystemExit(1)\n")
         self.ext("a.sh", "exit 1\n")
+        got = run_extensions(self.root)
+        self.assertEqual(self.triples(),
+                         [(WARNING, "ext", EXT_DIR + "/a.sh"),
+                          (WARNING, "ext", EXT_DIR + "/a.txt")])
+        for f in got:
+            self.assertIn("실행하지 않음", f.message)
+            self.assertIn(".py", f.message)
+
+    def test_uppercase_suffix_warns_and_not_run(self):
+        self.ext("check.PY", "raise SystemExit(1)\n")
+        self.assertEqual(self.triples(),
+                         [(WARNING, "ext", EXT_DIR + "/check.PY")])
+
+    def test_subfolder_warns_and_not_run(self):
+        self.ext("sub/a.py", "raise SystemExit(1)\n")
+        got = run_extensions(self.root)
+        self.assertEqual(self.triples(),
+                         [(WARNING, "ext", EXT_DIR + "/sub")])
+        self.assertIn("하위 폴더", got[0].message)
+
+    def test_folder_named_like_py_warns(self):
+        (self.root / EXT_DIR / "x.py").mkdir(parents=True)
+        self.assertEqual(self.triples(),
+                         [(WARNING, "ext", EXT_DIR + "/x.py")])
+
+    def test_helper_names_silent(self):
+        self.ext("_lib/a.py", "raise SystemExit(1)\n")
+        self.ext(".cache/a.py", "raise SystemExit(1)\n")
+        self.ext("_notes.txt", "x\n")
+        self.ext(".DS_Store", "x\n")
         self.assertEqual(run_extensions(self.root), [])
 
-    def test_subfolder_not_run(self):
-        self.ext("sub/a.py", "raise SystemExit(1)\n")
-        self.assertEqual(run_extensions(self.root), [])
+    def test_skipped_entries_do_not_stop_extensions(self):
+        self.ext("notes.txt", "x\n")
+        self.ext("a.py", emit("warning", "p", "m"))
+        self.assertEqual(sorted(f.category for f in run_extensions(self.root)),
+                         ["ext", "ext:a"])
 
     def test_only_root_folder(self):
         self.write("s/AGENTS/audit-checks/a.py", "raise SystemExit(1)\n")

@@ -15,15 +15,12 @@ import re
 from pathlib import Path
 
 from _audit_core import (
-    IMPLEMENTATION_DIR, NORMS_DIR_NAME, REFERENCE_DIR, is_bundle_path,
-    is_excluded, nfc)
+    in_material_content, is_bundle_path, is_excluded, nfc)
 from _index_core import is_byproduct
 
 MANIFEST_REL = "AGENTS/epistemic-rules/tools/bundle-manifest.sha256"
 TOOLS_REL = "AGENTS/epistemic-rules/tools"
 
-# 이 두 폴더 바로 아래에서는 규범 폴더만 본다.
-_MATERIAL_PARTS = ((REFERENCE_DIR,), (IMPLEMENTATION_DIR,))
 _LINE_RE = re.compile(r"^([0-9a-f]{64})  (\S.*)$")
 
 
@@ -45,18 +42,17 @@ def bundle_files(root: Path) -> "list[Path]":
 
     루트 상대 NFC POSIX 경로 순이다. 감사 순회와 같은 가지치기(도구 전용
     폴더, 중첩 저장소, 심볼릭 링크)를 쓰고, reference/와 implementation/
-    아래에서는 규범 폴더(AGENTS/)만 본다. 자료로 들여온 사본이나 하위
-    프로젝트의 클론을 상류 묶음으로 오인하지 않으려는 것이다.
+    아래에서는 감사 순회와 같은 술어(_audit_core.in_material_content)로
+    규범 폴더(AGENTS/)만 본다.
     """
     found: "list[tuple[str, Path]]" = []
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         d = Path(dirpath)
-        parts = d.relative_to(root).parts
         keep = []
         for name in sorted(dirnames):
             if _skipped_name(name) or is_excluded(root, d / name):
                 continue
-            if (parts in _MATERIAL_PARTS and name != NORMS_DIR_NAME):
+            if in_material_content(root, d / name):
                 continue
             keep.append(name)
         dirnames[:] = keep
