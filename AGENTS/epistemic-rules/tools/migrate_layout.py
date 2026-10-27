@@ -8,8 +8,9 @@ migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸
 추적되지 않는 내용은 옮기지 않되, 예외로 추적 안 되는 _tmp/ 폴더는 .tmp/가 없을 때
 파일 시스템 이름 바꾸기로 옮긴다. .tmp/가 이미 있으면 ("_tmp", ".tmp")를 충돌로 보고한다.
 대상 경로가 이미 있어(추적 여부 무관) 건너뛴 이동은 Report.conflicts에 모으고, 옛 파일은 그대로 둔다.
-상류 머지로 이미 새 위치에 와 있지만 본문 링크가 옛 위치 기준인 파일은, 대상이 실제로 있을 때만
-옛 위치 기준으로 다시 계산한다. 명령행은 conflicts나 unconverted가 있으면 종료 코드 1, 없으면 0이다.
+상류 머지로 이미 새 위치에 와 있지만 본문 링크가 옛 위치 기준인 파일은, 현재 위치 기준으로 대상이
+없거나 저장소 밖을 가리키는 링크를 옛 위치 기준으로 다시 계산하되 고친 대상이 실제로 있을 때만 바꾼다.
+명령행은 conflicts나 unconverted가 있으면 종료 코드 1, 없으면 0이다.
 링크 변환은 코드 펜스와 인라인 코드 구간 안의 예시 링크를 건드리지 않는다.
 reference/AGENTS.md에 "등록된 자료" 절의 표가 있으면 reference/INDEX.yaml(description, status)로
 옮기고 그 절을 지운다. 파일 열의 머리 칸 이름은 항목이어도 된다. 추가일 열은 버리고, 상태 칸에 어휘
@@ -236,23 +237,31 @@ def rewrite_links(text: str, old_src: str, new_src: str) -> str:
 
 
 def _resolve(base_dir: str, target: str) -> Optional[str]:
-    """링크 대상을 base_dir 기준 레포 상대 경로로 푼다. 풀 대상이 아니면 None이다."""
+    """링크 대상을 base_dir 기준 레포 상대 경로로 푼다.
+
+    외부 주소, 절대 경로, 빈 대상(앵커만 있는 링크 포함)은 풀 대상이 아니라 None이다.
+    저장소 밖을 가리키면 ../로 시작하는 경로를 그대로 돌려주므로 _outside로 가려 쓴다.
+    """
     path = target.partition("#")[0]
     if not path or path.startswith("/") or _SCHEME_RE.match(path):
         return None
-    p = posixpath.normpath(posixpath.join(base_dir, urllib.parse.unquote(path)))
-    if p == ".." or p.startswith("../"):
-        return None
-    return p
+    return posixpath.normpath(posixpath.join(base_dir, urllib.parse.unquote(path)))
+
+
+def _outside(rel: str) -> bool:
+    """_resolve가 푼 경로가 저장소 밖이면 참."""
+    return rel == ".." or rel.startswith("../")
 
 
 def _repair_links(text: str, cur: str, exists) -> str:
     """새 위치에 있으나 옛 위치 기준으로 쓰인 링크를 고친다.
 
-    cur가 대응표의 새 경로일 때만 동작한다. 현재 위치 기준으로 대상이 없고,
-    옛 위치(_inverse_path(cur)) 기준으로 풀어 대응시킨 경로가 exists(경로)로 있으면
-    그 경로로 다시 계산한다. 고친 뒤에는 대상이 있으므로 재실행해도 바뀌지 않는다.
-    코드 펜스와 인라인 코드 구간 안의 예시 링크는 건드리지 않는다.
+    cur가 대응표의 새 경로일 때만 동작한다. 현재 위치 기준으로 대상이 없거나 저장소 밖을
+    가리키고, 옛 위치(_inverse_path(cur)) 기준으로 풀어 대응시킨 경로가 저장소 안에 있으며
+    exists(경로)로 있으면 그 경로로 다시 계산한다. 저장소 밖 경로는 exists에 넘기지 않는다.
+    고친 뒤에는 대상이 있으므로 재실행해도 바뀌지 않는다.
+    외부 주소, 절대 경로, 빈 대상, 앵커만 있는 링크와 코드 펜스, 인라인 코드 구간 안의 예시
+    링크는 건드리지 않는다.
     """
     old = _inverse_path(cur)
     if old == cur:
@@ -262,11 +271,13 @@ def _repair_links(text: str, cur: str, exists) -> str:
     def repl(m):
         target = m.group(1)
         here = _resolve(cur_dir, target)
-        if here is None or exists(here):
+        if here is None or (not _outside(here) and exists(here)):
             return m.group(0)
         cand = _rewrite_target(target, old, cur)
+        if cand == target:
+            return m.group(0)
         there = _resolve(cur_dir, cand)
-        if cand == target or there is None or not exists(there):
+        if there is None or _outside(there) or not exists(there):
             return m.group(0)
         return "](" + cand + m.group(2) + ")"
     return _sub_outside_code(_LINK_RE, repl, text)

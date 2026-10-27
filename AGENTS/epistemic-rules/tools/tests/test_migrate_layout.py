@@ -461,6 +461,66 @@ class ChildMergeTest(unittest.TestCase):
             self.assertEqual(_snapshot(root), before)
 
 
+OUTSIDE_LINKS = (
+    "[AGENTS.md](../../AGENTS.md)\n"
+    "[x](../../AGENTS/instance-specialization.md)\n"
+    "[implementation/](../../_implementation/AGENTS.md)\n")
+OUTSIDE_LINKS_FIXED = (
+    "[AGENTS.md](../AGENTS.md)\n"
+    "[x](../AGENTS/epistemic-rules/instance-specialization.md)\n"
+    "[implementation/](../implementation/AGENTS.md)\n")
+
+
+class OutsideLinkRepairTest(unittest.TestCase):
+    """현재 위치 기준으로 저장소 밖을 가리키는 옛 위치 기준 링크를 고친다."""
+
+    CUR = "worklog/TASK_TREE.md"
+    PRESENT = {"AGENTS.md", "AGENTS/epistemic-rules/instance-specialization.md",
+               "implementation/AGENTS.md"}
+
+    def _exists(self, calls):
+        def exists(p):
+            calls.append(p)
+            return p in self.PRESENT
+        return exists
+
+    def test_repaired_against_old_location(self):
+        calls = []
+        out = _repair_links(OUTSIDE_LINKS, self.CUR, self._exists(calls))
+        self.assertEqual(out, OUTSIDE_LINKS_FIXED)
+        self.assertEqual(_repair_links(out, self.CUR, self._exists(calls)), out)
+        self.assertEqual([p for p in calls if p == ".." or p.startswith("../")], [])
+
+    def test_missing_mapped_target_kept(self):
+        src = "[x](../../AGENTS/instance-specialization.md)\n[n](../../nothing.md)\n"
+        out = _repair_links(src, self.CUR, lambda p: p == "AGENTS.md")
+        self.assertEqual(out, src)
+
+    def test_untouched_kinds(self):
+        src = "[u](https://x.y/../../a.md) [b](/abs/x.md) [c](#절) [d]() [m](mailto:q@r)\n"
+        self.assertEqual(_repair_links(src, self.CUR, lambda p: False), src)
+
+    def test_migrate_repairs_and_rerun_is_noop(self):
+        files = dict(NEW_FIXTURE)
+        files["worklog/TASK_TREE.md"] = OUTSIDE_LINKS
+        files["AGENTS.md"] = "root\n"
+        files["AGENTS/epistemic-rules/instance-specialization.md"] = "x\n"
+        files["implementation/AGENTS.md"] = "impl\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            dry = migrate(root, dry_run=True)
+            self.assertEqual(dry.rewritten, ["worklog/TASK_TREE.md"])
+            rep = migrate(root)
+            self.assertEqual(rep.rewritten, ["worklog/TASK_TREE.md"])
+            self.assertEqual(rep.residual, [])
+            self.assertEqual((root / "worklog/TASK_TREE.md").read_text(encoding="utf-8"),
+                             OUTSIDE_LINKS_FIXED)
+            before = _snapshot(root)
+            again = migrate(root)
+            self.assertEqual((again.moved, again.rewritten), ([], []))
+            self.assertEqual(_snapshot(root), before)
+
+
 class EdgeCaseTest(unittest.TestCase):
     def test_untracked_tmp_moved(self):
         with tempfile.TemporaryDirectory() as tmp:
