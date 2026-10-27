@@ -29,7 +29,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       reference/ 하위 폴더와 중첩 저장소 안은 보지 않음)
  12. TASK_TREE.md 완료 노드의 브랜치 속성 잔존 - 경고
  13. STATUS.md 레지스트리 표 스키마, 시각 형식 - 경고
- 14. epistemic-structure/ 4범주 직속 문서의 tags 첫 항목 정합 - 경고
+ 14. front matter tags의 형식과 표기 - 경고
+     (읽을 수 없는 형식, 공백 든 태그와 숫자만의 태그, NFKC와 대소문자, 공백,
+      하이픈, 밑줄만 다른 표기 묶음. 뜻이 같은 다른 낱말은 감사자 몫)
  15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더 제외) - 경고
      (`CLAUDE.md`와 규범 폴더, 색인 파일은 실체로 세지 않음)
      (찌꺼기인지 사양 동결인지 첫 실체 대기인지는 감사자가 판단)
@@ -118,7 +120,7 @@ import sys
 from pathlib import Path
 
 from _audit_core import Finding, VIOLATION, WARNING
-from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags_category
+from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags
 from audit_links import (
     check_links, check_link_text, check_section_refs, check_link_whitespace,
     check_reference_markers, check_imports,
@@ -158,7 +160,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_task_tree_attrs(root)
     findings += check_task_tree_completed_branch(root)
     findings += check_index_files(root)
-    findings += check_tags_category(root)
+    findings += check_tags(root)
     findings += check_empty_folders(root)
     findings += check_name_collision(root)
     findings += check_filename_portability(root)

@@ -57,14 +57,6 @@ SKELETON_DIRS = {
     WORKLOG_DIR, REFERENCE_DIR, IMPLEMENTATION_DIR,
 }
 
-# epistemic-structure/ 4범주 직속 문서의 tags 첫 항목 기대값 (하위 폴더에는 강제하지 않는다).
-CATEGORY_TAG_DIRS = {
-    "epistemic-structure/ontology": "ontology",
-    "epistemic-structure/knowledge": "knowledge",
-    "epistemic-structure/strategy": "strategy",
-    "epistemic-structure/architecture": "architecture",
-}
-
 # --- 임계값 (초기값. 보수적으로 시작해 운영하며 조정) ---
 # 공백 제외 문자 수. "한글 기준" 근사.
 SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
@@ -275,6 +267,22 @@ def in_bundle_detail(root: Path, d: Path) -> bool:
     parts = d.relative_to(root).parts
     return any(
         a == NORMS_DIR_NAME and b == BUNDLE_NAME for a, b in zip(parts, parts[1:])
+    )
+
+
+def is_bundle_path(root: Path, path: Path) -> bool:
+    """path가 상류 규범 묶음 경로인지 판정한다.
+
+    루트 상대 경로 성분에 AGENTS 바로 다음 epistemic-rules가 있거나, 이름이
+    epistemic-rules.md이고 부모 폴더 이름이 AGENTS이면 참이다(묶음 요지 파일).
+    경로 모양만 보며 파일 실재나 순회 제외는 보지 않는다.
+    """
+    parts = path.relative_to(root).parts
+    if any(a == NORMS_DIR_NAME and b == BUNDLE_NAME for a, b in zip(parts, parts[1:])):
+        return True
+    return (
+        len(parts) >= 2 and parts[-1] == BUNDLE_NAME + ".md"
+        and parts[-2] == NORMS_DIR_NAME
     )
 
 
