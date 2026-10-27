@@ -14,7 +14,7 @@ tags: [규칙, epistemic-rules]
 - 정확한 개념어로 쓰되 겉멋 든 용어나 불필요한 외래어로 치장하지 않는다. 세부는 [writing-style.md](writing-style.md) "정확한 개념어와 담백한 문체".
 - 문서 간 참조는 마크다운 링크로 쓰고 본문 문장에 녹이는 것을 우선한다. 따로 둘 때는 이 문서가 대상에 기대는 방식에 따라 `ref:`(이해나 정당화를 기대는 원천), `sub:`(범위의 일부를 맡긴 하위), `see:`(기대지 않는 부연과 관련) 표지를 단다. 세부는 [reference-markers.md](writing-style/reference-markers.md).
 - 약어는 첫 등장 시 원문을 병기한다(예: `SSOT(single source of truth)`). 줄임말(truncation; feature -> feat, configuration -> config, repository -> repo 등)은 피하고 공식 형태를 쓴다.
-- 모든 .md(생성 색인 제외)에 YAML front matter를 붙인다: `date created`, `date modified`, `tags`(첫 항목은 카테고리, `epistemic-structure/` 4범주 직속은 감사 스크립트가 검사). 새 문서에는 폴더 색인에 보일 한 줄 설명 `description`을 단다. 없어도 감사는 경고하지 않는다 (see: [folder-index.md](folder-index.md)).
+- 모든 .md(생성 색인 제외)에 YAML front matter를 붙인다: `date created`, `date modified`, `tags`(순서 없는 집합, 표기와 어휘는 [tags.md](tags.md)). 새 문서에는 폴더 색인에 보일 한 줄 설명 `description`을 단다. 없어도 감사는 경고하지 않는다 (see: [folder-index.md](folder-index.md)).
 - 추측 금지와 사실, 의견, 주체 구분은 [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트"에 둔다.
 
 ## 응답 언어

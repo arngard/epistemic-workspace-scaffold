@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-26
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [agents, 규칙, 상속, epistemic-rules]
 ---
 
@@ -28,6 +28,7 @@ tags: [agents, 규칙, 상속, epistemic-rules]
 - 역할 분담: 상류 자산은 공통 사항만 담고, 도메인 고유 항목은 인스턴스 자산의 정의에만 둔다.
 - 상류와 자손의 자리: 상류 규범은 각 폴더 `AGENTS/`의 고정 이름 묶음(`epistemic-rules.md`와 `epistemic-rules/`)에 있고, 인스턴스는 그 파일을 고치지 않는다. 상류 규범 문서는 출처 태그 `epistemic-rules`를 단다. 인스턴스 고유의 규범은 묶음 옆에 낱개 문서로 두고, 그 폴더의 `AGENTS.md`에서 어떤 상황에 읽는지와 함께 링크한다. 그 폴더를 다룰 때 늘 필요하면 가져온다. 모든 인스턴스에 같게 전파될 보편 규범과 절차는 상류 묶음의 몫이고, 이 인스턴스에 고유한 워크스페이스 운영 규범은 인스턴스 쪽 낱개 문서의 몫이다. 도메인의 운영 절차와 환경에 결부된 명세는 워크스페이스 운영 규범이 아니라 도메인 콘텐츠이므로 `epistemic-structure/architecture/`에 둔다 (see: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙").
 - 덮어쓰기와 보태기의 등재: 상류 규범을 덮어쓰거나 보탤 때 차이는 인스턴스 소유 파일(폴더 `AGENTS.md`와 인스턴스 규범 문서)에만 만든다. 연결은 인스턴스에서 상류로 건다. 인스턴스 문서는 대상 상류 문서와 절을 가리키며 "대체한다" 또는 "보탠다"를 밝힌다. 덮어쓰기 목록은 그 폴더의 `AGENTS.md`에 두고, 항목마다 대상 상류 문서와 절, 대체인지 보탬인지, 적용되는 상황, 인스턴스 문서를 적는다. 상류 요지는 같은 사안에 자손 규범이 있으면 자손 규범이 우선한다고 고정으로 밝혀 둔다. 이 등재는 모든 폴더에 같게 적용한다.
+- 기계 확인: 감사(`audit.py` 항목 30)는 상류 묶음 파일을 상류가 함께 출고한 목록 `tools/bundle-manifest.sha256`과 대조해 고친 파일, 지운 파일, 묶음 안에 더한 파일을 위반으로 잡는다. 목록은 상류 저장소만 `build_index.py --bundle-manifest`로 다시 만들고(커밋 전 훅은 만들지 않는다), 인스턴스는 다시 만들지 않는다. 바꾸면 의미 감사가 git 이력으로 잡는다. 인스턴스에서 위반이 나면 파일을 상류 판으로 되돌리고 차이를 인스턴스 소유 파일로 옮긴다. 인스턴스의 감사 검사는 상류 도구를 고치지 않고 [audit-extensions.md](audit-extensions.md)의 확장 지점에 둔다.
 
 역할 정의에 적용한 구체 사례는 [agent-roles.md](agent-roles.md) "인스턴스 전용 감사자" 참조.
 
