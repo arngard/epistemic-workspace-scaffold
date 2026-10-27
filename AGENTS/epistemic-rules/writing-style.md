@@ -58,7 +58,7 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 ## 도구 전용 설정 파일 예외
 
-도구 전용 설정 파일(`.claude/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. [communication.md](communication.md) "문서 작성 스타일"의 공통 필수 필드(`date created`, `date modified`, `tags`)를 본 파일들에 강제하지 않는다.
+도구가 형식을 정하는 파일은 그 도구의 형식을 따르고 front matter 의무에서 빠진다. 대상 파일은 [communication.md](communication.md) "문서 작성 스타일"이 정한다.
 
 ## 하위 문서
 
