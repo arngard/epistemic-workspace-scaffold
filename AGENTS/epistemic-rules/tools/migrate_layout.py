@@ -12,10 +12,10 @@ migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸
 옛 위치 기준으로 다시 계산한다. 명령행은 conflicts나 unconverted가 있으면 종료 코드 1, 없으면 0이다.
 링크 변환은 코드 펜스와 인라인 코드 구간 안의 예시 링크를 건드리지 않는다.
 reference/AGENTS.md에 "등록된 자료" 절의 표가 있으면 reference/INDEX.yaml(description, status)로
-옮기고 그 절을 지운다. 추가일 열은 버리고, 상태 칸에 어휘 뒤로 남은 글(derived 링크 등)은 설명 끝에
-덧붙인다. 폴더 행은 이름 끝의 /를 남긴다. 읽지 못한 행이 있거나 항목이 든 INDEX.yaml(형식 오류 포함)이
-이미 있으면 절을 건드리지 않고 Report.unconverted에 보고한다. 주석과 빈 줄뿐인 INDEX.yaml은 없는 것으로
-보고 덮어쓴다.
+옮기고 그 절을 지운다. 파일 열의 머리 칸 이름은 항목이어도 된다. 추가일 열은 버리고, 상태 칸에 어휘
+뒤로 남은 글(derived 링크 등)은 설명 끝에 덧붙인다. 폴더 행은 이름 끝의 /를 남긴다. 읽지 못한 행이
+있거나 항목이 든 INDEX.yaml(형식 오류 포함)이 이미 있으면 절을 건드리지 않고 Report.unconverted에
+보고한다. 주석과 빈 줄뿐인 INDEX.yaml은 없는 것으로 보고 덮어쓴다.
 unconverted가 있으면 명령행 종료 코드도 1이다.
 
 이전 절차: 옛 배치를 가진 저장소가 상류를 머지한 직후 한 번 실행한다.
@@ -338,6 +338,8 @@ _SECTION_RE = re.compile(r"^(#{1,6})[ \t]+" + _SECTION_NAME + r"[ \t]*$")
 _HEADING_RE = re.compile(r"^(#{1,6})[ \t]")
 _EMPTY_NOTE_RE = re.compile(r"^\(아직 등록된 자료 없음\.?\)$")
 _KNOWN_COLUMNS = ("파일", "추가일", "설명", "상태")
+# 파일 열과 같은 뜻으로 받는 머리 칸 이름. 폴더 단위 자료를 함께 등록하는 표가 쓴다.
+_FILE_COLUMN_ALIASES = ("항목",)
 _SEPARATOR_CELL_RE = re.compile(r"^:?-+:?$")
 _CELL_SPLIT_RE = re.compile(r"(?<!\\)\|")
 _LINK_CELL_RE = re.compile(r"^\[[^\]]*\]\(([^)\s]*)(?:\s+\"[^\"]*\")?\)$")
@@ -433,13 +435,14 @@ def _read_table(lines: List[str]) -> Tuple[List[Tuple[str, str, str]], List[str]
         bad.append("표가 중간에 끊겼다")
         return rows, bad
     head = [c.strip("` ") for c in _split_row(table[0])]
-    unknown = [c for c in head if c not in _KNOWN_COLUMNS]
+    unknown = [c for c in head if c not in _KNOWN_COLUMNS + _FILE_COLUMN_ALIASES]
     if unknown:
         bad.append("모르는 열: " + ", ".join(unknown))
         return rows, bad
+    head = ["파일" if c in _FILE_COLUMN_ALIASES else c for c in head]
     if "파일" not in head or "상태" not in head or head.count("파일") > 1 \
             or head.count("상태") > 1 or head.count("설명") > 1:
-        bad.append("머리 칸에 파일과 상태가 하나씩 없다: " + table[0].strip())
+        bad.append("머리 칸에 파일(또는 항목)과 상태가 하나씩 없다: " + table[0].strip())
         return rows, bad
     if len(table) < 2 or not all(_SEPARATOR_CELL_RE.match(c) for c in _split_row(table[1])):
         bad.append("머리 줄 다음에 구분 줄이 없다: " + table[0].strip())
@@ -475,6 +478,7 @@ def convert_reference_table(text: str) -> Tuple[str, str, List[str]]:
     (text, "", [])이다. 읽지 못한 행이나 표 밖의 글이 하나라도 있으면 본문을 바꾸지 않고
     INDEX.yaml 텍스트도 빈 문자열로 둔다. 표에 행이 없으면 절만 지우고 머리 주석만 든 텍스트를 만든다.
     파일 칸은 링크, 인라인 코드, 일반 글에서 이름을 얻고, 추가일 열은 버린다. 값은 quote_scalar로 쓴다.
+    머리 칸 이름 항목은 파일과 같은 뜻으로 받는다. 한 표에 둘이 함께 있으면 읽지 못한 것으로 본다.
     """
     lines = text.splitlines(keepends=True)
     start = end = None

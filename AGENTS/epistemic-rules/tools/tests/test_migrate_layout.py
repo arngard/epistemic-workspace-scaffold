@@ -677,6 +677,24 @@ class ReferenceTableTest(unittest.TestCase):
         self.assertEqual((body, yaml, len(bad)), (text, "", 1))
         self.assertIn("모르는 열: 출처", bad[0])
 
+    def test_item_column_as_file(self):
+        text = ("## 등록된 자료\n\n| 항목 | 추가일 | 설명 | 상태 |\n|---|---|---|---|\n"
+                "| `name/` | d | 폴더 자료 | 처리 대기 |\n"
+                "| [a.pdf](a.pdf) | d | 보고서 | 처리됨 |\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual(bad, [])
+        self.assertNotIn("등록된 자료", body)
+        self.assertEqual(self._load(yaml), {
+            "name/": {"description": "폴더 자료", "status": "처리 대기"},
+            "a.pdf": {"description": "보고서", "status": "처리됨"}})
+
+    def test_item_and_file_columns_together_reported(self):
+        text = ("## 등록된 자료\n\n| 항목 | 파일 | 상태 |\n|---|---|---|\n"
+                "| a | a.pdf | 처리됨 |\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual((body, yaml, len(bad)), (text, "", 1))
+        self.assertIn("머리 칸", bad[0])
+
     def test_status_remainder_allowed_starts(self):
         for rest in ("(노드)", "- 노드", "[n](n.md)"):
             row = "| a.pdf | d | 글 | 처리됨 %s |" % rest
