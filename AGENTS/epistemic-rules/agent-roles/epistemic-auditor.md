@@ -33,7 +33,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - TASK_TREE 루트/1-depth 노드의 마크 커밋 없는 삭제
    - 루트가 아닌 완료 노드의 단독 삭제 - 조상 루트와 함께 제거되거나 완료된 중위 노드의 하위로 정리된 경우가 아닌 삭제
    - TASK_TREE 브랜치 속성이 가리키는 브랜치와 워크트리의 실존 대조(`git branch -a`, `git worktree list`)
-   - `reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반 - `reference/INDEX.yaml`의 변경은 제외)
+   - `reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반 - 운영 파일(`AGENTS.md`, `CLAUDE.md`, 규범 폴더 `AGENTS/`)과 색인 쪽 파일(`INDEX*.md`, `INDEX.yaml`)의 변경은 제외)
    - `date closed` 히스토리 문서의 본문 변경(동결 위반 - 후속 문서 링크 추가와 정합 유지 수정은 허용, ref: [document-temporality.md](../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
    - TASK_TREE `[x]` 완료 루트의 과다 잔존
    - 상류 머지 밖에서 상류 묶음 목록(`tools/bundle-manifest.sha256`)을 바꾼 본 레포 커밋 (명령과 범위는 [procedure.md](epistemic-auditor/procedure.md))
