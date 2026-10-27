@@ -406,42 +406,52 @@ def classify_target(root: Path, target: Path) -> str:
 def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: str) -> bool:
     """파일명 형태의 링크 표시텍스트가 링크 대상 자체를 가리키는지 판정.
 
+    대상은 링크를 둔 문서 위치에서 링크 대상을 풀어낸 경로(해석된 대상)다.
     정당한 형태 (writing-style/markdown-link-display-text.md):
       1. / 없는 표시텍스트는 대상 파일명(basename)과 같다 -
          [AGENTS.md](daily/AGENTS.md).
-      2. / 로 끝나는 폴더 표기는 그 폴더명이 링크 대상 경로 성분에 있다 -
-         [knowledge/](../knowledge/AGENTS.md).
-      3. 그 밖의 경로형은 루트나 문서 기준으로 해석한 결과가 대상과 같은
-         파일이거나(루트 기준 경로, 대상 문자열 그대로), . 과 .. 없이 해석된
+      2. / 로 끝나는 폴더 표기는 그 폴더명이 해석된 대상의 루트 상대 경로
+         성분에 있다 - [knowledge/](../knowledge/AGENTS.md). 루트 밖 대상은
+         링크 대상 문자열의 성분과 대조한다.
+      3. 그 밖의 경로형은 루트나 문서 기준으로 정규화한 결과가 대상과 같거나
+         (루트 기준 경로, 대상 문자열 그대로, ./x.md 등), . 과 .. 없이 해석된
          대상의 루트 상대 경로 끝 성분과 같다 -
          [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md).
-    경로는 심링크를 따르지 않고 문자열로 정규화하며 양쪽을 NFC로 맞춘다.
-    대상의 실존은 check_links 소관이라 여기서 보지 않는다. 어느 형태도 아니면
-    없는 파일이나 다른 위치를 지칭하는 오도로 본다.
+         루트 밖 대상은 끝부분 형태를 받지 않는다.
+    경로는 심링크를 따르지 않고 문자열로 정규화하며, 표시텍스트, 링크 대상,
+    파일시스템에서 온 문서와 루트 경로를 모두 NFC로 맞춘다. 대상의 실존은
+    check_links 소관이라 여기서 보지 않는다. 어느 형태도 아니면 없는 파일이나
+    다른 위치를 지칭하는 오도로 본다.
     """
     disp = nfc(disp)
     target_path = nfc(target_path)
+    base_dir = nfc(os.path.abspath(str(source.parent)))
+    root_dir = nfc(os.path.abspath(str(root)))
+    target = os.path.normpath(os.path.join(base_dir, target_path))
+    try:
+        rel = os.path.relpath(target, root_dir)
+    except ValueError:
+        rel = None  # 윈도우에서 드라이브가 다름 (루트 밖)
+    if rel is not None and (rel == os.pardir or rel.startswith(os.pardir + os.sep)):
+        rel = None  # 루트 밖
+    rel_parts = rel.split(os.sep) if rel is not None else None
     if disp.endswith("/"):
         disp_base = disp.rstrip("/").rsplit("/", 1)[-1]
-        return disp_base in target_path.split("/")
-    base_dir = os.path.abspath(str(source.parent))
-    target = os.path.normpath(os.path.join(base_dir, target_path))
+        if rel_parts is None:
+            return disp_base in target_path.split("/")
+        return disp_base in rel_parts
     if "/" not in disp:
         return disp == os.path.basename(target)
-    root_dir = os.path.abspath(str(root))
     for base in (root_dir, base_dir):
         if os.path.normpath(os.path.join(base, disp)) == target:
             return True
     disp_parts = disp.split("/")
+    # 해석된 경로 성분에는 빈 성분, . , .. 이 없어 아래 비교로도 걸러지나
+    # 끝부분 형태의 조건을 드러내려고 먼저 거부한다.
     if {"", ".", ".."} & set(disp_parts):
         return False
-    try:
-        rel = os.path.relpath(target, root_dir)
-    except ValueError:
-        return False  # 윈도우에서 드라이브가 다름 (루트 밖)
-    if rel == os.pardir or rel.startswith(os.pardir + os.sep):
+    if rel_parts is None:
         return False  # 루트 밖 대상은 끝부분 형태를 받지 않는다
-    rel_parts = rel.split(os.sep)
     return rel_parts[-len(disp_parts):] == disp_parts
 
 

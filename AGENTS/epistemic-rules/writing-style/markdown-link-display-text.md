@@ -12,15 +12,16 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 - 대상 파일명(basename): `[AGENTS.md](daily/AGENTS.md)`.
 - 대상 파일의 루트 기준 완전 경로: `[AGENTS/epistemic-rules/folder-structure.md](../../AGENTS/epistemic-rules/folder-structure.md)`. 대상은 상대 경로로 두고 표시텍스트로 워크스페이스 내 절대 위치를 보이는 관례.
-- 링크 대상 문자열 그대로: `[../knowledge/x.md](../knowledge/x.md)`.
+- 링크 대상 문자열 그대로, 또는 링크를 둔 문서 기준으로 대상과 같은 경로: `[../knowledge/x.md](../knowledge/x.md)`, `[./x.md](x.md)`.
 - 대상 경로의 끝부분: `[agent-roles/epistemic-auditor.md](../../../AGENTS/epistemic-rules/agent-roles/epistemic-auditor.md)`. 링크를 둔 문서 위치에서 대상을 풀어낸 루트 기준 경로의 뒤쪽 성분이며 `.`과 `..`을 쓰지 않는다.
-- 폴더를 가리키는 링크의 폴더명: `[knowledge/](../knowledge/AGENTS.md)` (대상은 그 폴더 자체나 그 폴더의 디스크립터, 색인).
+- 폴더를 가리키는 링크의 폴더명: `[knowledge/](../knowledge/AGENTS.md)`, 그 폴더 안 문서의 `[knowledge/](AGENTS.md)` (대상은 그 폴더 자체나 그 폴더의 디스크립터, 색인).
 
 부당한 것은 없는 파일이나 대상과 다른 위치를 지칭하는 표기다.
 
 - `[daily.md](daily/AGENTS.md)`: 실물은 `daily/AGENTS.md`이며 `daily.md` 파일은 없다. `.md`를 붙이면 이미 파일명으로 읽히므로 실존하지 않는 이름을 별칭으로 쓰지 않는다.
 - `[strategy/decision-log.md](../AGENTS.md)`: `strategy/decision-log.md`는 부재 파일 (폐지된 목록 문서 잔재).
 - `[old/x.md](../knowledge/x.md)`, `[../knowledge/y.md](../knowledge/x.md)`: 파일명이 같거나 실존하는 파일이어도 대상과 다른 위치를 말하는 경로다.
+- `[knowledge/AGENTS.md](../knowledge/)`: 폴더를 가리키는 링크에 파일 경로를 쓰면 대상과 다르다. 폴더명(`knowledge/`)으로 쓴다.
 
 표시텍스트를 자유 문구로 커스텀하는 것이 정당한 경우는 둘뿐이다.
 

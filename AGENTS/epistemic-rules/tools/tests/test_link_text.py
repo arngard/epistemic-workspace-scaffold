@@ -79,6 +79,57 @@ class LinkTextTest(unittest.TestCase):
         # 끝부분 형태는 . 과 .. 를 받지 않는다.
         self.assertEqual(self.link("b/z.md", "p/../p/e.md", "../q/p/e.md"), 1)
 
+    def test_dot_suffix_violation(self):
+        self.assertEqual(self.link("b/z.md", "./p/e.md", "../q/p/e.md"), 1)
+
+    def test_document_relative_path(self):
+        # 문서 기준으로 정규화하면 대상과 같은 경로다.
+        self.assertEqual(self.link("a/y.md", "./x.md", "x.md"), 0)
+        self.assertEqual(self.link("a/y.md", "../a/x.md", "x.md"), 0)
+
+    def test_outside_root_suffix_violation(self):
+        # 루트 밖 대상은 끝부분 형태를 받지 않는다.
+        self.assertEqual(self.link("b/z.md", "out/x.md", "../../out/x.md"), 1)
+
+    def test_folder_resolved(self):
+        # 링크 문자열(AGENTS.md)에는 폴더명이 없고
+        # 해석된 대상 r/AGENTS.md에만 있다.
+        self.write("r/AGENTS.md")
+        self.assertEqual(self.link("r/x.md", "r/", "AGENTS.md"), 0)
+
+    def test_folder_wrong_name_violation(self):
+        self.write("a/AGENTS.md")
+        self.assertEqual(self.link("b/z.md", "c/", "../a/AGENTS.md"), 1)
+
+    def test_folder_link_file_text_violation(self):
+        # 폴더를 가리키는 링크에 파일 경로를 쓰면 대상이 아니다.
+        self.write("a/AGENTS.md")
+        self.assertEqual(self.link("b/z.md", "a/AGENTS.md", "../a/"), 1)
+
+    def test_nfd_folder(self):
+        nfd = unicodedata.normalize("NFD", "가")
+        self.write(nfd + "/x.md")
+        self.write(nfd + "/y.md")
+        disp = "가/x.md"
+        self.assertEqual(self.link(nfd + "/y.md", disp, "x.md"), 0)
+
+    def test_case_violation(self):
+        self.assertEqual(self.link("b/z.md", "A/x.md", "../a/x.md"), 1)
+        self.assertEqual(self.link("b/z.md", "X.md", "../a/x.md"), 1)
+
+    def test_anchor(self):
+        self.assertEqual(self.link("b/z.md", "a/x.md", "../a/x.md#t"), 0)
+        self.assertEqual(self.link("b/z.md", "old/x.md", "../a/x.md#t"), 1)
+
+    def test_percent_encoded(self):
+        self.write("a/x y.md")
+        self.assertEqual(self.link("b/z.md", "a/x%20y.md", "../a/x%20y.md"), 0)
+
+    def test_missing_target(self):
+        # 대상 실존은 링크 검사 몫이다. 표시텍스트는 대상과만 맞춘다.
+        self.assertEqual(self.link("b/z.md", "a/no.md", "../a/no.md"), 0)
+        self.assertEqual(self.link("b/z.md", "old/no.md", "../a/no.md"), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
