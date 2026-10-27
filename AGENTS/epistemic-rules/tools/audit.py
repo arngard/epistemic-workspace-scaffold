@@ -91,6 +91,10 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       build_index.py --bundle-manifest로 목록을 다시 만들고, 상속한 저장소는
       파일을 되돌린다)
 
+확장 검사: 루트 AGENTS/audit-checks/ 바로 아래의 *.py(_와 .으로 시작하는 이름
+제외)를 별도 프로세스로 실행해 표준 출력의 JSON 줄을 발견으로 받는다. 범주는
+ext:<이름>. 실패와 시간 초과는 위반. 계약은 AGENTS/epistemic-rules/audit-extensions.md
+
 위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tools.md "기계 감사 스크립트".
 
 사용법:
@@ -119,7 +123,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 - 검사 함수는 의미별 모듈에 나뉜다: audit_frontmatter(front matter/스키마),
   audit_links(링크/참조), audit_structure(폴더/디스크립터/이식성),
   audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호),
-  audit_index(색인 정합/설명 원본), audit_bundle(상류 묶음 출처 태그/동일성).
+  audit_index(색인 정합/설명 원본), audit_bundle(상류 묶음 출처 태그/동일성),
+  audit_extensions(루트 확장 검사 실행).
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
   해석, 인코딩 설정, 출력, 종료 코드를 담당한다.
@@ -135,6 +140,7 @@ from audit_links import (
     check_reference_markers, check_imports,
 )
 from audit_bundle import check_bundle_identity, check_source_tags
+from audit_extensions import run_extensions
 from audit_index import check_index_files, check_index_sources
 from audit_structure import (
     check_descriptors, check_empty_folders,
@@ -183,6 +189,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_index_sources(root)
     findings += check_source_tags(root)
     findings += check_bundle_identity(root)
+    findings += run_extensions(root)
     return findings
 
 
