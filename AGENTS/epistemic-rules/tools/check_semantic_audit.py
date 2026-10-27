@@ -16,6 +16,16 @@ audit.py는 git에 의존하지 않는다는 원칙을 지키려고 별도 스�
     3. worklog/AGENTS/epistemic-rules/status-registry.md 표의 의미 감사 행 (상류 규칙)
 마지막 수행 시각은 STATUS 행의 둘째 칸이다.
 
+경계 사례의 판정:
+    - 코드 펜스(줄 머리가 백틱 셋이나 ~~~인 줄로 여닫는 블록) 안의 줄은 행으로
+      보지 않는다. 문서가 예시로 든 표를 실제 행으로 읽지 않기 위해서다.
+    - 덮어쓰기 파일에 표는 있으나 의미 감사 행이 없으면 다음 출처로 넘어간다.
+    - 읽은 행에서 임계 시간이나 trailer를 읽을 수 없으면 다음 출처로 넘어가지
+      않고 그 파일을 밝혀 판정 불가로 끝난다(조용한 대체 금지).
+    - STATUS 행이 칸 하나뿐이면 판정 불가다.
+    - STATUS 행의 둘째 칸이 비면 미수행 표시로 보아 충족이다(감사를 더 하는
+      쪽이 안전한 기본값).
+
 시각 비교는 KST(UTC+9) 고정으로 한다. STATUS 시각이 KST 표기이므로 실행
 머신의 로컬 시간대에 의존하지 않는다.
 
@@ -64,11 +74,26 @@ def git(root: Path, *args: str) -> tuple[int, str]:
 
 
 def find_row(path: Path) -> "list[str] | None":
-    """이름 칸에 AUDIT_ROW_KEY를 담은 첫 표 행의 칸 목록(앞뒤 공백 제거). 없으면 None."""
+    """이름 칸에 AUDIT_ROW_KEY를 담은 첫 표 행의 칸 목록(앞뒤 공백 제거). 없으면 None.
+
+    코드 펜스 안의 줄은 건너뛴다. 펜스는 줄 머리(앞 공백 제외)가 백틱 셋이나
+    ~~~인 줄로 열고, 같은 종류의 표지로 시작하는 줄로 닫는다. 닫지 않은 펜스는
+    파일 끝까지 이어진다.
+    """
     if not path.is_file():
         return None
+    fence = None
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        if not line.lstrip().startswith("|"):
+        head = line.lstrip()
+        if fence is None:
+            if head.startswith(("```", "~~~")):
+                fence = head[:3]
+                continue
+        else:
+            if head.startswith(fence):
+                fence = None
+            continue
+        if not head.startswith("|"):
             continue
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
         if AUDIT_ROW_KEY in cells[0]:
@@ -83,7 +108,7 @@ def parse_last_run(root: Path) -> "datetime | None":
     """
     cells = find_row(root / STATUS_REL)
     if cells is None:
-        raise ValueError(f'STATUS에 "{AUDIT_ROW_KEY}"를 담은 레지스트리 행 없음 - {STATUS_REL}')
+        raise ValueError(f'STATUS에 "{AUDIT_ROW_KEY}"를 담은 레지스트리 행 없음 - {STATUS_REL.as_posix()}')
     if len(cells) < 2:
         raise ValueError(f"레지스트리 행의 칸이 2개 미만 - {cells}")
     stamp = cells[1]
@@ -104,15 +129,18 @@ def parse_condition(root: Path) -> "tuple[int, str, Path]":
             continue
         candidates.append((rel, cells))
     if not candidates:
-        raise ValueError(f'주기 조건을 담은 "{AUDIT_ROW_KEY}" 행 없음 - {OVERRIDE_REL}, {STATUS_REL}, {RULE_REL}')
+        raise ValueError(
+            f'주기 조건을 담은 "{AUDIT_ROW_KEY}" 행 없음 - '
+            f"{OVERRIDE_REL.as_posix()}, {STATUS_REL.as_posix()}, {RULE_REL.as_posix()}"
+        )
     rel, cells = candidates[0]
     cell = cells[-1] if rel != STATUS_REL else cells[2]
     threshold = THRESHOLD_RE.search(cell)
     if not threshold:
-        raise ValueError(f"{rel}에서 임계 시간을 읽을 수 없음 - {cell}")
+        raise ValueError(f"{rel.as_posix()}에서 임계 시간을 읽을 수 없음 - {cell}")
     trailer = TRAILER_RE.search(cell)
     if not trailer:
-        raise ValueError(f"{rel}에서 trailer 문구를 읽을 수 없음 - {cell}")
+        raise ValueError(f"{rel.as_posix()}에서 trailer 문구를 읽을 수 없음 - {cell}")
     return int(threshold.group(1)), trailer.group(1), rel
 
 
