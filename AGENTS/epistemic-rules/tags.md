@@ -20,7 +20,7 @@ front matter `tags`를 다는 규약. front matter 필수 필드는 [communicati
 
 - 태그에 공백을 쓰지 않는다. 여러 낱말은 붙여 쓰거나(`단위작업`) 하이픈으로 잇는다(`unit-task`).
 - 숫자만으로 된 태그와 빈 태그를 쓰지 않는다.
-- 대소문자와 공백, 하이픈, 밑줄만 다른 표기(`unit-task`, `Unit_Task`)는 같은 태그로 보고 하나로 맞춘다.
+- NFKC(Normalization Form KC; 유니코드 호환 조합형 정규화)로 맞춘 뒤 대소문자와 공백, 하이픈, 밑줄만 다른 표기(`unit-task`, `Unit_Task`)는 같은 태그로 보고 하나로 맞춘다.
 - 근거: [옵시디언 도움말 Tags](https://obsidian.md/help/tags)(2026-10-27 조회)에 따르면 옵시디언은 공백이 든 태그와 숫자만으로 된 태그를 태그로 인정하지 않고, 태그의 대소문자를 구분하지 않는다.
 - 목록은 흐름형(`tags: [a, b]`)이나 블록형(`tags:` 다음 줄부터 한 줄에 하나씩 `- a`)으로 쓴다. 항목 없는 `tags:`는 빈 목록이다. 감사는 이 두 형식만 읽고, 그 밖의 형식(`tags: a`, 여러 줄에 걸친 흐름형 등)은 읽을 수 없다고 경고한다. 공백이나 탭 뒤의 `#`부터는 주석이다.
 
@@ -39,11 +39,11 @@ front matter `tags`를 다는 규약. front matter 필수 필드는 [communicati
 - 기계 감사(`audit.py` 항목 14)가 읽을 수 없는 형식, 표기 규칙 위반, 표기만 다른 태그 묶음을 경고한다. 표준 표기는 기계가 고르지 않는다.
 - 뜻이 같은 다른 낱말(한영 쌍, 동의어, 단수와 복수, 경로와 겹치는 태그)은 의미 감사가 병합안을 낸다 (see: [epistemic-auditor.md](agent-roles/epistemic-auditor.md) "점검 항목").
 - 병합은 사용자가 승인한 대응만 `retag.py`로 실행한다. 손이나 즉석 치환으로 고치지 않는다. `retag.py`는 `tags` 밖의 바이트와 `date modified`를 바꾸지 않고, `tags` 영역 안에 주석이 있는 문서는 쓰지 않고 보고한다. 세부는 그 docstring.
-- 상류 묶음 문서의 태그는 자손에서 고정이다. 병합의 표준이 될 수는 있어도 바뀌는 쪽이 되지 않는다. `retag.py`는 묶음 문서를 건너뛴다.
+- 상류 묶음 문서의 태그는 자손에서 고정이다. 병합의 표준이 될 수는 있어도 바뀌는 쪽이 되지 않는다. `retag.py`는 묶음 문서를 건너뛰고, 상류 저장소가 자기 묶음 문서를 바꿀 때만 `--include-bundles`를 쓴다.
 - 한 문서에만 붙은 태그는 위반이 아니다.
 - 합치지 않기로 정한 묶음과, 태그가 많은 자손이 고르는 허용 태그 목록은 자손 규범 `AGENTS/tag-vocabulary.md`(저장소 루트)에 둔다. 상류는 이 파일을 출고하지 않는다.
 
 워크스페이스 루트에서 실행한다.
 
-- 사용 현황: `python3 AGENTS/epistemic-rules/tools/tag_inventory.py .`(태그마다 문서 수, 상류 사용 여부, 예시 경로를 TSV(tab-separated values; 탭 구분 값)로 낸다)
+- 사용 현황: `python3 -B AGENTS/epistemic-rules/tools/tag_inventory.py .`(태그마다 문서 수, 상류 사용 여부, 예시 경로를 TSV(tab-separated values; 탭 구분 값)로 낸다)
 - 병합: `python3 AGENTS/epistemic-rules/tools/retag.py . --map 옛=새 [--map 옛=새 ...] [--dry-run]`

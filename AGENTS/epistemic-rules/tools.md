@@ -43,5 +43,5 @@ tags: [규칙, 도구, epistemic-rules]
 
 - 실행: 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/check_semantic_audit.py .` (윈도우는 `python` 또는 `py`).
 - 종료 코드: 미충족 0, 충족 1, 판정 불가 2(수동 판정으로 넘긴다).
-- 임계 시간과 trailer 문구를 스크립트에 하드코딩하지 않고 자손 덮어쓰기 표나 상류 규칙의 "주기 조건" 표에서 읽는다(읽는 순서는 check_semantic_audit.py docstring). 읽은 곳은 판정 문장 끝의 `(조건 출처: ...)`로 밝힌다. 인스턴스가 주기를 조정하면 스크립트가 따라간다.
+- 임계 시간과 trailer 문구를 스크립트에 하드코딩하지 않고 자손 덮어쓰기 표나 상류 규칙의 "주기 조건" 표 등에서 읽는다(출처와 순서는 check_semantic_audit.py docstring). 읽은 곳은 판정 문장 끝의 `(조건 출처: ...)`로 밝힌다. 인스턴스가 주기를 조정하면 스크립트가 따라간다.
 - 시각 비교는 KST 고정이라 실행 머신의 시간대에 의존하지 않는다.

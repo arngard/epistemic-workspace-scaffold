@@ -122,11 +122,15 @@ ext:<이름>. 실패와 시간 초과는 위반. 계약은 AGENTS/epistemic-rule
 구조:
 - 공용 인프라(Finding, 상수, 순회/읽기/링크 해석 헬퍼)는 _audit_core.py.
   색인의 YAML 부분집합 파서와 렌더러는 생성기와 함께 쓰는 _index_core.py.
+  front matter tags 읽기와 표기 규칙은 태그 도구와 함께 쓰는 _tags_core.py.
+  상류 묶음 파일 목록과 출고 목록은 생성기와 함께 쓰는 _bundle_core.py.
 - 검사 함수는 의미별 모듈에 나뉜다: audit_frontmatter(front matter/스키마),
   audit_links(링크/참조), audit_structure(폴더/디스크립터/이식성),
   audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호),
   audit_index(색인 정합/설명 원본), audit_bundle(상류 묶음 출처 태그/동일성),
   audit_extensions(루트 확장 검사 실행).
+- 감사 밖의 태그 도구 tag_inventory.py(읽기 전용)와 retag.py(승인된 병합
+  실행)는 _tags_core.py를 쓴다. audit.py는 이 둘을 부르지 않는다.
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
   해석, 인코딩 설정, 출력, 종료 코드를 담당한다.

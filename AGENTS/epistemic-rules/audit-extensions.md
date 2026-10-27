@@ -19,10 +19,10 @@ description: 자손이 상류 도구를 고치지 않고 기계 감사에 검사
 ## 계약
 
 - 실행: 감사를 실행한 인터프리터로 `python -B <확장 파일> <루트>`를 실행한다. 작업 폴더는 루트이고 표준 입력은 없다. 환경 변수 `EPISTEMIC_AUDIT_TOOLS`에 상류 도구 폴더를, `PYTHONIOENCODING=utf-8`, `PYTHONDONTWRITEBYTECODE=1`을 준다.
-- 출력: 표준 출력에 발견 하나를 한 줄의 JSON(JavaScript Object Notation) 객체로 내고 종료 코드 0으로 끝난다. 키 `severity`(`violation` 또는 `warning`), `path`(`/`로 구분한 루트 상대 경로), `message`(설명)는 모두 문자열이어야 한다. 빈 줄과 모르는 키는 무시한다. 감사는 경로를 고쳐 주지 않는다.
+- 출력: 표준 출력에 발견 하나를 한 줄의 JSON(JavaScript Object Notation; 자바스크립트 객체 표기) 객체로 내고 종료 코드 0으로 끝난다. 키 `severity`(`violation` 또는 `warning`), `path`(`/`로 구분한 루트 상대 경로), `message`(설명)는 모두 문자열이어야 한다. 빈 줄과 모르는 키는 무시한다. 감사는 경로를 고쳐 주지 않는다.
 - 예: `{"severity": "warning", "path": "epistemic-structure/knowledge/a.md", "message": "출처 칸이 비었다"}`
 - 범주: 감사는 발견에 범주 `ext:<파일 이름 줄기>`를 붙여 상류 검사와 섞이지 않게 한다.
-- 상류 내부 모듈은 `EPISTEMIC_AUDIT_TOOLS`로 가져올 수 있으나 그 API(application programming interface)는 보장하지 않는다. 계약은 위의 프로세스 경계 텍스트 형식이며, 상류는 이 계약을 늘리기만 하고 바꾸지 않는다.
+- 상류 내부 모듈은 `EPISTEMIC_AUDIT_TOOLS`로 가져올 수 있으나 그 API(application programming interface; 응용 프로그램 인터페이스)는 보장하지 않는다. 계약은 위의 프로세스 경계 텍스트 형식이며, 상류는 이 계약을 늘리기만 하고 바꾸지 않는다.
 
 ## 실패
 
