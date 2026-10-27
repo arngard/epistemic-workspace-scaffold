@@ -4,8 +4,8 @@
 _index_core.render_all이 만든 색인 쪽을 디스크와 비교해 내용이 다른 쪽만
 쓰고, 색인 폴더마다 필요한 쪽보다 뒤의 INDEX<n>.md를 지운다. 색인 폴더가
 아니게 된 폴더(순차 분류 선언의 하위, AGENTS.md를 지운 폴더)에 남은 생성
-쪽도 지운다. reference/ 자료 폴더 안은 건드리지 않는다. 파일을 쓰는
-진입점은 이 파일 하나다. 렌더링은 _index_core, 대조 검사는 감사가 맡는다.
+쪽도 지운다. reference/ 자료 폴더 안은 건드리지 않는다. 생성 진입점은
+이 파일 하나다. 렌더링은 _index_core, 대조 검사는 감사가 맡는다.
 규칙의 원본은 AGENTS/epistemic-rules/folder-index.md다.
 
 생성 쪽인지는 첫 줄이 생성 머리말인지로 가린다. 색인 폴더에 머리말 없는
@@ -17,8 +17,17 @@ git이 있고 루트가 작업 트리 안이면 색인 항목 가운데 git이 �
 아래가 아니라 .tmp/에 둔다. .git이 폴더인 내장 클론은 색인 항목이 아니라
 이 확인에도 들지 않는다. git이 없으면 이 확인을 건너뛴다.
 
+--bundle-manifest는 색인 대신 상류 묶음 출고 목록(AGENTS/epistemic-rules/
+tools/bundle-manifest.sha256)만 다시 만든다. 상류 유지자가 묶음 파일을 바꾼
+커밋마다 손으로 쓴다. 커밋 전 훅은 이 선택지를 쓰지 않는다. 훅이 목록을
+만들면 상속한 저장소의 모든 커밋이 제자리 수정을 목록에 흡수해 감사의
+동일성 검사(항목 30)가 죽기 때문이다. 이 파일이 있는 도구 폴더가 루트의
+AGENTS/epistemic-rules/tools와 다르면(다른 저장소의 루트를 준 경우) 아무것도
+쓰지 않고 종료 코드 2로 거부한다.
+
 사용법:
     python3 AGENTS/epistemic-rules/tools/build_index.py [루트] [--dry-run]
+        [--bundle-manifest]
     (루트를 생략하면 현재 디렉토리. --dry-run은 쓰지 않고 바뀔 경로만 낸다.
      윈도우에서는 python 또는 py -3으로 같게 실행)
 
@@ -26,6 +35,7 @@ git이 있고 루트가 작업 트리 안이면 색인 항목 가운데 git이 �
     쓰거나 지운(--dry-run이면 쓰거나 지울) 파일의 루트 상대 POSIX 경로를
     정렬해 한 줄에 하나씩 표준 출력에 낸다. 바뀐 것이 없으면 아무것도 내지
     않는다. 경로는 디스크 이름 그대로다(유니코드 정규화를 하지 않는다).
+    --bundle-manifest이면 목록을 바꿀(바꾼) 때만 그 경로를 한 줄 낸다.
 
 종료 코드:
     0  성공
@@ -43,6 +53,7 @@ from pathlib import Path
 from typing import Optional
 
 from _audit_core import INDEX_PAGE_RE
+from _bundle_core import MANIFEST_REL, own_root, render_manifest
 from _index_core import (
     IndexFormatError, entry_paths, in_reference_subfolder, index_dirs,
     is_generated_page, non_index_dirs, render_all)
@@ -111,6 +122,27 @@ def build(root: Path, dry_run: bool = False) -> "list[str]":
     return sorted(changed)
 
 
+def write_bundle_manifest(
+    root: Path, tools_dir: Path, dry_run: bool = False,
+) -> "list[str]":
+    """상류 묶음 출고 목록을 다시 만든다. 바뀌면 [MANIFEST_REL], 같으면 [].
+
+    tools_dir이 root의 AGENTS/epistemic-rules/tools와 같지 않으면 ValueError를
+    낸다. 남의 루트에 엉뚱한 목록을 쓰지 않으려는 것이다.
+    """
+    if not own_root(root, tools_dir):
+        raise ValueError(
+            "이 도구의 폴더가 루트의 AGENTS/epistemic-rules/tools가 아님")
+    data = render_manifest(root).encode("utf-8")
+    target = root / MANIFEST_REL
+    if target.is_file() and target.read_bytes() == data:
+        return []
+    if not dry_run:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    return [MANIFEST_REL]
+
+
 def _git(root: Path, args: "list[str]",
          stdin: "Optional[bytes]" = None) -> "subprocess.CompletedProcess":
     return subprocess.run(["git", *args], cwd=str(root), input=stdin,
@@ -174,12 +206,27 @@ def main(argv: "Optional[list[str]]" = None) -> int:
     parser = argparse.ArgumentParser(description="폴더 색인을 만든다.")
     parser.add_argument("root", nargs="?", default=".")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--bundle-manifest", action="store_true",
+                        help="색인 대신 상류 묶음 출고 목록만 만든다")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     if not root.is_dir():
         print("Error: not a directory. 디렉토리가 아님 - %s" % root,
               file=sys.stderr)
         return 2
+    if args.bundle_manifest:
+        try:
+            changed = write_bundle_manifest(
+                root, Path(__file__).resolve().parent, dry_run=args.dry_run)
+        except ValueError as e:
+            print("Error: bundle manifest refused. %s" % e, file=sys.stderr)
+            return 2
+        except OSError as e:
+            print("Error: bundle manifest failed. %s" % e, file=sys.stderr)
+            return 2
+        for rel in changed:
+            print(rel)
+        return 0
     try:
         ignored = ignored_entries(root, entry_paths(root))
         if ignored:

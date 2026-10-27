@@ -81,6 +81,15 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       값, reference/ 밖 항목의 쓰이지 않는 status 키, reference/ 직속의 미등록
       항목, 순차 분류로 선언된 폴더 INDEX.yaml의 "." 밖 항목, 설명의 비ASCII
       문장 부호)
+ 29. 상류 묶음 md의 출처 태그 epistemic-rules 누락은 위반, 묶음 밖 md의 그
+     태그는 경고
+     (묶음은 AGENTS/epistemic-rules.md와 AGENTS/epistemic-rules/ 아래. 읽을
+      수 없는 tags는 항목 14 소관이라 건너뜀. 생성 색인 쪽 파일은 제외)
+ 30. 상류 묶음 파일과 상류 목록(tools/bundle-manifest.sha256)의 대조 - 내용
+     차이, 누락, 목록 밖 파일, 목록 형식 오류는 위반
+     (이 도구가 감사 대상 루트의 묶음에 있을 때만. 상류 저장소는
+      build_index.py --bundle-manifest로 목록을 다시 만들고, 상속한 저장소는
+      파일을 되돌린다)
 
 위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tools.md "기계 감사 스크립트".
 
@@ -110,7 +119,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 - 검사 함수는 의미별 모듈에 나뉜다: audit_frontmatter(front matter/스키마),
   audit_links(링크/참조), audit_structure(폴더/디스크립터/이식성),
   audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호),
-  audit_index(색인 정합/설명 원본).
+  audit_index(색인 정합/설명 원본), audit_bundle(상류 묶음 출처 태그/동일성).
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
   해석, 인코딩 설정, 출력, 종료 코드를 담당한다.
@@ -125,6 +134,7 @@ from audit_links import (
     check_links, check_link_text, check_section_refs, check_link_whitespace,
     check_reference_markers, check_imports,
 )
+from audit_bundle import check_bundle_identity, check_source_tags
 from audit_index import check_index_files, check_index_sources
 from audit_structure import (
     check_descriptors, check_empty_folders,
@@ -171,6 +181,8 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_imports(root)
     findings += check_norms_dir_descriptors(root)
     findings += check_index_sources(root)
+    findings += check_source_tags(root)
+    findings += check_bundle_identity(root)
     return findings
 
 

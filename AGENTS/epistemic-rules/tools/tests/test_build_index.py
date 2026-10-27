@@ -14,6 +14,7 @@ from pathlib import Path
 TOOLS = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, str(TOOLS))
 
+from _bundle_core import MANIFEST_REL  # noqa: E402
 from _index_core import INDEX_HEADER  # noqa: E402
 from build_index import (  # noqa: E402
     HandWrittenIndexError, build, ignored_entries, main)
@@ -444,6 +445,26 @@ class HookTest(unittest.TestCase):
         self.assertEqual(r.returncode, 1)
         self.assertIn("Python 3.9", r.stderr.decode("utf-8", "replace"))
         self.assertFalse((self.root / "INDEX.md").exists())
+
+    def test_hook_does_not_touch_manifest(self):
+        tools = self.install_tools()
+        self.write("AGENTS/epistemic-rules/x.md", FM)
+        subprocess.run(
+            [sys.executable, str(tools / "build_index.py"), str(self.root),
+             "--bundle-manifest"], env=self.env, check=True,
+            stdout=subprocess.PIPE)
+        self.assertEqual(self.commit_status(), 0, self.last_err)
+        self.assertEqual(
+            self.commit(MANIFEST_REL, "AGENTS/epistemic-rules/x.md"), 0,
+            self.last_err)
+        before = self.git("show", "HEAD:" + MANIFEST_REL)
+        self.assertTrue(before)
+        self.write("AGENTS/epistemic-rules/x.md", FM + "more\n")
+        self.assertEqual(self.commit("AGENTS/epistemic-rules/x.md"), 0,
+                         self.last_err)
+        names = self.git("show", "--name-only", "--format=", "HEAD").split()
+        self.assertNotIn(MANIFEST_REL, names)
+        self.assertEqual(self.git("show", "HEAD:" + MANIFEST_REL), before)
 
     def test_hook_mode_executable_in_git(self):
         repo = TOOLS.parent.parent.parent
