@@ -404,33 +404,45 @@ def classify_target(root: Path, target: Path) -> str:
 
 
 def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: str) -> bool:
-    """파일명 형태의 링크 표시텍스트가 실존 대상을 가리키는지 판정.
+    """파일명 형태의 링크 표시텍스트가 링크 대상 자체를 가리키는지 판정.
 
-    실존을 정확히 가리키는 세 관례를 정당으로 인정한다 (writing-style.md
-    "마크다운 링크 표시텍스트").
-      1. 대상 파일명(basename) 일치 - [AGENTS.md](daily/AGENTS.md).
-      2. 루트 기준 또는 source 상대로 표시텍스트 경로가 실존 -
-         [AGENTS/epistemic-rules/folder-structure.md](../../AGENTS/epistemic-rules/folder-structure.md).
-      3. 폴더 표기(/로 끝남)의 폴더명이 대상 경로 성분에 존재 -
+    정당한 형태 (writing-style/markdown-link-display-text.md):
+      1. / 없는 표시텍스트는 대상 파일명(basename)과 같다 -
+         [AGENTS.md](daily/AGENTS.md).
+      2. / 로 끝나는 폴더 표기는 그 폴더명이 링크 대상 경로 성분에 있다 -
          [knowledge/](../knowledge/AGENTS.md).
-    셋 다 아니면 부재 파일을 지칭하는 오도로 본다 (daily.md, strategy/overview.md).
+      3. 그 밖의 경로형은 루트나 문서 기준으로 해석한 결과가 대상과 같은
+         파일이거나(루트 기준 경로, 대상 문자열 그대로), . 과 .. 없이 해석된
+         대상의 루트 상대 경로 끝 성분과 같다 -
+         [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md).
+    경로는 심링크를 따르지 않고 문자열로 정규화하며 양쪽을 NFC로 맞춘다.
+    대상의 실존은 check_links 소관이라 여기서 보지 않는다. 어느 형태도 아니면
+    없는 파일이나 다른 위치를 지칭하는 오도로 본다.
     """
-    disp_norm = disp.rstrip("/")
-    disp_base = disp_norm.rsplit("/", 1)[-1]
-    target_base = target_path.rstrip("/").rsplit("/", 1)[-1]
-    if disp_base == target_base:
-        return True
-    for base in (root, source.parent):
-        try:
-            if (base / disp_norm).resolve().exists():
-                return True
-        except OSError:
-            # 경로 해석/조회 불가는 "실존하지 않음"과 동일하게 취급하고
-            # 다음 관례로 넘어간다.
-            pass
-    if disp.endswith("/") and disp_base in target_path.split("/"):
-        return True
-    return False
+    disp = nfc(disp)
+    target_path = nfc(target_path)
+    if disp.endswith("/"):
+        disp_base = disp.rstrip("/").rsplit("/", 1)[-1]
+        return disp_base in target_path.split("/")
+    base_dir = os.path.abspath(str(source.parent))
+    target = os.path.normpath(os.path.join(base_dir, target_path))
+    if "/" not in disp:
+        return disp == os.path.basename(target)
+    root_dir = os.path.abspath(str(root))
+    for base in (root_dir, base_dir):
+        if os.path.normpath(os.path.join(base, disp)) == target:
+            return True
+    disp_parts = disp.split("/")
+    if {"", ".", ".."} & set(disp_parts):
+        return False
+    try:
+        rel = os.path.relpath(target, root_dir)
+    except ValueError:
+        return False  # 윈도우에서 드라이브가 다름 (루트 밖)
+    if rel == os.pardir or rel.startswith(os.pardir + os.sep):
+        return False  # 루트 밖 대상은 끝부분 형태를 받지 않는다
+    rel_parts = rel.split(os.sep)
+    return rel_parts[-len(disp_parts):] == disp_parts
 
 
 def normalize_heading(text: str) -> str:
