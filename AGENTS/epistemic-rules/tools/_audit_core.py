@@ -16,7 +16,7 @@ from pathlib import Path
 REFERENCE_DIR = "reference"
 IMPLEMENTATION_DIR = "implementation"
 WORKLOG_DIR = "worklog"
-# 도구 전용 파일은 front matter 면제 (ref: writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
+# 도구 전용 파일은 front matter 면제 (ref: communication.md "문서 작성 스타일"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
 
