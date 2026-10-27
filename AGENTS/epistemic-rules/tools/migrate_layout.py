@@ -17,6 +17,17 @@ reference/AGENTS.md에 "등록된 자료" 절의 표가 있으면 reference/INDE
 이미 있으면 절을 건드리지 않고 Report.unconverted에 보고한다. 주석과 빈 줄뿐인 INDEX.yaml은 없는 것으로
 보고 덮어쓴다.
 unconverted가 있으면 명령행 종료 코드도 1이다.
+
+이전 절차: 옛 배치를 가진 저장소가 상류를 머지한 직후 한 번 실행한다.
+옛 배치를 가진 적 없는 저장소는 실행하지 않는다.
+1. 상류를 머지한다.
+2. 충돌을 푼다. reference/AGENTS.md의 충돌은 자손 쪽 자료 표를 남긴 채 풀고,
+   표는 다음 단계에서 이 도구가 reference/INDEX.yaml로 옮긴다.
+3. 이 도구를 --dry-run으로 돌려 보고를 확인한 뒤 실제로 실행한다.
+   보고에 남은 conflicts와 unconverted는 손으로 정리한다.
+4. build_index.py로 색인을 다시 만들어 결과를 커밋한다.
+5. 커밋 전 훅을 연결한다. 명령은 tools.md "색인 생성 스크립트",
+   서브모듈로 품은 저장소의 변형은 folder-index.md "생성과 확인".
 """
 
 import argparse

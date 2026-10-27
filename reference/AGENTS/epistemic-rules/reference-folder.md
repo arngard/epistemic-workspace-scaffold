@@ -38,4 +38,4 @@ tags: [agents, 절차, ingest, epistemic-rules]
 
 ## Raw 자료 자체는 immutable
 
-처리 후에도 `reference/` 안의 파일은 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../../../AGENTS/epistemic-rules/agent-roles/epistemic-auditor.md) "점검 항목").
+처리 후에도 자료(운영 파일 제외)는 삭제, 수정하지 않는다. 원본 보존이 SSOT다. derived 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../../../AGENTS/epistemic-rules/agent-roles/epistemic-auditor.md) "점검 항목").

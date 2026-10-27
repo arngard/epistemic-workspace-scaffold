@@ -1,9 +1,3 @@
----
-date created: 2026-04-18
-date modified: 2026-10-26
-tags: [에이전트, 진입점]
----
-
 # GitHub Copilot 진입점
 
 이 프로젝트의 AI 에이전트 지침은 루트의 [AGENTS.md](../AGENTS.md)에 정의되어 있다.

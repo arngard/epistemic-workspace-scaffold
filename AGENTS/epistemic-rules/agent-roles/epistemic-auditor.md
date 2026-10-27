@@ -33,7 +33,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - TASK_TREE 루트/1-depth 노드의 마크 커밋 없는 삭제
    - 루트가 아닌 완료 노드의 단독 삭제 - 조상 루트와 함께 제거되거나 완료된 중위 노드의 하위로 정리된 경우가 아닌 삭제
    - TASK_TREE 브랜치 속성이 가리키는 브랜치와 워크트리의 실존 대조(`git branch -a`, `git worktree list`)
-   - `reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반 - `reference/INDEX.yaml`의 변경은 제외)
+   - `reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반 - 운영 파일(`AGENTS.md`, `CLAUDE.md`, `AGENTS/`, `INDEX*.md`, `INDEX.yaml`)의 변경은 제외)
    - `date closed` 히스토리 문서의 본문 변경(동결 위반 - 후속 문서 링크 추가와 정합 유지 수정은 허용, ref: [document-temporality.md](../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
    - TASK_TREE `[x]` 완료 루트의 과다 잔존
    - 상류 머지 밖에서 상류 묶음 목록(`tools/bundle-manifest.sha256`)을 바꾼 본 레포 커밋 (명령과 범위는 [procedure.md](epistemic-auditor/procedure.md))
@@ -45,8 +45,8 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - 입력은 본 레포의 최근 머지 커밋 목록과 그 본문, TASK_TREE의 활성, 후속 항목이다. 세션 기록과 상속된 상류 이력은 입력하지 않는다.
    - 세부 패턴: 격리 위반(메타 영역의 사실을 컨텐츠 영역에 기재), 자율 격상(메타 결정을 AI가 자율로 기재), 자율 머지(단위 작업 시작점 커밋 없이 머지된 흔적), 반복 정정(메타 변동에 따른 같은 컨텐츠의 단기 반복 수정), 분석적 쪼개기(미시 분류로 쪼갰다가 통합으로 정정), 단위 경계 오인(한 의미 단위의 자의 분할이나 무관한 단위의 병합).
 6. 태그 어휘 (의미 판단)
-   - 뜻이 같은 태그 묶음(한영 쌍, 동의어, 단수와 복수, 경로와 겹치는 태그)의 병합안
-   - 고정 규격 문서(README, AGENTS 등)의 태그 중복 (ref: [tags.md](../tags.md) "고정 규격 문서 태그 중복 회피")
+   - 뜻이 같은 태그 묶음(한영 쌍, 동의어, 단수와 복수)의 병합안
+   - 걸러도 의미 있는 묶음이 생기지 않는 태그의 삭제안
    - 방법과 보고 형식은 [procedure.md](epistemic-auditor/procedure.md)
 
 수행 순서와 보고 형식은 [epistemic-auditor/procedure.md](epistemic-auditor/procedure.md)를 따른다. 감사자로서 감사를 수행할 때 읽는다.

@@ -16,7 +16,7 @@ from pathlib import Path
 REFERENCE_DIR = "reference"
 IMPLEMENTATION_DIR = "implementation"
 WORKLOG_DIR = "worklog"
-# 도구 전용 파일은 front matter 면제 (ref: writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
+# 도구 전용 파일은 front matter 면제 (ref: communication.md "문서 작성 스타일"). SKILL.md는 자체 규격(name, description).
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
 
@@ -404,33 +404,55 @@ def classify_target(root: Path, target: Path) -> str:
 
 
 def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: str) -> bool:
-    """파일명 형태의 링크 표시텍스트가 실존 대상을 가리키는지 판정.
+    """파일명 형태의 링크 표시텍스트가 링크 대상 자체를 가리키는지 판정.
 
-    실존을 정확히 가리키는 세 관례를 정당으로 인정한다 (writing-style.md
-    "마크다운 링크 표시텍스트").
-      1. 대상 파일명(basename) 일치 - [AGENTS.md](daily/AGENTS.md).
-      2. 루트 기준 또는 source 상대로 표시텍스트 경로가 실존 -
-         [AGENTS/epistemic-rules/folder-structure.md](../../AGENTS/epistemic-rules/folder-structure.md).
-      3. 폴더 표기(/로 끝남)의 폴더명이 대상 경로 성분에 존재 -
-         [knowledge/](../knowledge/AGENTS.md).
-    셋 다 아니면 부재 파일을 지칭하는 오도로 본다 (daily.md, strategy/overview.md).
+    대상은 링크를 둔 문서 위치에서 링크 대상을 풀어낸 경로(해석된 대상)다.
+    정당한 형태 (writing-style/markdown-link-display-text.md):
+      1. / 없는 표시텍스트는 대상 파일명(basename)과 같다 -
+         [AGENTS.md](daily/AGENTS.md).
+      2. / 로 끝나는 폴더 표기는 그 폴더명이 해석된 대상의 루트 상대 경로
+         성분에 있다 - [knowledge/](../knowledge/AGENTS.md). 루트 밖 대상은
+         링크 대상 문자열의 성분과 대조한다.
+      3. 그 밖의 경로형은 루트나 문서 기준으로 정규화한 결과가 대상과 같거나
+         (루트 기준 경로, 대상 문자열 그대로, ./x.md 등), . 과 .. 없이 해석된
+         대상의 루트 상대 경로 끝 성분과 같다 -
+         [agent-roles/epistemic-auditor.md](../agent-roles/epistemic-auditor.md).
+         루트 밖 대상은 끝부분 형태를 받지 않는다.
+    경로는 심링크를 따르지 않고 문자열로 정규화하며, 표시텍스트, 링크 대상,
+    파일시스템에서 온 문서와 루트 경로를 모두 NFC로 맞춘다. 대상의 실존은
+    check_links 소관이라 여기서 보지 않는다. 어느 형태도 아니면 없는 파일이나
+    다른 위치를 지칭하는 오도로 본다.
     """
-    disp_norm = disp.rstrip("/")
-    disp_base = disp_norm.rsplit("/", 1)[-1]
-    target_base = target_path.rstrip("/").rsplit("/", 1)[-1]
-    if disp_base == target_base:
-        return True
-    for base in (root, source.parent):
-        try:
-            if (base / disp_norm).resolve().exists():
-                return True
-        except OSError:
-            # 경로 해석/조회 불가는 "실존하지 않음"과 동일하게 취급하고
-            # 다음 관례로 넘어간다.
-            pass
-    if disp.endswith("/") and disp_base in target_path.split("/"):
-        return True
-    return False
+    disp = nfc(disp)
+    target_path = nfc(target_path)
+    base_dir = nfc(os.path.abspath(str(source.parent)))
+    root_dir = nfc(os.path.abspath(str(root)))
+    target = os.path.normpath(os.path.join(base_dir, target_path))
+    try:
+        rel = os.path.relpath(target, root_dir)
+    except ValueError:
+        rel = None  # 윈도우에서 드라이브가 다름 (루트 밖)
+    if rel is not None and (rel == os.pardir or rel.startswith(os.pardir + os.sep)):
+        rel = None  # 루트 밖
+    rel_parts = rel.split(os.sep) if rel is not None else None
+    if disp.endswith("/"):
+        disp_base = disp.rstrip("/").rsplit("/", 1)[-1]
+        if rel_parts is None:
+            return disp_base in target_path.split("/")
+        return disp_base in rel_parts
+    if "/" not in disp:
+        return disp == os.path.basename(target)
+    for base in (root_dir, base_dir):
+        if os.path.normpath(os.path.join(base, disp)) == target:
+            return True
+    disp_parts = disp.split("/")
+    # 해석된 경로 성분에는 빈 성분, . , .. 이 없어 아래 비교로도 걸러지나
+    # 끝부분 형태의 조건을 드러내려고 먼저 거부한다.
+    if {"", ".", ".."} & set(disp_parts):
+        return False
+    if rel_parts is None:
+        return False  # 루트 밖 대상은 끝부분 형태를 받지 않는다
+    return rel_parts[-len(disp_parts):] == disp_parts
 
 
 def normalize_heading(text: str) -> str:

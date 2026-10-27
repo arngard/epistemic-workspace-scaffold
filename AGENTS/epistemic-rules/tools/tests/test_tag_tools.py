@@ -556,6 +556,146 @@ class RetagMainTest(Fixture):
         self.assertEqual(code, 2)
 
 
+class DropTest(Fixture):
+    def test_drop_removes_tag(self):
+        retag(self.root, {}, drop={"x"})
+        self.assertEqual(self.tags("s/a.md"), ["agents"])
+
+    def test_drop_to_empty_flow(self):
+        self.write("s/c.md", "[x]")
+        retag(self.root, {}, drop={"x"})
+        self.assertIn("tags: []\n", self.read("s/c.md"))
+
+    def test_drop_to_empty_block(self):
+        retag(self.root, {}, drop={"에이전트"})
+        self.assertEqual(self.tags("s/b.md"), [])
+
+    def test_drop_bundle_skipped(self):
+        rep = retag(self.root, {}, drop={"agents"})
+        self.assertIn("AGENTS/epistemic-rules.md", rep.skipped_bundle)
+        self.assertEqual(self.tags("s/a.md"), ["x"])
+
+    def test_drop_include_bundles(self):
+        retag(self.root, {}, drop={"agents"}, include_bundles=True)
+        self.assertEqual(
+            self.tags("AGENTS/epistemic-rules.md"), ["epistemic-rules"])
+
+    def test_drop_keeps_date_and_other_bytes(self):
+        before = self.read("s/a.md")
+        retag(self.root, {}, drop={"x"})
+        self.assertEqual(
+            before.replace("[agents, x]", "[agents]"), self.read("s/a.md"))
+
+    def test_map_and_drop_same_tag_rejected(self):
+        before = self.snapshot()
+        with self.assertRaises(ValueError):
+            retag(self.root, {"x": "z"}, drop={"x"})
+        self.assertEqual(before, self.snapshot())
+
+    def test_map_and_drop_together(self):
+        retag(self.root, {"agents": "a"}, drop={"x"})
+        self.assertEqual(self.tags("s/a.md"), ["a"])
+
+    def test_drop_equal_to_new_tag_rejected(self):
+        before = self.snapshot()
+        with self.assertRaises(ValueError):
+            retag(self.root, {"agents": "x"}, drop={"x"})
+        self.assertEqual(before, self.snapshot())
+
+    def test_empty_drop_rejected(self):
+        before = self.snapshot()
+        with self.assertRaises(ValueError):
+            retag(self.root, {}, drop={""})
+        self.assertEqual(before, self.snapshot())
+
+    def test_drop_skips_comment_region(self):
+        self.write_raw(
+            "s/b.md", FM_HEAD + "tags:\n  - x # m\n  - y\n---\n\nb\n")
+        before = self.read("s/b.md")
+        rep = retag(self.root, {}, drop={"x"})
+        self.assertEqual(rep.skipped_comment, ["s/b.md"])
+        self.assertEqual(before, self.read("s/b.md"))
+
+
+class PathScopeTest(Fixture):
+    def test_folder_scope(self):
+        self.write("t/a.md", "[x]")
+        retag(self.root, {}, drop={"x"}, paths=["t"])
+        self.assertEqual(self.tags("t/a.md"), [])
+        self.assertEqual(self.tags("s/a.md"), ["agents", "x"])
+
+    def test_file_scope(self):
+        self.write("s/c.md", "[x]")
+        retag(self.root, {"x": "z"}, paths=["s/c.md"])
+        self.assertEqual(self.tags("s/c.md"), ["z"])
+        self.assertEqual(self.tags("s/a.md"), ["agents", "x"])
+
+    def test_prefix_is_not_folder(self):
+        # "s"는 "s2/" 아래를 포함하지 않는다.
+        self.write("s2/a.md", "[x]")
+        retag(self.root, {}, drop={"x"}, paths=["s"])
+        self.assertEqual(self.tags("s2/a.md"), ["x"])
+
+    def test_bad_paths_rejected(self):
+        before = self.snapshot()
+        for bad in ("/abs", "../out", "nowhere", "", "s\\a.md"):
+            with self.assertRaises(ValueError):
+                retag(self.root, {}, drop={"x"}, paths=[bad])
+        self.assertEqual(before, self.snapshot())
+
+    def test_path_matching_no_document_rejected(self):
+        (self.root / "u").mkdir()
+        (self.root / "u" / "note.txt").write_text("x")
+        before = self.snapshot()
+        with self.assertRaises(ValueError):
+            retag(self.root, {}, drop={"x"}, paths=["u"])
+        self.assertEqual(before, self.snapshot())
+
+    def test_path_normalized(self):
+        for given in ("s/", "./s", "s/a.md/"):
+            self.write("s/a.md", "[agents, x]")
+            self.write("s2/a.md", "[x]")
+            retag(self.root, {}, drop={"x"}, paths=[given])
+            self.assertEqual(self.tags("s/a.md"), ["agents"])
+            self.assertEqual(self.tags("s2/a.md"), ["x"])
+
+    def test_dot_is_whole_root(self):
+        self.write("t/a.md", "[x]")
+        retag(self.root, {}, drop={"x"}, paths=["."])
+        self.assertEqual(self.tags("t/a.md"), [])
+        self.assertEqual(self.tags("s/a.md"), ["agents"])
+
+    def test_empty_paths_sees_nothing(self):
+        rep = retag(self.root, {}, drop={"x"}, paths=[])
+        self.assertEqual(rep.changed, [])
+        self.assertEqual(self.tags("s/a.md"), ["agents", "x"])
+
+
+class RetagMainDropTest(Fixture):
+    def test_drop_only_exit_0(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = retag_main([str(self.root), "--drop", "x"])
+        self.assertEqual(code, 0)
+        self.assertEqual(self.tags("s/a.md"), ["agents"])
+
+    def test_neither_map_nor_drop_exit_2(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(retag_main([str(self.root)]), 2)
+
+    def test_bad_path_exit_2_nothing_written(self):
+        before = self.snapshot()
+        for bad in ("../out", "nowhere"):
+            argv = [str(self.root), "--drop", "x", "--path", bad]
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(retag_main(argv), 2)
+        self.assertEqual(before, self.snapshot())
+
+    def test_drop_equal_to_new_tag_exit_2(self):
+        argv = [str(self.root), "--map", "agents=x", "--drop", "x"]
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(retag_main(argv), 2)
+
+
 class RenderTest(unittest.TestCase):
     def block(self, text):
         return find_tags_block(text)

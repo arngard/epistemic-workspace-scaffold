@@ -18,6 +18,8 @@ tags: [agents, 역할, epistemic-rules]
 
 ## 역할 목록
 
+상류가 정의한 역할의 목록이다. 인스턴스 역할은 이 표에 더하지 않고 아래 "인스턴스 전용 감사자"의 자리에 둔다.
+
 | 역할 | 목적 | 정의 |
 |------|------|------|
 | epistemic-auditor | 문서 정합성 감사. 보고만 하고 수정하지 않는다. 감사자 호출, 감사 판정 기준 확인 시 읽는다 | [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md) |
@@ -27,4 +29,4 @@ tags: [agents, 역할, epistemic-rules]
 스캐폴드를 적용한 인스턴스가 자기 도메인 고유 정책(예: 출처 표기 강화, 도메인 데이터 정합, 누적 왜곡 점검)을 감사하려면, [epistemic-auditor](agent-roles/epistemic-auditor.md)를 수정하지 않고 인스턴스 전용 감사자를 별도 역할로 둔다. 특수화 방식은 [instance-specialization.md](instance-specialization.md) "특수화 방식"을 따른다. 결정론적으로 판정할 수 있는 고유 점검은 감사자 대신 [audit-extensions.md](audit-extensions.md)의 감사 확장 지점에 둔다.
 
 - 포함 호출: 인스턴스 감사자는 epistemic-auditor를 super로 포함해 호출한다. 한 번의 호출로 스캐폴드 공통 정합성과 인스턴스 고유 점검이 함께 수행된다.
-- 등재: 인스턴스 감사자도 본 문서의 역할 목록에 올리고, `agent-roles/` 아래 하위 문서에 정의와 도구별 구현 위치를 둔다.
+- 등재: 인스턴스 감사자의 정의는 상류 묶음 옆 낱개 문서(예: `AGENTS/<감사자 이름>.md`)에 두고, 루트 `AGENTS.md` "이 워크스페이스의 규범" 절에서 어떤 상황에 부르는지와 함께 링크한다. 도구별 구현은 도구의 자리(예: `.claude/agents/<이름>.md`)에 둔다. 상류 묶음 파일은 고치지 않으므로(부모 불수정) 본 문서의 역할 목록과 `agent-roles/`에는 더하지 않는다.

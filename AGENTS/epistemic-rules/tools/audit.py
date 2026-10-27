@@ -42,9 +42,12 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      (동명 쌍은 하위 문서 묶음 관계의 예약 신호. md가 든 동명 쌍의
       실제 관계 판단은 감사자 몫)
  17. 마크다운 링크 표시텍스트-대상 정합 - 위반
-     (파일명 형태 표시텍스트가 대상 basename 또는 대상 전체와 일치해야 함.
+     (파일명 형태 표시텍스트는 링크 대상 자체를 가리켜야 함. 대상은 문서
+      위치에서 풀어낸 경로. / 없으면 대상 basename, / 로 끝나면 대상 경로
+      성분의 폴더명, 그 밖의 경로는 루트나 문서 기준 해석이 대상과 같거나
+      . 과 .. 없이 대상 루트 상대 경로의 끝부분.
       공백 든 자연어 문구, 타이틀은 제외하되 날짜 문서, 폴더 이름은 검사.
-      폐지 파일명 잔재 오도를 검출)
+      폐지 파일명과 옛 경로 잔재 오도를 검출)
  18. 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 - 경고
      (importance, urgency. ref: strategy/AGENTS/epistemic-rules.md. 하위 폴더/디스크립터 제외)
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
@@ -130,8 +133,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호),
   audit_index(색인 정합/설명 원본), audit_bundle(상류 묶음 출처 태그/동일성),
   audit_extensions(루트 확장 검사 실행).
-- 감사 밖의 태그 도구 tag_inventory.py(읽기 전용)와 retag.py(승인된 병합
-  실행)는 _tags_core.py를 쓴다. audit.py는 이 둘을 부르지 않는다.
+- 감사 밖의 태그 도구 tag_inventory.py(읽기 전용)와 retag.py(승인된 병합과
+  삭제 실행)는 _tags_core.py를 쓴다. audit.py는 이 둘을 부르지 않는다.
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
   해석, 인코딩 설정, 출력, 종료 코드를 담당한다.

@@ -1,7 +1,7 @@
 ---
 date created: 2026-04-18
 date modified: 2026-10-25
-tags: [architecture, 규칙, 네이밍, 코딩규약]
+tags: [architecture, 규칙, 네이밍, 코딩]
 description: 프로젝트 고유 코드, 빌드 규약. 워크스페이스 공통 규약은 상류 규범에 있다
 ---
 

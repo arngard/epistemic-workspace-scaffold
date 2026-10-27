@@ -67,13 +67,14 @@ def check_link_whitespace(root: Path) -> list[Finding]:
 
 
 def check_link_text(root: Path) -> list[Finding]:
-    """마크다운 링크 표시텍스트가 실존하지 않는 파일을 지칭하는지 검사.
+    """마크다운 링크 표시텍스트가 링크 대상 자체를 가리키는지 검사.
 
     링크 대상은 check_links가 실존을 검사하지만 표시텍스트는 그 검사 밖이라,
     폐지된 파일명이나 옛 경로가 표시텍스트로 남으면 링크가 깨지지 않은 채
-    독자를 없는 파일로 오도한다 (예: [strategy/overview.md](../AGENTS.md)는 대상이
-    실존해 링크는 성립하나 표시텍스트 strategy/overview.md는 부재 파일). 본 검사가
-    그 사각을 닫는다. 파일명 형태의 표시텍스트만 본다 - 공백 없이 (.md로 끝나거나
+    독자를 없는 파일이나 다른 위치로 오도한다 (예: [strategy/overview.md](../AGENTS.md)는
+    대상이 실존해 링크는 성립하나 표시텍스트 strategy/overview.md는 대상이 아님).
+    본 검사가 그 사각을 닫는다. 정당한 형태는 link_text_points_to_real이
+    정한다. 파일명 형태의 표시텍스트만 본다 - 공백 없이 (.md로 끝나거나
     / 를 포함한 것), 그리고 경로 성분 중 하나가 날짜 프리픽스로 시작하면서 .md나
     / 로 끝나는 것(날짜 문서와 폴더는 이름에 공백이 든다). 그 밖에 공백이 든
     자연어 문구와 타이틀은 제외된다. 표시텍스트와 대상 모두 %20 등을 디코딩해
@@ -106,7 +107,7 @@ def check_link_text(root: Path) -> list[Finding]:
                 continue
             out.append(Finding(
                 VIOLATION, "link-text", rel,
-                f"표시텍스트가 실존하지 않는 대상을 지칭 -> [{disp}]({target})",
+                f"표시텍스트가 링크 대상을 가리키지 않음 -> [{disp}]({target})",
             ))
     return out
 

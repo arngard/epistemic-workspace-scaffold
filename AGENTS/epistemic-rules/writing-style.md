@@ -58,13 +58,13 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 ## 도구 전용 설정 파일 예외
 
-도구 전용 설정 파일(`.claude/`, `.github/` 등 특정 AI 도구가 고정된 스키마로 읽는 파일)은 해당 도구의 스키마를 우선한다. [communication.md](communication.md) "문서 작성 스타일"의 공통 필수 필드(`date created`, `date modified`, `tags`)를 본 파일들에 강제하지 않는다.
+도구가 형식을 정하는 파일은 그 도구의 형식을 따르고 front matter 의무에서 빠진다. 대상 파일은 [communication.md](communication.md) "문서 작성 스타일"이 정한다.
 
 ## 하위 문서
 
 분량이 크고 자체 완결적인 세부 규약은 `writing-style/` 아래 하위 문서로 둔다.
 
-- [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (실존 기반, audit 기계 검사). 문서 간 링크를 작성할 때 읽는다.
+- [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (링크 대상 자체를 가리킴, audit 기계 검사). 문서 간 링크를 작성할 때 읽는다.
 - [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외. 문서를 작성하거나 부호를 입력할 때 읽는다.
 - [reference-markers.md](writing-style/reference-markers.md): 참조 표지 `ref:`, `sub:`, `see:`의 판정, 형태, 자리 (본문 링크 우선). 문서 간 참조를 따로 둘 때 읽는다.
 - [conversation-reporting.md](writing-style/conversation-reporting.md): 대화 보고의 구성 (결론 선행, 질문은 마지막, 산출물만, 내부 라벨 금지). 사용자에게 보고하거나 답변할 때 읽는다.

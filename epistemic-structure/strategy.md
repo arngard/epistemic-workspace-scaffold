@@ -2,7 +2,7 @@
 date created: 2026-10-26
 date modified: 2026-10-27
 tags: [strategy]
-description: 우리가 내린 결정과 그 근거(왜 그렇게 결정했는가)
+description: 우리가 내린 결정과 그 근거(왜 이렇게 하기로 했는가)
 ---
 
 # strategy

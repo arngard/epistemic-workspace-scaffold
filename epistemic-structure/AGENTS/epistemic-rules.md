@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [epistemic-structure, epistemic-rules]
 ---
 
@@ -13,7 +13,7 @@ tags: [epistemic-structure, epistemic-rules]
 - [온톨로지 규범](../ontology/AGENTS/epistemic-rules.md) "정의": "우리 도메인에 무엇이 존재하는가"
 - [지식 규범](../knowledge/AGENTS/epistemic-rules.md) "정의": "세상이 어떠한가"
 - [전략 규범](../strategy/AGENTS/epistemic-rules.md) "정의": "왜 이렇게 하기로 했는가"
-- [설계 명세 규범](../architecture/AGENTS/epistemic-rules.md) "정의": "무엇을 어떻게 만들겠다"
+- [설계 명세 규범](../architecture/AGENTS/epistemic-rules.md) "정의": "무엇을 어떻게 만드는가"
 
 작업 상태와 작업 트리를 담는 [worklog/](../../worklog/AGENTS.md)는 이 범주가 아니며, `epistemic-structure/` 밖의 별도 최상위 폴더다.
 

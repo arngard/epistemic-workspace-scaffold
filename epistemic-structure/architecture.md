@@ -2,7 +2,7 @@
 date created: 2026-10-26
 date modified: 2026-10-27
 tags: [architecture]
-description: 무엇을 어떻게 만들지 정한 설계 명세(어떻게 만드는가)
+description: 무엇을 어떻게 만들지 정한 설계 명세(무엇을 어떻게 만드는가)
 ---
 
 # architecture

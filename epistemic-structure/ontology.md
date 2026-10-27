@@ -2,7 +2,7 @@
 date created: 2026-10-26
 date modified: 2026-10-27
 tags: [ontology]
-description: 도메인 개념과 용어의 정의(무엇이 존재하는가)
+description: 도메인 개념과 용어의 정의(우리 도메인에 무엇이 존재하는가)
 ---
 
 # ontology

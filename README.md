@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [소개]
 description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 ---
@@ -11,10 +11,10 @@ description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 
 문서를 인식론적 범주로 나누는 워크스페이스 골격. 인간과 AI가 함께 일할 때 상위 의도와 근거가 유실되지 않게 한다. 설계 문서를 네 범주로 분류한다.
 
-- Ontology: 무엇이 존재하는가
+- Ontology: 우리 도메인에 무엇이 존재하는가
 - Knowledge: 세상이 어떠한가
-- Strategy: 왜 이렇게 결정했는가
-- Architecture: 어떻게 만드는가
+- Strategy: 왜 이렇게 하기로 했는가
+- Architecture: 무엇을 어떻게 만드는가
 
 왜 이렇게 하는가는 [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md), 운영 지침과 원칙은 단일 진입점 [AGENTS.md](AGENTS.md)를 본다.
 
@@ -52,7 +52,7 @@ description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 
 스캐폴드 이력을 받았다면 `upstream` 연결은 고를 수 있는 선택지가 아니라 시작 상태다. 감사는 이 연결로 상류 커밋과 자기 커밋을 구분한다. 고른 방식과 이유는 결정 문서로 남긴다.
 
-가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
+가져온 뒤에는 첫 커밋 전에 클론마다 커밋 전 훅을 한 번 연결한다(명령은 [tools.md](AGENTS/epistemic-rules/tools.md) "색인 생성 스크립트"). 이어서 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
 
 ## 더 읽을 거리
 
