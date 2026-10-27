@@ -5,6 +5,9 @@
 마크다운 링크와 본문 언급을 새 경로로 바꾸는 순수 함수를 담는다.
 모든 경로 인자는 레포 루트 기준 POSIX 상대 경로다. import 시 부수 효과는 없다.
 migrate()는 git 추적 파일을 옮기고 추적 md 파일의 본문을 바꾸는 실행부다.
+reference/ 아래 자료 파일(사용자가 넣은 원본 자료와 그 사본)은 옮기기만 하고 본문을 바꾸지 않는다.
+reference/AGENTS.md, reference/CLAUDE.md, reference/ 직속 색인 쪽 파일, 규범 폴더 reference/AGENTS/
+아래는 운영 파일이라 다른 md와 같이 바꾼다. implementation/ 아래 문서도 바꾼다.
 추적되지 않는 내용은 옮기지 않되, 예외로 추적 안 되는 _tmp/ 폴더는 .tmp/가 없을 때
 파일 시스템 이름 바꾸기로 옮긴다. .tmp/가 이미 있으면 ("_tmp", ".tmp")를 충돌로 보고한다.
 대상 경로가 이미 있어(추적 여부 무관) 건너뛴 이동은 Report.conflicts에 모으고, 옛 파일은 그대로 둔다.
@@ -44,6 +47,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _audit_core import (  # noqa: E402
+    DESCRIPTOR_NAME, INDEX_PAGE_RE, NORMS_DIR_NAME, REFERENCE_DIR)
 from _index_core import (  # noqa: E402
     REFERENCE_STATUSES, IndexFormatError, load_index_yaml, quote_scalar)
 
@@ -536,6 +541,26 @@ def convert_reference_table(text: str) -> Tuple[str, str, List[str]]:
     return rest, "".join(out), []
 
 
+# reference/ 직속에서 운영 파일로 보는 이름. 디스크립터, 진입점 포인터, 생성 색인 쪽 파일이다.
+_REFERENCE_OPERATIONAL_NAMES = (DESCRIPTOR_NAME, "CLAUDE.md")
+
+
+def _is_reference_material(rel: str) -> bool:
+    """rel(이전 뒤 경로)이 reference/ 아래 자료 파일이면 참. 이런 파일은 본문을 바꾸지 않는다.
+
+    감사의 자료 폴더 판정(in_material_content)을 reference/에 한정해 따른다. 규범 폴더
+    reference/AGENTS/ 아래와 reference/ 직속의 AGENTS.md, CLAUDE.md, 색인 쪽 파일(INDEX.md,
+    INDEX2.md ...)은 운영 파일이라 거짓이다. 그 밖의 하위 폴더에 있는 같은 이름은 자료 사본으로 본다.
+    """
+    parts = rel.split("/")
+    if len(parts) < 2 or parts[0] != REFERENCE_DIR or parts[1] == NORMS_DIR_NAME:
+        return False
+    if len(parts) == 2 and (parts[1] in _REFERENCE_OPERATIONAL_NAMES
+                            or INDEX_PAGE_RE.match(parts[1])):
+        return False
+    return True
+
+
 @dataclass
 class Report:
     """이전 결과. 경로는 레포 루트 기준 POSIX 상대 경로다."""
@@ -644,6 +669,8 @@ def migrate(root: Path, dry_run: bool = False) -> Report:
     이미 새 위치에 있던 파일은 그 뒤 _repair_links로 옛 위치 기준 링크를 고친다. 대상 존재
     판정은 이전 뒤 추적 파일 집합(dry_run이 아니면 파일 시스템도)으로 하므로 고친 링크는 재실행에서
     그대로다. 대응이 없는 옛 최상위 폴더의 추적 파일과 링크 대상에 옛 경로가 남은 줄은 residual로 보고한다.
+    대응 뒤 경로가 reference/ 아래 자료 파일(_is_reference_material)이면 옮기기만 하고 본문을 읽거나
+    바꾸지 않으며, rewritten과 residual에도 넣지 않는다. 충돌로 옛 자리에 남은 파일도 같다.
     dry_run이면 파일 시스템과 색인을 건드리지 않고 같은 보고를 돌려준다.
     """
     root = Path(root)
@@ -687,7 +714,8 @@ def migrate(root: Path, dry_run: bool = False) -> Report:
     _move_untracked_tmp(root, present, plan, report, dry_run)
     for old in tracked:
         new = plan.get(old, old)
-        if not new.endswith(".md"):
+        # 충돌로 옛 자리에 남은 파일도 대응 뒤 경로로 판정해 자료 본문을 지킨다.
+        if not new.endswith(".md") or _is_reference_material(map_path(new)):
             continue
         read_from = old if dry_run else new
         with open(str(root / read_from), encoding="utf-8", newline="") as f:

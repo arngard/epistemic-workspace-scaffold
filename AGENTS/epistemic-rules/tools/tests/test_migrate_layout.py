@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from _index_core import IndexFormatError, load_index_yaml  # noqa: E402
 from migrate_layout import (  # noqa: E402
-    INDEX_YAML_HEADER, _inverse_path, _repair_links, convert_reference_table, main, map_path,
-    migrate, rewrite_links, rewrite_mentions)
+    INDEX_YAML_HEADER, _inverse_path, _is_reference_material, _repair_links,
+    convert_reference_table, main, map_path, migrate, rewrite_links, rewrite_mentions)
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -519,6 +519,72 @@ class OutsideLinkRepairTest(unittest.TestCase):
             again = migrate(root)
             self.assertEqual((again.moved, again.rewritten), ([], []))
             self.assertEqual(_snapshot(root), before)
+
+
+# 다른 워크스페이스를 통째로 복사해 둔 자료 사본의 본문. 옛 경로 언급과 링크가 든다.
+COPY_TEXT = ("`_docs/_worklog/` 언급\n[a](_docs/_worklog/x.md)\n"
+             "[b](../../_docs/_worklog/TASK_TREE.md)\n")
+
+
+class ReferenceMaterialTest(unittest.TestCase):
+    """reference/ 아래 자료 사본은 옮기기만 하고 본문을 바꾸지 않는다."""
+
+    def test_predicate(self):
+        for rel in ("reference/copy/AGENTS.md", "reference/copy/_docs/x.md", "reference/a.md",
+                    "reference/copy/INDEX.md", "reference/copy/CLAUDE.md",
+                    "reference/copy/AGENTS/x.md"):
+            self.assertTrue(_is_reference_material(rel), rel)
+        for rel in ("reference/AGENTS.md", "reference/CLAUDE.md", "reference/INDEX.md",
+                    "reference/INDEX2.md", "reference/AGENTS/epistemic-rules/x.md",
+                    "implementation/copy/x.md", "worklog/x.md", "reference"):
+            self.assertFalse(_is_reference_material(rel), rel)
+
+    def test_copy_bodies_kept(self):
+        files = dict(FIXTURE)
+        files["_reference/AGENTS.md"] = TABLE_ONE_ROW
+        files["_reference/a.pdf"] = "x\n"
+        files["_reference/INDEX.md"] = "`_docs/_worklog/` 색인\n"
+        files["_reference/AGENTS/note.md"] = "`_docs/_worklog/` 규범\n"
+        for rel in ("_reference/copy/AGENTS.md", "_reference/copy/_docs/x.md",
+                    "_reference/copy/INDEX.md", "reference/copy2/y.md"):
+            files[rel] = COPY_TEXT
+        copies = ["reference/copy/AGENTS.md", "reference/copy/_docs/x.md",
+                  "reference/copy/INDEX.md", "reference/copy2/y.md"]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            for dry in (True, False):
+                rep = migrate(root, dry_run=dry)
+                self.assertIn(("_reference/copy/_docs/x.md", "reference/copy/_docs/x.md"), rep.moved)
+                for rel in copies:
+                    self.assertNotIn(rel, rep.rewritten)
+                    self.assertEqual([r for r in rep.residual if r[0] == rel], [])
+                self.assertIn("reference/INDEX.md", rep.rewritten)
+                self.assertIn("reference/AGENTS/note.md", rep.rewritten)
+                self.assertIn("reference/AGENTS.md", rep.rewritten)
+                self.assertEqual(len(rep.converted), 1)
+            for rel in copies:
+                self.assertEqual((root / rel).read_text(encoding="utf-8"), COPY_TEXT, rel)
+            self.assertEqual((root / "reference/INDEX.md").read_text(encoding="utf-8"),
+                             "`worklog/` 색인\n")
+            self.assertEqual(list(load_index_yaml(root / "reference/INDEX.yaml")), ["a.pdf"])
+            self.assertNotIn("등록된 자료", (root / "reference/AGENTS.md").read_text(encoding="utf-8"))
+            _git(root, "add", "-A")
+            before = _snapshot(root)
+            again = migrate(root)
+            self.assertEqual((again.moved, again.rewritten), ([], []))
+            self.assertEqual(_snapshot(root), before)
+
+    def test_conflicted_copy_body_kept(self):
+        files = dict(FIXTURE)
+        files["_reference/copy/x.md"] = COPY_TEXT
+        files["reference/copy/x.md"] = "already here\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root)
+            self.assertIn(("_reference/copy/x.md", "reference/copy/x.md"), rep.conflicts)
+            self.assertNotIn("_reference/copy/x.md", rep.rewritten)
+            self.assertEqual([r for r in rep.residual if r[0] == "_reference/copy/x.md"], [])
+            self.assertEqual((root / "_reference/copy/x.md").read_text(encoding="utf-8"), COPY_TEXT)
 
 
 class EdgeCaseTest(unittest.TestCase):
