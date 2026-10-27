@@ -16,6 +16,19 @@ audit.py는 git에 의존하지 않는다는 원칙을 지키려고 별도 스�
     3. worklog/AGENTS/epistemic-rules/status-registry.md 표의 의미 감사 행 (상류 규칙)
 마지막 수행 시각은 STATUS 행의 둘째 칸이다.
 
+경계 사례의 판정:
+    - 코드 펜스 안의 줄은 행으로 보지 않는다. 문서가 예시로 든 표를 실제 행으로
+      읽지 않기 위해서다. 펜스는 줄 머리(앞 공백 제외)가 같은 문자(백틱이나 ~)의
+      연속 셋 이상인 줄로 열고, 같은 문자가 열 때 이상으로 이어지고 그 뒤에
+      공백뿐인 줄로 닫는다. 펜스를 닫지 않은 채 파일이 끝나면 그 파일을 밝혀
+      판정 불가로 끝난다(다음 출처로 조용히 넘어가지 않는다).
+    - 덮어쓰기 파일에 표는 있으나 의미 감사 행이 없으면 다음 출처로 넘어간다.
+    - 읽은 행에서 임계 시간이나 trailer를 읽을 수 없으면 다음 출처로 넘어가지
+      않고 그 파일을 밝혀 판정 불가로 끝난다(조용한 대체 금지).
+    - STATUS 행이 칸 하나뿐이면 판정 불가다.
+    - STATUS 행의 둘째 칸이 비면 미수행 표시로 보아 충족이다(감사를 더 하는
+      쪽이 안전한 기본값).
+
 시각 비교는 KST(UTC+9) 고정으로 한다. STATUS 시각이 KST 표기이므로 실행
 머신의 로컬 시간대에 의존하지 않는다.
 
@@ -63,16 +76,39 @@ def git(root: Path, *args: str) -> tuple[int, str]:
     return proc.returncode, proc.stdout.strip()
 
 
-def find_row(path: Path) -> "list[str] | None":
-    """이름 칸에 AUDIT_ROW_KEY를 담은 첫 표 행의 칸 목록(앞뒤 공백 제거). 없으면 None."""
+def find_row(path: Path, label: "str | None" = None) -> "list[str] | None":
+    """이름 칸에 AUDIT_ROW_KEY를 담은 첫 표 행의 칸 목록(앞뒤 공백 제거). 없으면 None.
+
+    코드 펜스 안의 줄은 건너뛴다. 펜스는 줄 머리(앞 공백 제외)가 같은 문자(백틱이나
+    ~)의 연속 셋 이상인 줄로 열고, 같은 문자가 열 때 이상으로 이어지고 그 뒤에
+    공백뿐인 줄로 닫는다(정보 문자열이 붙은 줄은 닫지 않는다). 파일이 끝날 때까지
+    펜스가 닫히지 않으면 그 뒤의 행을 읽을 수 없으므로 ValueError다(label은 메시지에
+    넣을 파일 이름, 없으면 path).
+    """
     if not path.is_file():
         return None
+    fence = None  # (문자, 연 길이)
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        if not line.lstrip().startswith("|"):
+        # 4칸 이상 들여 쓴 줄도 펜스로 본다. 목록 항목 안에 중첩한 펜스를 놓치지 않으려는 의도다.
+        head = line.lstrip()
+        if fence is None:
+            if head.startswith(("```", "~~~")):
+                run = len(head) - len(head.lstrip(head[0]))
+                fence = (head[0], run)
+                continue
+        else:
+            char, size = fence
+            rest = head.lstrip(char)
+            if len(head) - len(rest) >= size and not rest.strip():
+                fence = None
+            continue
+        if not head.startswith("|"):
             continue
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
         if AUDIT_ROW_KEY in cells[0]:
             return cells
+    if fence is not None:
+        raise ValueError(f"코드 펜스가 닫히지 않아 행을 읽을 수 없음 - {label or path.as_posix()}")
     return None
 
 
@@ -81,9 +117,9 @@ def parse_last_run(root: Path) -> "datetime | None":
 
     행이 없거나 시각을 읽을 수 없으면 ValueError - 침묵 실패를 만들지 않는다.
     """
-    cells = find_row(root / STATUS_REL)
+    cells = find_row(root / STATUS_REL, STATUS_REL.as_posix())
     if cells is None:
-        raise ValueError(f'STATUS에 "{AUDIT_ROW_KEY}"를 담은 레지스트리 행 없음 - {STATUS_REL}')
+        raise ValueError(f'STATUS에 "{AUDIT_ROW_KEY}"를 담은 레지스트리 행 없음 - {STATUS_REL.as_posix()}')
     if len(cells) < 2:
         raise ValueError(f"레지스트리 행의 칸이 2개 미만 - {cells}")
     stamp = cells[1]
@@ -99,20 +135,23 @@ def parse_condition(root: Path) -> "tuple[int, str, Path]":
     """(임계 시간, trailer, 읽은 파일의 루트 상대 경로). 출처 순서는 모듈 docstring 참조."""
     candidates = []
     for rel, need_three in ((OVERRIDE_REL, False), (STATUS_REL, True), (RULE_REL, False)):
-        cells = find_row(root / rel)
+        cells = find_row(root / rel, rel.as_posix())
         if cells is None or (need_three and len(cells) < 3):
             continue
         candidates.append((rel, cells))
     if not candidates:
-        raise ValueError(f'주기 조건을 담은 "{AUDIT_ROW_KEY}" 행 없음 - {OVERRIDE_REL}, {STATUS_REL}, {RULE_REL}')
+        raise ValueError(
+            f'주기 조건을 담은 "{AUDIT_ROW_KEY}" 행 없음 - '
+            f"{OVERRIDE_REL.as_posix()}, {STATUS_REL.as_posix()}, {RULE_REL.as_posix()}"
+        )
     rel, cells = candidates[0]
     cell = cells[-1] if rel != STATUS_REL else cells[2]
     threshold = THRESHOLD_RE.search(cell)
     if not threshold:
-        raise ValueError(f"{rel}에서 임계 시간을 읽을 수 없음 - {cell}")
+        raise ValueError(f"{rel.as_posix()}에서 임계 시간을 읽을 수 없음 - {cell}")
     trailer = TRAILER_RE.search(cell)
     if not trailer:
-        raise ValueError(f"{rel}에서 trailer 문구를 읽을 수 없음 - {cell}")
+        raise ValueError(f"{rel.as_posix()}에서 trailer 문구를 읽을 수 없음 - {cell}")
     return int(threshold.group(1)), trailer.group(1), rel
 
 

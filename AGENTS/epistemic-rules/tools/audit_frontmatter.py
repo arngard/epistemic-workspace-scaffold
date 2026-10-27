@@ -7,6 +7,7 @@ import urllib.parse
 from pathlib import Path
 
 from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
+from _tags_core import scan_tags, tag_form_problem, tag_key
 
 
 def check_front_matter(root: Path) -> list[Finding]:
@@ -86,31 +87,75 @@ def check_strategy_fields(root: Path) -> list[Finding]:
     return out
 
 
-def check_tags_category(root: Path) -> list[Finding]:
-    """epistemic-structure/ 4범주 직속 문서의 tags 첫 항목이 카테고리와 일치하는지 (경고).
+def check_tags(root: Path) -> list[Finding]:
+    """front matter tags의 형식과 표기 검사 (항목 14, 모두 경고).
 
-    하위 폴더 문서에는 강제하지 않는다 (ref: AGENTS/epistemic-rules/communication.md "문서 작성 스타일").
+    - 읽을 수 없는 tags: 문서마다 1건.
+    - 형태 규칙 위반(공백 든 태그, 빈 태그, 숫자만의 태그): 서로 다른 태그마다 1건.
+    - 표기 차이: tag_key가 같고 표기가 둘 이상인 묶음마다 1건.
+    경고 경로는 고칠 수 있는 파일을 가리킨다. 상류 묶음 문서는 자손이 고치지
+    못하므로 묶음 밖 문서를 먼저 고른다.
     """
+    docs, errors = scan_tags(root)
+
+    def rel(p: Path) -> str:
+        return str(p.relative_to(root))
+
+    ordered = sorted(docs, key=rel)
     out: list[Finding] = []
-    for rel_dir, expected in CATEGORY_TAG_DIRS.items():
-        d = root / rel_dir
-        if not d.is_dir():
+    for path, err in sorted(errors, key=lambda e: rel(e[0])):
+        where = f" ({err.line}행)" if err.line else ""
+        out.append(Finding(
+            WARNING, "tags", rel(path),
+            f"tags를 읽을 수 없음{where} - {err}",
+        ))
+
+    spellings: "dict[str, list[Path]]" = {}
+    for path in ordered:
+        for tag in dict.fromkeys(docs[path]):  # 문서 안 중복은 한 번만 센다
+            spellings.setdefault(tag, []).append(path)
+
+    def pick(paths: "list[Path]") -> Path:
+        return next((p for p in paths if not is_bundle_path(root, p)), paths[0])
+
+    for tag in sorted(spellings):
+        problem = tag_form_problem(tag)
+        if problem:
+            paths = spellings[tag]
+            out.append(Finding(
+                WARNING, "tags", rel(pick(paths)),
+                f'태그 "{tag}" - {problem}. 옵시디언이 태그로 인정하지 않음 '
+                f"(문서 {len(paths)}건)",
+            ))
+
+    groups: "dict[str, list[str]]" = {}
+    for tag in spellings:
+        groups.setdefault(tag_key(tag), []).append(tag)
+    for key in sorted(groups):
+        forms = groups[key]
+        if len(forms) < 2:
             continue
-        for p in sorted(d.iterdir()):
-            if not (p.is_file() and p.suffix == ".md"):
-                continue
-            if p.name in EXEMPT_FILENAMES:
-                continue
-            m = FRONT_MATTER_RE.match(read(p))
-            if not m:
-                continue  # front matter 부재는 check_front_matter가 잡는다
-            t = re.search(r"^tags\s*:\s*\[([^\]]*)\]", m.group(1), re.MULTILINE)
-            if not t:
-                continue
-            first = t.group(1).split(",")[0].strip()
-            if first != expected:
-                out.append(Finding(
-                    WARNING, "tags", str(p.relative_to(root)),
-                    f'tags 첫 항목 "{first}" - 4범주 직속 문서는 "{expected}" 기대',
-                ))
+        upstream = {
+            t for t in forms
+            if any(is_bundle_path(root, p) for p in spellings[t])
+        }
+        others = [t for t in forms if t not in upstream]
+        if upstream and others:
+            # 상류 표기는 고정이다. 그 밖의 표기를 쓰는 문서 가운데 첫 문서.
+            target = min(
+                (p for t in others for p in spellings[t]), key=rel)
+        else:
+            # 상류 표기가 없으면 가장 적게 쓰인 표기의 첫 문서.
+            least = min(forms, key=lambda t: (len(spellings[t]), rel(spellings[t][0])))
+            target = spellings[least][0]
+        ranked = sorted(forms, key=lambda t: (-len(spellings[t]), t))
+        listing = ", ".join(
+            f"{t} {len(spellings[t])}" + (" (상류)" if t in upstream else "")
+            for t in ranked
+        )
+        out.append(Finding(
+            WARNING, "tags", rel(target),
+            f"표기만 다른 태그 묶음(표기별 문서 수) - {listing}. "
+            "옵시디언은 대소문자 차이를 한 태그로 본다",
+        ))
     return out

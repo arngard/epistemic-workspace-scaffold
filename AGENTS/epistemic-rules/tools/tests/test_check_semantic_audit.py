@@ -30,7 +30,9 @@ def status_2col(stamp="(아직 없음)"):
     return "| 이름 | 마지막 수행 |\n|---|---|\n" + row("에피스테믹 의미 감사", stamp)
 
 
-class ConditionSourceTest(unittest.TestCase):
+class ConditionSourceBase(unittest.TestCase):
+    """임시 루트와 파일 쓰기 도우미. 시험 메서드는 두지 않는다."""
+
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
@@ -41,6 +43,8 @@ class ConditionSourceTest(unittest.TestCase):
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text, encoding="utf-8")
 
+
+class ConditionSourceTest(ConditionSourceBase):
     def test_rule_only(self):
         self.write(str(STATUS_REL), status_2col())
         self.write(str(RULE_REL), rule_text(47))
@@ -78,18 +82,119 @@ class ConditionSourceTest(unittest.TestCase):
             parse_last_run(self.root)
 
 
-class UndecidableMessageTest(unittest.TestCase):
+class EdgeTest(ConditionSourceBase):
+    """경계 사례: 코드 펜스, 표만 있는 파일, 읽을 수 없는 칸, 칸 수."""
+
+    def test_fenced_example_ignored(self):
+        self.write(OVERRIDE_REL, "```\n" + rule_text(1) + "```\n")
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
+
+    def test_tilde_fence_ignored(self):
+        self.write(OVERRIDE_REL, "~~~md\n" + rule_text(1) + "~~~\n")
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
+
+    def test_indented_fence_ignored(self):
+        self.write(OVERRIDE_REL, "  ```\n" + rule_text(1) + "  ```\n")
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
+
+    def test_row_after_closed_fence_read(self):
+        text = "```\n" + rule_text(1) + "```\n\n" + rule_text(24)
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[::2], (24, OVERRIDE_REL))
+
+    def test_other_fence_marker_does_not_close(self):
+        text = "~~~\n```\n" + rule_text(1) + "~~~\n"
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
+
+    def test_fenced_status_row_ignored(self):
+        self.write(STATUS_REL, "```\n" + status_2col("2026-10-26 09:00:00") + "```\n")
+        with self.assertRaises(ValueError) as cm:
+            parse_last_run(self.root)
+        self.assertIn(STATUS_REL.as_posix(), str(cm.exception))
+
+    def test_unclosed_fence_override_no_fallback(self):
+        self.write(OVERRIDE_REL, "```\nexample\n" + rule_text(1))
+        self.write(RULE_REL, rule_text(47))
+        with self.assertRaises(ValueError) as cm:
+            parse_condition(self.root)
+        self.assertIn(OVERRIDE_REL.as_posix(), str(cm.exception))
+
+    def test_unclosed_fence_status_names_status(self):
+        self.write(STATUS_REL, "```\n" + status_2col())
+        with self.assertRaises(ValueError) as cm:
+            parse_last_run(self.root)
+        self.assertIn(STATUS_REL.as_posix(), str(cm.exception))
+
+    def test_unclosed_fence_main_undecidable(self):
+        self.write(STATUS_REL, status_2col())
+        self.write(OVERRIDE_REL, "```\n" + rule_text(1))
+        self.write(RULE_REL, rule_text(47))
+        err = io.StringIO()
+        argv = sys.argv
+        sys.argv = ["check_semantic_audit.py", str(self.root)]
+        try:
+            with contextlib.redirect_stderr(err):
+                code = main()
+        finally:
+            sys.argv = argv
+        self.assertEqual(code, UNDECIDABLE)
+        self.assertIn(OVERRIDE_REL.as_posix(), err.getvalue())
+
+    def test_long_fence_not_closed_by_short_run(self):
+        text = "````\n```\n" + rule_text(1) + "````\n"
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
+
+    def test_long_closer_closes_short_fence(self):
+        text = "```\n" + rule_text(1) + "`````\n\n" + rule_text(24)
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[::2], (24, OVERRIDE_REL))
+
+    def test_closer_with_info_string_does_not_close(self):
+        text = "```\n```md\n" + rule_text(1) + "```\n"
+        self.write(OVERRIDE_REL, text)
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[0], 47)
+
+    def test_table_without_audit_row_falls_through(self):
+        self.write(OVERRIDE_REL, HEAD + row("형식 감사", "push 시"))
+        self.write(RULE_REL, rule_text(47))
+        self.assertEqual(parse_condition(self.root)[2], RULE_REL)
+
+    def test_unreadable_override_cell_no_fallback(self):
+        self.write(OVERRIDE_REL, HEAD + row("에피스테믹 의미 감사", "자주"))
+        self.write(RULE_REL, rule_text(47))
+        with self.assertRaises(ValueError) as cm:
+            parse_condition(self.root)
+        self.assertIn(OVERRIDE_REL.as_posix(), str(cm.exception))
+
+    def test_override_without_trailer_no_fallback(self):
+        self.write(OVERRIDE_REL, HEAD + row("에피스테믹 의미 감사", "24시간 초과 시"))
+        self.write(RULE_REL, rule_text(47))
+        with self.assertRaises(ValueError) as cm:
+            parse_condition(self.root)
+        self.assertIn(OVERRIDE_REL.as_posix(), str(cm.exception))
+
+    def test_status_row_single_cell(self):
+        self.write(STATUS_REL, "| 이름 |\n|---|\n| 에피스테믹 의미 감사 |\n")
+        with self.assertRaises(ValueError):
+            parse_last_run(self.root)
+
+    def test_status_row_empty_time_is_placeholder(self):
+        self.write(STATUS_REL, status_2col(""))
+        self.assertIsNone(parse_last_run(self.root))
+
+
+class UndecidableMessageTest(ConditionSourceBase):
     """판정 불가 메시지는 파싱에 실패한 파일을 가리킨다."""
-
-    def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self._tmp.cleanup)
-        self.root = Path(self._tmp.name).resolve()
-
-    def write(self, rel, text):
-        p = self.root / rel
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(text, encoding="utf-8")
 
     def run_main(self):
         err = io.StringIO()

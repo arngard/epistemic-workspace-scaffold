@@ -6,15 +6,38 @@ import re
 from pathlib import Path
 
 from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
-from _index_core import IndexFormatError, front_matter_description
+from _index_core import (
+    IndexFormatError, front_matter_description, sequential_tops, under_sequential)
+
+
+def _sequential_leftovers(root: Path, d: Path) -> list[Finding]:
+    """순차 분류 하위 폴더에 남은 AGENTS.md, CLAUDE.md마다 경고 1건."""
+    out: list[Finding] = []
+    for name in (DESCRIPTOR_NAME, "CLAUDE.md"):
+        path = d / name
+        if path.is_file():
+            out.append(Finding(
+                WARNING, "descriptor", path.relative_to(root).as_posix(),
+                f"순차 분류 하위의 {name} - 분류 최상위가 대신 맡으므로 지운다",
+            ))
+    return out
 
 
 def check_descriptors(root: Path) -> list[Finding]:
-    """모든 폴더가 디스크립터(AGENTS.md)를 갖는지, 폴더 직속 md 수 임계를 검사."""
+    """모든 폴더가 디스크립터(AGENTS.md)를 갖는지, 폴더 직속 md 수 임계를 검사.
+
+    순차 분류 최상위의 자손 폴더는 디스크립터 의무와 분화 권고에서 뺀다.
+    분화의 단위를 최상위의 structure 선언이 정하기 때문이다. 그 폴더에 남은
+    AGENTS.md와 CLAUDE.md는 파일마다 경고한다.
+    """
     out: list[Finding] = []
+    tops = sequential_tops(root, strict=False)
     for d in content_dirs(root):
         if in_norms_dir(root, d):
             continue  # 규범 폴더는 디스크립터를 두지 않는다
+        if under_sequential(d, tops):
+            out.extend(_sequential_leftovers(root, d))
+            continue
         rel = d.relative_to(root) if d != root else Path(".")
         # reference/ 하위 폴더는 immutable raw 보관이라 규약 검사 대상이 아니다.
         # 디스크립터도 강제하지 않고, 분화 권고도 하지 않는다 - 원본을 재편하지
@@ -187,10 +210,15 @@ def check_claude_pointers(root: Path) -> list[Finding]:
 
     규범 폴더가 아닌 폴더에 AGENTS.md가 있으면 같은 폴더에 내용이 `@AGENTS.md`
     (앞뒤 공백 제외)인 CLAUDE.md가 있어야 한다. 없거나 내용이 다르면 경고한다.
+    순차 분류 최상위의 자손 폴더는 건너뛴다(남은 CLAUDE.md는
+    check_descriptors가 경고한다).
     """
     out: list[Finding] = []
+    tops = sequential_tops(root, strict=False)
     for d in content_dirs(root):
         if in_norms_dir(root, d) or not (d / DESCRIPTOR_NAME).exists():
+            continue
+        if under_sequential(d, tops):
             continue
         rel = d.relative_to(root).as_posix() if d != root else "."
         pointer = d / "CLAUDE.md"

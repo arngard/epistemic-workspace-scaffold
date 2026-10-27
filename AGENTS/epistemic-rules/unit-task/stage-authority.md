@@ -1,7 +1,7 @@
 ---
 date created: 2026-10-21
 date modified: 2026-10-25
-tags: [agents, 단위 작업, 워크플로우, epistemic-rules]
+tags: [agents, 단위작업, 워크플로우, epistemic-rules]
 ---
 
 # 단계에 권한을 두는 기준

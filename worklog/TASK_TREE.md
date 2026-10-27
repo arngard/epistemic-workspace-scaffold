@@ -24,7 +24,7 @@ description: 작업의 계층 구조와 다음 작업 포인터
   - [ ] README와 LICENSE 정리
     - 설명: 스캐폴드 소개문인 README.md, README.en.md를 이 워크스페이스의 소개로 교체하고(상류를 받으면 충돌 유의), LICENSE를 정한다.
   - [ ] 감사 주기 값 검토
-    - 설명: [STATUS.md](STATUS.md)의 주기 조건([status-registry.md](AGENTS/epistemic-rules/status-registry.md) "주기 조건")이 작업 빈도에 맞는지 검토한다. 바꿀 값은 [AGENTS.md](AGENTS.md)의 덮어쓰기 표에 둔다.
+    - 설명: [STATUS.md](STATUS.md)의 주기 조건이 작업 빈도에 맞는지 검토한다. 바꿀 값이 있으면 [AGENTS.md](AGENTS.md)에 덮어쓰기 표를 만들어 둔다(형식은 [status-registry.md](AGENTS/epistemic-rules/status-registry.md) "주기 조건").
   - [ ] 프로젝트 수준 상위 결정 기록
     - 설명: 프로젝트 목표, 첫 출시 핵심 목표와 스펙, 향후 확장, 대상 고객과 사용자 등 큰 결정을 [epistemic-structure/strategy/](../epistemic-structure/strategy/AGENTS.md) 아래 `why-*.md` 문서들로 분리 작성한다. 샘플 `project-overview.md`는 참고 후 삭제하거나 실제 내용으로 교체한다.
   - [ ] 도메인 온톨로지 정의

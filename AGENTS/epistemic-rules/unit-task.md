@@ -1,7 +1,7 @@
 ---
 date created: 2026-05-10
 date modified: 2026-10-26
-tags: [agents, 단위 작업, epistemic-rules]
+tags: [agents, 단위작업, epistemic-rules]
 ---
 
 # 단위 작업과 워크플로우

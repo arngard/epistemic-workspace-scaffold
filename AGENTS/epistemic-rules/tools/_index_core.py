@@ -377,26 +377,57 @@ def in_reference_subfolder(root: Path, d: Path) -> bool:
     return len(parts) >= 2 and parts[0] == REFERENCE_DIR
 
 
+def _index_candidates(root: Path) -> "list[Path]":
+    """색인 대상 판정을 통과한 폴더(규범 폴더 밖, reference/ 자료 폴더 밖,
+    AGENTS.md 있음). 순서는 content_dirs를 따른다(루트가 먼저)."""
+    return [
+        d for d in content_dirs(root)
+        if not (in_norms_dir(root, d) or in_reference_subfolder(root, d))
+        and (d / DESCRIPTOR_NAME).is_file()
+    ]
+
+
+def under_sequential(d: Path, tops: "list[Path]") -> bool:
+    """폴더 d가 순차 분류 최상위의 자손이면 참. 최상위 자신은 거짓."""
+    return any(t in d.parents for t in tops)
+
+
+def sequential_tops(root: Path, strict: bool = True) -> "list[Path]":
+    """순차 분류 최상위 폴더. 순서는 content_dirs를 따른다.
+
+    색인 대상 판정(규범 폴더 밖, reference/ 자료 폴더 밖, AGENTS.md 있음)을
+    통과하고 INDEX.yaml의 "." 항목으로 structure를 선언한 폴더 가운데 다른
+    최상위의 자손이 아닌 것이다. 선언은 색인 후보 폴더의 INDEX.yaml에서만
+    읽고, 다른 최상위 아래의 INDEX.yaml은 읽지 않는다.
+    strict가 참이면 INDEX.yaml 형식 오류를 IndexFormatError로 올리고, 거짓이면
+    그 폴더를 선언 없음으로 본다(형식 오류는 색인 감사가 따로 알린다).
+    색인 생성기(index_dirs)와 감사가 같은 판정을 쓰도록 이 함수 하나로 한다.
+    """
+    tops: "list[Path]" = []
+    for d in _index_candidates(root):
+        if under_sequential(d, tops):
+            continue
+        try:
+            declared = sequential_structure(d) is not None
+        except IndexFormatError:
+            if strict:
+                raise
+            declared = False
+        if declared:
+            tops.append(d)
+    return tops
+
+
 def index_dirs(root: Path) -> "list[Path]":
     """색인을 두는 폴더. 순서는 content_dirs를 따른다(루트가 먼저).
 
     content_dirs가 중첩 저장소 안과 implementation/ 하위 프로젝트를 이미
-    뺀다. 순차 분류 최상위로 선언된 폴더 자신은 들고 그 자손은 빠진다.
-    선언은 색인 후보 폴더의 INDEX.yaml에서만 읽는다.
+    뺀다. 순차 분류 최상위(sequential_tops)로 선언된 폴더 자신은 들고 그
+    자손은 빠진다. 선언은 색인 후보 폴더의 INDEX.yaml에서만 읽는다.
     """
-    out: "list[Path]" = []
-    tops: "list[Path]" = []
-    for d in content_dirs(root):
-        if any(t in d.parents for t in tops):
-            continue
-        if in_norms_dir(root, d) or in_reference_subfolder(root, d):
-            continue
-        if not (d / DESCRIPTOR_NAME).is_file():
-            continue
-        out.append(d)
-        if sequential_structure(d) is not None:
-            tops.append(d)
-    return out
+    tops = sequential_tops(root)
+    return [d for d in _index_candidates(root)
+            if not under_sequential(d, tops)]
 
 
 def non_index_dirs(root: Path, dirs: "set[Path]"):

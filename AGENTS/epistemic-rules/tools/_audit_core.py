@@ -57,15 +57,10 @@ SKELETON_DIRS = {
     WORKLOG_DIR, REFERENCE_DIR, IMPLEMENTATION_DIR,
 }
 
-# epistemic-structure/ 4범주 직속 문서의 tags 첫 항목 기대값 (하위 폴더에는 강제하지 않는다).
-CATEGORY_TAG_DIRS = {
-    "epistemic-structure/ontology": "ontology",
-    "epistemic-structure/knowledge": "knowledge",
-    "epistemic-structure/strategy": "strategy",
-    "epistemic-structure/architecture": "architecture",
-}
-
-# --- 임계값 (초기값. 보수적으로 시작해 운영하며 조정) ---
+# --- 임계값 ---
+# 상류가 보수적 초기값으로 두고 운영하며 조정한다. 상속한 저장소는 이 상수를
+# 고치지 않는다(묶음 동일성 검사, 항목 30). 다른 값이 필요하면 경고를
+# 의식적으로 수용하거나 상류에 변경을 제안한다.
 # 공백 제외 문자 수. "한글 기준" 근사.
 SIZE_LIMIT_NODE = 3000        # 지식/전략 노드 등 일반 현재적 문서
 SIZE_LIMIT_TEMPORAL = 10000   # 히스토리 문서(날짜 프리픽스)는 누적이 본질
@@ -247,19 +242,30 @@ def iter_md_files(root: Path):
         ):
             yield path
             continue
-        if (
-            parts and parts[0] == REFERENCE_DIR and path.resolve() != ref_descriptor
-            and not (len(parts) >= 3 and parts[1] == NORMS_DIR_NAME)
-        ):
-            continue
-        if (
-            len(parts) >= 2
-            and parts[0] == IMPLEMENTATION_DIR
-            and not (len(parts) == 2 and parts[1] == DESCRIPTOR_NAME)
-            and parts[1] != NORMS_DIR_NAME
-        ):
+        descriptor = (
+            (parts[0] == REFERENCE_DIR and path.resolve() == ref_descriptor)
+            or (parts[0] == IMPLEMENTATION_DIR and parts[1:] == (DESCRIPTOR_NAME,))
+        )
+        if in_material_content(root, path) and not descriptor:
             continue
         yield path
+
+
+def in_material_content(root: Path, path: Path) -> bool:
+    """path가 자료 폴더(reference/, implementation/)에서 규범 폴더 밖인지 판정한다.
+
+    루트 상대 경로의 첫 성분이 reference나 implementation이고 둘째 성분이
+    AGENTS가 아니면 참이다. 자료 폴더 자신은 거짓이고, 그 직속 파일
+    (디스크립터와 색인 쪽 포함)은 참이다. 그런 예외는 호출부가 정한다.
+    감사 순회(iter_md_files)와 묶음 파일 목록(_bundle_core.bundle_files)이
+    함께 쓴다. 자료로 들여온 사본이나 하위 프로젝트의 클론을 규약 문서나
+    상류 묶음으로 오인하지 않으려는 것이다.
+    """
+    parts = path.relative_to(root).parts
+    return (
+        len(parts) >= 2 and parts[0] in (REFERENCE_DIR, IMPLEMENTATION_DIR)
+        and parts[1] != NORMS_DIR_NAME
+    )
 
 
 def in_norms_dir(root: Path, d: Path) -> bool:
@@ -270,11 +276,31 @@ def in_norms_dir(root: Path, d: Path) -> bool:
     return NORMS_DIR_NAME in d.relative_to(root).parts
 
 
-def in_bundle_detail(root: Path, d: Path) -> bool:
-    """폴더 d가 묶음 세부 폴더(AGENTS 바로 다음 성분이 epistemic-rules)인지 판정."""
-    parts = d.relative_to(root).parts
+def _has_bundle_pair(parts: "tuple[str, ...]") -> bool:
+    """경로 성분에 AGENTS 바로 다음 epistemic-rules가 있으면 참."""
     return any(
         a == NORMS_DIR_NAME and b == BUNDLE_NAME for a, b in zip(parts, parts[1:])
+    )
+
+
+def in_bundle_detail(root: Path, d: Path) -> bool:
+    """폴더 d가 묶음 세부 폴더(AGENTS 바로 다음 성분이 epistemic-rules)인지 판정."""
+    return _has_bundle_pair(d.relative_to(root).parts)
+
+
+def is_bundle_path(root: Path, path: Path) -> bool:
+    """path가 상류 규범 묶음 경로인지 판정한다.
+
+    루트 상대 경로 성분에 AGENTS 바로 다음 epistemic-rules가 있거나, 이름이
+    epistemic-rules.md이고 부모 폴더 이름이 AGENTS이면 참이다(묶음 요지 파일).
+    경로 모양만 보며 파일 실재나 순회 제외는 보지 않는다.
+    """
+    parts = path.relative_to(root).parts
+    if _has_bundle_pair(parts):
+        return True
+    return (
+        len(parts) >= 2 and parts[-1] == BUNDLE_NAME + ".md"
+        and parts[-2] == NORMS_DIR_NAME
     )
 
 

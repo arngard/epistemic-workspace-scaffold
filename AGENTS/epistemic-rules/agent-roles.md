@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-19
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [agents, 역할, epistemic-rules]
 ---
 
@@ -24,7 +24,7 @@ tags: [agents, 역할, epistemic-rules]
 
 ## 인스턴스 전용 감사자
 
-스캐폴드를 적용한 인스턴스가 자기 도메인 고유 정책(예: 출처 표기 강화, 도메인 데이터 정합, 누적 왜곡 점검)을 감사하려면, [epistemic-auditor](agent-roles/epistemic-auditor.md)를 수정하지 않고 인스턴스 전용 감사자를 별도 역할로 둔다. 특수화 방식은 [instance-specialization.md](instance-specialization.md) "특수화 방식"을 따른다.
+스캐폴드를 적용한 인스턴스가 자기 도메인 고유 정책(예: 출처 표기 강화, 도메인 데이터 정합, 누적 왜곡 점검)을 감사하려면, [epistemic-auditor](agent-roles/epistemic-auditor.md)를 수정하지 않고 인스턴스 전용 감사자를 별도 역할로 둔다. 특수화 방식은 [instance-specialization.md](instance-specialization.md) "특수화 방식"을 따른다. 결정론적으로 판정할 수 있는 고유 점검은 감사자 대신 [audit-extensions.md](audit-extensions.md)의 감사 확장 지점에 둔다.
 
 - 포함 호출: 인스턴스 감사자는 epistemic-auditor를 super로 포함해 호출한다. 한 번의 호출로 스캐폴드 공통 정합성과 인스턴스 고유 점검이 함께 수행된다.
 - 등재: 인스턴스 감사자도 본 문서의 역할 목록에 올리고, `agent-roles/` 아래 하위 문서에 정의와 도구별 구현 위치를 둔다.

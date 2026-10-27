@@ -17,9 +17,11 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   5. STATUS.md 레지스트리 표 외 서술 누적 - 위반
   6. TASK_TREE.md 속성 노드 표준 키 위반 - 위반
   7. 디스크립터(AGENTS.md) 없는 폴더 - 위반 (규범 폴더(`AGENTS/`와 그 아래) 제외)
+     (순차 분류로 선언된 폴더의 하위 제외, 그 하위에 남은 AGENTS.md와
+      CLAUDE.md는 경고)
   8. 폴더 직속 md 파일 수 임계 초과 - 경고 (분화 권고)
      (reference/ 하위는 제외 - 원본을 재편하지 않으므로 실행 불가능한 권고다.
-      색인 파일은 세지 않음)
+      순차 분류 하위 제외. 색인 파일은 세지 않음)
   9. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
  10. 파일명의 크로스 플랫폼 이식성 (윈도우 금지 문자, 예약어 등)
  11. 색인 정합 - 색인을 둘 폴더(규범 폴더 밖에서 AGENTS.md가 있는 폴더)의
@@ -29,7 +31,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       reference/ 하위 폴더와 중첩 저장소 안은 보지 않음)
  12. TASK_TREE.md 완료 노드의 브랜치 속성 잔존 - 경고
  13. STATUS.md 레지스트리 표 스키마, 시각 형식 - 경고
- 14. epistemic-structure/ 4범주 직속 문서의 tags 첫 항목 정합 - 경고
+ 14. front matter tags의 형식과 표기 - 경고
+     (읽을 수 없는 형식, 공백 든 태그와 숫자만의 태그, NFKC와 대소문자, 공백,
+      하이픈, 밑줄만 다른 표기 묶음. 뜻이 같은 다른 낱말은 감사자 몫)
  15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더 제외) - 경고
      (`CLAUDE.md`와 규범 폴더, 색인 파일은 실체로 세지 않음)
      (찌꺼기인지 사양 동결인지 첫 실체 대기인지는 감사자가 판단)
@@ -67,7 +71,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      생성 색인 쪽 파일은 제외
      (ref: AGENTS/epistemic-rules/writing-style/reference-markers.md)
  25. AGENTS.md가 있는 폴더(규범 폴더 제외)의 CLAUDE.md 포인터 - 경고
-     (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님)
+     (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님. 순차 분류 하위 제외)
  26. `@` 가져오기 줄(줄 전체가 @경로)의 대상 부재 - 위반
      (경로는 줄을 둔 파일 위치 기준. 묶음 세부 폴더 AGENTS/epistemic-rules/ 안의
       가져오기는 경고. front matter와 코드 펜스 안은 제외)
@@ -79,6 +83,20 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       값, reference/ 밖 항목의 쓰이지 않는 status 키, reference/ 직속의 미등록
       항목, 순차 분류로 선언된 폴더 INDEX.yaml의 "." 밖 항목, 설명의 비ASCII
       문장 부호)
+ 29. 상류 묶음 md의 출처 태그 epistemic-rules 누락은 위반, 묶음 밖 md의 그
+     태그는 경고
+     (묶음은 AGENTS/epistemic-rules.md와 AGENTS/epistemic-rules/ 아래. 읽을
+      수 없는 tags는 항목 14 소관이라 건너뜀. 생성 색인 쪽 파일은 제외)
+ 30. 상류 묶음 파일과 상류 목록(tools/bundle-manifest.sha256)의 대조 - 내용
+     차이, 누락, 목록 밖 파일, 목록 형식 오류는 위반
+     (이 도구가 감사 대상 루트의 묶음에 있을 때만. 상류 저장소는
+      build_index.py --bundle-manifest로 목록을 다시 만들고, 상속한 저장소는
+      파일을 되돌린다)
+
+확장 검사: 루트 AGENTS/audit-checks/ 바로 아래의 *.py(_와 .으로 시작하는
+이름과 부산물 제외)를 별도 프로세스로 실행해 표준 출력의 JSON 줄을 발견으로
+받는다. 범주는 ext:<이름>. 실패와 시간 초과는 위반. 실행하지 않는 그 밖의 항목(.py가 아닌
+파일, 하위 폴더)은 범주 ext의 경고. 계약은 AGENTS/epistemic-rules/audit-extensions.md
 
 위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tools.md "기계 감사 스크립트".
 
@@ -105,10 +123,15 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 구조:
 - 공용 인프라(Finding, 상수, 순회/읽기/링크 해석 헬퍼)는 _audit_core.py.
   색인의 YAML 부분집합 파서와 렌더러는 생성기와 함께 쓰는 _index_core.py.
+  front matter tags 읽기와 표기 규칙은 태그 도구와 함께 쓰는 _tags_core.py.
+  상류 묶음 파일 목록과 출고 목록은 생성기와 함께 쓰는 _bundle_core.py.
 - 검사 함수는 의미별 모듈에 나뉜다: audit_frontmatter(front matter/스키마),
   audit_links(링크/참조), audit_structure(폴더/디스크립터/이식성),
   audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호),
-  audit_index(색인 정합/설명 원본).
+  audit_index(색인 정합/설명 원본), audit_bundle(상류 묶음 출처 태그/동일성),
+  audit_extensions(루트 확장 검사 실행).
+- 감사 밖의 태그 도구 tag_inventory.py(읽기 전용)와 retag.py(승인된 병합
+  실행)는 _tags_core.py를 쓴다. audit.py는 이 둘을 부르지 않는다.
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
   해석, 인코딩 설정, 출력, 종료 코드를 담당한다.
@@ -118,11 +141,13 @@ import sys
 from pathlib import Path
 
 from _audit_core import Finding, VIOLATION, WARNING
-from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags_category
+from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags
 from audit_links import (
     check_links, check_link_text, check_section_refs, check_link_whitespace,
     check_reference_markers, check_imports,
 )
+from audit_bundle import check_bundle_identity, check_source_tags
+from audit_extensions import run_extensions
 from audit_index import check_index_files, check_index_sources
 from audit_structure import (
     check_descriptors, check_empty_folders,
@@ -158,7 +183,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_task_tree_attrs(root)
     findings += check_task_tree_completed_branch(root)
     findings += check_index_files(root)
-    findings += check_tags_category(root)
+    findings += check_tags(root)
     findings += check_empty_folders(root)
     findings += check_name_collision(root)
     findings += check_filename_portability(root)
@@ -169,6 +194,9 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_imports(root)
     findings += check_norms_dir_descriptors(root)
     findings += check_index_sources(root)
+    findings += check_source_tags(root)
+    findings += check_bundle_identity(root)
+    findings += run_extensions(root)
     return findings
 
 

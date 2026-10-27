@@ -4,3 +4,6 @@
 
 # 폴더 색인은 생성 파일이라 PR(pull request) 차이에서 접는다. 머지 충돌은 생성기를 다시 돌려 푼다.
 INDEX*.md linguist-generated=true
+
+# 상류 묶음 출고 목록은 생성 파일이라 PR 차이에서 접는다. 상류 저장소만 build_index.py --bundle-manifest로 다시 만든다.
+AGENTS/epistemic-rules/tools/bundle-manifest.sha256 linguist-generated=true
