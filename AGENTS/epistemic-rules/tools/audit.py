@@ -130,8 +130,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   audit_worklog(STATUS/TASK_TREE), audit_content(분량/시간성/문장 부호),
   audit_index(색인 정합/설명 원본), audit_bundle(상류 묶음 출처 태그/동일성),
   audit_extensions(루트 확장 검사 실행).
-- 감사 밖의 태그 도구 tag_inventory.py(읽기 전용)와 retag.py(승인된 병합
-  실행)는 _tags_core.py를 쓴다. audit.py는 이 둘을 부르지 않는다.
+- 감사 밖의 태그 도구 tag_inventory.py(읽기 전용)와 retag.py(승인된 병합과
+  삭제 실행)는 _tags_core.py를 쓴다. audit.py는 이 둘을 부르지 않는다.
 - 각 검사 함수는 Finding 리스트를 반환하고 전역 가변 상태를 두지 않는다.
 - 본 파일 audit.py가 진입점 - run_audit(root)가 검사들을 모으고, main()은 인자
   해석, 인코딩 설정, 출력, 종료 코드를 담당한다.

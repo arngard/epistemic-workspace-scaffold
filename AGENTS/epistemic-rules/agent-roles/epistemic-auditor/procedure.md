@@ -14,7 +14,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 2. 최근 커밋(`git log --oneline -20` 등)과 STATUS 레지스트리, TASK_TREE를 대조해 워크로그 최신성을 본다.
 3. 형식 감사 `python3 -B AGENTS/epistemic-rules/tools/audit.py .`(윈도우는 `python` 또는 `py`)를 실행해 결과를 수집한다. 형식 항목을 손으로 재검사하지 않는다.
 4. [epistemic-structure/AGENTS/epistemic-rules.md](../../../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙"을 그대로 적용한다. 그 문서에서 링크한 각 범주 요지의 "정의"로 4범주 정의를 확인한 뒤, 각 `epistemic-structure/X/` 문서의 첫 단락이나 front matter `description`으로 카테고리 부합 여부를 본다. 판정이 서지 않으면 본문을 더 읽고, 그래도 모호하면 "확실하지 않음"으로 둔다. 한 문서가 두 범주에 걸치면 같은 문서의 "교차 링크" 절에 따라 주 위치 하나를 정하고 나머지를 링크로 분리할 수 있는지 본다. 분리할 수 없거나 주 위치가 모호하면 "확실하지 않음"으로 보고한다.
-5. 태그 어휘를 본다. `python3 -B AGENTS/epistemic-rules/tools/tag_inventory.py .`의 목록과 자손의 `AGENTS/tag-vocabulary.md`(있을 때)를 읽고 뜻이 같은 태그 묶음을 찾는다. 기계 감사가 이미 낸 표기 차이는 다시 세지 않는다. 표준 태그는 묶음에 상류 태그(목록의 상류 칸이 `예`)가 있으면 그것으로, 없으면 가장 많이 쓰인 것으로 제안하고, 하나로 정해지지 않으면 사용자에게 묻는다. `tag-vocabulary.md`에 합치지 않기로 적힌 묶음은 제안하지 않는다. 고정 규격 문서의 태그 중복도 여기서 본다.
+5. 태그 어휘를 본다. `python3 -B AGENTS/epistemic-rules/tools/tag_inventory.py .`의 목록과 자손의 `AGENTS/tag-vocabulary.md`(있을 때)를 읽고 뜻이 같은 태그 묶음을 찾는다. 기계 감사가 이미 낸 표기 차이는 다시 세지 않는다. 표준 태그는 묶음에 상류 태그(목록의 상류 칸이 `예`)가 있으면 그것으로, 없으면 가장 많이 쓰인 것으로 제안하고, 하나로 정해지지 않으면 사용자에게 묻는다. `tag-vocabulary.md`에 합치지 않기로 적힌 묶음은 제안하지 않는다. 걸러도 의미 있는 묶음이 생기지 않는 태그는 병합과 따로 삭제안으로 낸다.
 6. git 맥락 검출 항목을 확인한다. 브랜치 속성의 실존은 `git branch -a`와 `git worktree list`로, `date closed` 문서의 본문 변경은 `git log -p`로, `reference/` 원본의 수정, 삭제, 이동은 `git -c core.quotepath=false log --first-parent --diff-filter=MDR --name-status <범위> -- reference/ ":(exclude)reference/AGENTS.md" ":(exclude)reference/INDEX*.md" ":(exclude)reference/INDEX.yaml"`로 본다(`--first-parent`는 머지 커밋에서만 가한 수정도 잡는다). 범위는 직전 클린 커밋이 있으면 `<직전 클린 커밋>..HEAD`로, 없으면 상속 이력을 빼기 위해 `<상류>/main..HEAD`로 잡는다. 상류 원격이 없으면 이력 없이 가져온 워크스페이스로 보고 범위 지정 없이 본다. 스캐폴드 이력을 받았는데 상류 원격이 없다면 시작 상태가 갖춰지지 않은 것이므로 그 사실을 보고한다. 이동(R 행)은 파생 노드의 링크를 끊으므로 위반으로 보고한다. 머지 커밋이 나오면 `git log <머지>^1..<머지>^2`로 원인 커밋을 찾는다. 상류 머지 밖에서 상류 묶음 목록을 바꾼 커밋은 `git log --no-merges --full-history --format=%h HEAD --not <상류>/main [<직전 클린 커밋>] -- AGENTS/epistemic-rules/tools/bundle-manifest.sha256`로 보고(`<상류>`는 위 범위 규칙의 상류 원격, 직전 클린 커밋은 있을 때만 넣는다), 출력이 있으면 위반이다. 이 명령은 자손이 직전 클린 커밋 이후 만든 머지 아닌 커밋을 보며, `--full-history`는 상류 머지 뒤에도 그 커밋이 가려지지 않게 한다. 상류 저장소 자신에서는 이 확인이 "해당 없음"이다. 상류 원격이 없으면 이 확인을 하지 않고 보고에 "확인 불가(상류 원격 없음)"로 적는다. 충돌을 풀면서 머지 커밋 안에서 목록을 다시 만든 경우는 이 명령이 잡지 못한다.
 7. 메타-컨텐츠 영역 혼동을 본 레포가 만든 머지와 그 본문으로 점검한다. 상류 원격이 있으면 `git log --first-parent --merges <상류>/main..HEAD`로 상속 이력을 빼고, 없으면 `git log --first-parent --merges`로 직전 7~10개 단위 작업에 해당하는 최근 머지를 본다. 쓸 만한 단서는 다음과 같다.
    - 커밋 메시지의 "정정", "되돌림", "revert", "롤백", "자율" 같은 키워드 빈도.
@@ -25,10 +25,10 @@ tags: [agents, 역할, 감사, epistemic-rules]
 ## 보고 형식
 
 - 각 항목은 "(위반) ... -> (제안 수정) ..." 짝으로 쓴다.
-- 점검 항목별로 묶는다(형식 감사 결과, 워크로그 최신성, 잔여 형식, git 맥락, 카테고리 배치, 메타-컨텐츠 영역 혼동, 태그 병합 제안).
+- 점검 항목별로 묶는다(형식 감사 결과, 워크로그 최신성, 잔여 형식, git 맥락, 카테고리 배치, 메타-컨텐츠 영역 혼동, 태그 병합과 삭제 제안).
 - 카테고리 배치 위반에는 현재 위치, 제안 위치, 그 카테고리 정의의 어느 조항에 해당하는지를 붙인다.
 - 메타-컨텐츠 혼동 위반에는 발생 단위 작업(커밋 해시), 세부 패턴, 개선 제안(메타 영역 이동, 인스턴스에서 제거, 정책 신설)을 붙인다. 같은 세부 패턴이 여러 단위 작업에서 반복되면 해당 정책(작성 스타일 등) 자체의 격상 후보로 따로 짚는다.
 - 자율 머지는 사후 확정이 불가하므로(승인 여부는 커밋 텍스트에 남기지 않는 규약이다, ref: [merge-types.md](../../unit-task-workflow/merge-types.md) "브랜치 관리자 타입") 직전 감사 이후 머지 목록을 판정 없이 첨부해 사용자가 자기 승인 기억과 대조할 수 있게 한다.
-- 태그 병합 제안은 묶음마다 표준 태그, 합칠 태그와 각 문서 수, 근거 한 줄, 실행할 명령(`python3 AGENTS/epistemic-rules/tools/retag.py . --map 옛=새`)을 적는다. 사용자가 결정을 미룬 제안은 TASK_TREE에 등재한다.
+- 태그 병합 제안은 묶음마다 표준 태그, 합칠 태그와 각 문서 수, 근거 한 줄, 실행할 명령(`python3 AGENTS/epistemic-rules/tools/retag.py . --map 옛=새`)을 적는다. 삭제 제안은 태그마다 문서 수, 근거 한 줄, 명령(`python3 AGENTS/epistemic-rules/tools/retag.py . --drop 태그`)을 적는다. 사용자가 결정을 미룬 제안은 TASK_TREE에 등재한다.
 - 판단이 애매한 항목은 "확실하지 않음"으로 표시해 따로 나열한다.
 - 배경 설명은 필요한 경우에만 쓴다.
