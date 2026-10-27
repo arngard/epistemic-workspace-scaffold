@@ -217,6 +217,41 @@ def find_tags_block(text: str) -> "TagsBlock | None":
     raise TagFormatError("tags가 목록이 아니다(흐름형 [a, b]나 블록형만 읽는다)", line)
 
 
+def _needs_quote(tag: str, in_flow: bool) -> bool:
+    """따옴표 없이 쓰면 읽을 때 다른 값이 되거나 읽히지 않는 태그인지 판정한다."""
+    if tag != tag.strip(" \t") or tag[:1] in "\"'":
+        return True
+    if in_flow and "," in tag:
+        return True
+    try:
+        _check_plain(tag, in_flow, 0)
+    except TagFormatError:
+        return True
+    return False
+
+
+def _render_item(tag: str, in_flow: bool) -> str:
+    if not _needs_quote(tag, in_flow):
+        return tag
+    return '"' + tag.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def render_tags(block: TagsBlock, tags: "list[str]", newline: str = "\n") -> str:
+    """block의 표기(style, indent)를 유지해 tags를 쓴 값 영역 텍스트를 만든다.
+
+    돌려준 문자열은 원문의 text[block.start:block.end]를 대신한다.
+    - 흐름형: "[a, b]". 따옴표가 필요한 항목만 큰따옴표로 감싼다.
+    - 블록형: 줄바꿈으로 시작해 항목마다 indent + "- 값". 줄바꿈 문자열은
+      newline으로 정한다(CRLF 문서는 CR과 LF를 이은 문자열을 준다). 항목 줄의 주석은 버린다.
+    읽는 규칙을 이 모듈의 find_tags_block 하나로 두므로, 쓴 결과는 같은
+    함수로 읽으면 tags와 같아야 한다.
+    """
+    if block.style == "flow":
+        return "[" + ", ".join(_render_item(t, True) for t in tags) + "]"
+    return "".join(
+        newline + block.indent + "- " + _render_item(t, False) for t in tags)
+
+
 def parse_tags(front: str) -> "list[str] | None":
     """front matter 안쪽 텍스트의 태그 목록. 키가 없으면 None."""
     block = find_tags_block(front)

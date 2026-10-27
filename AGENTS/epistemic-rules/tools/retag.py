@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+"""태그 병합 실행 - 승인된 대응(옛 태그=새 태그)을 front matter tags에 적용한다.
+
+사용자가 승인한 대응만 명시적으로 실행하는 편집 도구다. 감사(audit.py)와
+색인 생성(build_index.py), 커밋 전 훅은 이 도구를 부르지 않는다. 어떤 태그를
+합칠지는 의미 판단이라 도구가 정하지 않는다(후보는 tag_inventory.py 목록과
+의미 감사가 낸다). 수천 문서에 걸치는 병합을 손이나 즉석 sed로 하면
+front matter 밖을 건드리거나 상류 문서를 바꾸는 사고가 규모에 비례해
+늘어나서, 같은 일을 이 도구 하나로 한다.
+
+적용 규칙:
+- 대상은 front matter의 tags 값 영역뿐이다. 영역 밖의 바이트와 파일의 줄바꿈
+  방식(LF, CRLF)은 그대로다. 파일을 바이트로 읽고 쓴다.
+- 문서 범위와 읽기 규칙은 감사와 같다(_tags_core.scan_tags,
+  find_tags_block). 읽기와 다시 쓰기가 같은 코드라 감사가 못 본 태그를 바꾸지
+  않는다. 태그를 읽을 수 없는 문서는 바꾸지 않고 보고한다.
+- 옛 태그는 NFC로 바꾼 뒤 정확히 같은 표기만 바꾼다. 대소문자나 표기 변형은
+  변형마다 대응을 따로 준다.
+- 대응은 동시에 적용한다. 사슬로 잇지 않는다(a=b와 b=c는 a를 b로, b를 c로).
+- 바꾼 뒤 같은 태그가 겹치면 처음 자리 하나만 남긴다.
+- 흐름형과 블록형 표기를 유지한다. 영역 안의 항목은 다시 써서 따옴표는 필요한
+  항목에만 붙고 블록형 항목 줄의 주석은 사라진다. 대응에 걸리는 태그가 없는
+  문서는 쓰지 않는다.
+- date modified를 바꾸지 않는다. 태그 병합은 기계적 변경이라 문서 내용을
+  고쳤다는 뜻이 아니고, 날짜를 바꾸면 병합이 문서 수천 개의 수정일을 한꺼번에
+  밀어 버린다.
+- 상류 규범 묶음 문서는 건너뛰고 보고한다. 상류 저장소에서 자기 묶음 문서를
+  바꿀 때만 --include-bundles를 쓴다. 상속한 저장소가 묶음 문서를 바꾸면 감사의
+  동일성 검사(항목 30)가 위반으로 잡는다.
+- 새 태그가 형태 규칙(공백, 숫자만의 태그, 빈 태그 금지)을 어기거나 같은 옛
+  태그에 다른 새 태그가 둘이면 아무것도 쓰지 않고 거부한다.
+
+사용법:
+    python3 AGENTS/epistemic-rules/tools/retag.py [루트] --map 옛=새
+        [--map 옛=새 ...] [--dry-run] [--include-bundles]
+    (루트를 생략하면 현재 디렉토리. --dry-run은 쓰지 않고 바뀔 문서만 낸다.
+     옛 태그에 =가 있으면 쓸 수 없다. 첫 =가 옛과 새를 가른다)
+
+출력(표준 출력): 절 셋을 이 순서로 낸다. 문서는 루트 상대 POSIX 경로, 한 줄에
+하나, 경로 순이다.
+    # 바뀐 문서 (N)        --dry-run이면 "# 바뀔 문서 (N)"
+    # 상류 묶음이라 건너뜀 (N)
+    # 읽을 수 없음 (N)
+
+종료 코드:
+    0  성공(읽을 수 없는 문서가 있어도 0)
+    2  새 태그가 형태 규칙을 어김, 같은 옛 태그에 다른 새 태그, 인자 오류,
+       루트가 디렉토리가 아님, 파일 쓰기 오류
+"""
+
+import argparse
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from _audit_core import FRONT_MATTER_RE, is_bundle_path, nfc
+from _tags_core import (
+    TagFormatError, find_tags_block, render_tags, scan_tags, tag_form_problem)
+
+_ENC = ("utf-8", "surrogateescape")
+
+
+@dataclass
+class RetagReport:
+    """병합 결과. 모두 루트 상대 POSIX 경로 목록(경로 순)이다."""
+
+    changed: "list[str]" = field(default_factory=list)
+    skipped_bundle: "list[str]" = field(default_factory=list)
+    unreadable: "list[str]" = field(default_factory=list)
+
+
+def build_mapping(pairs) -> "dict[str, str]":
+    """(옛, 새) 쌍들을 NFC로 바꿔 대응 하나로 합친다.
+
+    새 태그가 형태 규칙을 어기거나 같은 옛 태그에 다른 새 태그가 있으면
+    ValueError를 낸다.
+    """
+    mapping: "dict[str, str]" = {}
+    for old, new in pairs:
+        old, new = nfc(old), nfc(new)
+        if not old:
+            raise ValueError("옛 태그가 비어 있다")
+        problem = tag_form_problem(new)
+        if problem:
+            raise ValueError('새 태그 "%s"가 형태 규칙을 어긴다 - %s' % (new, problem))
+        if old in mapping and mapping[old] != new:
+            raise ValueError(
+                '옛 태그 "%s"에 새 태그가 둘이다 - "%s", "%s"'
+                % (old, mapping[old], new))
+        mapping[old] = new
+    return mapping
+
+
+def _map_tags(tags: "tuple[str, ...]", mapping: "dict[str, str]") -> "list[str]":
+    """대응을 동시에 적용하고 겹친 태그는 처음 자리 하나만 남긴다."""
+    return list(dict.fromkeys(mapping.get(t, t) for t in tags))
+
+
+def rewrite_text(text: str, mapping: "dict[str, str]", expected: "list[str]"):
+    """파일 전문 text의 tags 값 영역을 대응대로 다시 쓴 텍스트를 돌려준다.
+
+    대응에 걸리는 태그가 없으면 None. text가 감사가 읽은 태그(expected)와
+    다르게 읽히거나 쓴 결과를 다시 읽어 맞지 않으면 ValueError를 낸다.
+    """
+    m = FRONT_MATTER_RE.match(text)
+    if not m:
+        raise ValueError("front matter를 찾지 못했다")
+    front = m.group(1)
+    try:
+        block = find_tags_block(front)
+    except TagFormatError as e:
+        raise ValueError(str(e)) from None
+    if block is None or list(block.tags) != expected:
+        raise ValueError("파일 바이트에서 읽은 태그가 감사가 읽은 태그와 다르다")
+    new_tags = _map_tags(block.tags, mapping)
+    if not any(mapping.get(t, t) != t for t in block.tags):
+        return None
+    start = m.start(1) + block.start
+    end = m.start(1) + block.end
+    newline = "\r\n" if text[start:end].startswith("\r\n") else "\n"
+    new_text = text[:start] + render_tags(block, new_tags, newline) + text[end:]
+    again = FRONT_MATTER_RE.match(new_text)
+    check = find_tags_block(again.group(1)) if again else None
+    if check is None or list(check.tags) != new_tags:
+        raise ValueError("다시 쓴 tags를 같은 규칙으로 읽으면 맞지 않는다")
+    return new_text
+
+
+def retag(
+    root: Path,
+    mapping: "dict[str, str]",
+    dry_run: bool = False,
+    include_bundles: bool = False,
+) -> RetagReport:
+    """대응을 태그를 모으는 문서의 front matter tags에 적용한다.
+
+    쓰기 전에 바뀔 문서를 모두 계산하므로 중간에 실패해도 일부만 바뀌지
+    않는다. dry_run이면 쓰지 않고 보고만 한다. 새 태그가 형태 규칙을 어기거나
+    대응이 모순이면 아무것도 하지 않고 ValueError를 낸다.
+    """
+    mapping = build_mapping(mapping.items())
+    docs, errors = scan_tags(root)
+
+    def rel(p: Path) -> str:
+        return p.relative_to(root).as_posix()
+
+    report = RetagReport()
+    unreadable = {rel(p) for p, _ in errors}
+    pending: "list[tuple[Path, str]]" = []
+    for path in sorted(docs, key=rel):
+        tags = docs[path]
+        if not any(mapping.get(t, t) != t for t in tags):
+            continue
+        if is_bundle_path(root, path) and not include_bundles:
+            report.skipped_bundle.append(rel(path))
+            continue
+        try:
+            text = path.read_bytes().decode(*_ENC)
+            new_text = rewrite_text(text, mapping, tags)
+        except ValueError:
+            unreadable.add(rel(path))
+            continue
+        if new_text is not None:
+            pending.append((path, new_text))
+            report.changed.append(rel(path))
+    report.unreadable = sorted(unreadable)
+    if not dry_run:
+        for path, new_text in pending:
+            path.write_bytes(new_text.encode(*_ENC))
+    return report
+
+
+def _setup_streams() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="surrogateescape",
+                               newline="\n")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+
+def _parse_pair(arg: str) -> "tuple[str, str]":
+    old, sep, new = arg.partition("=")
+    if not sep or not old or not new:
+        raise argparse.ArgumentTypeError(
+            "--map은 옛=새 형식이고 양쪽이 비어 있으면 안 된다 - %s" % arg)
+    return old, new
+
+
+def main(argv: "list[str] | None" = None) -> int:
+    _setup_streams()
+    parser = argparse.ArgumentParser(description="승인된 태그 대응을 적용한다.")
+    parser.add_argument("root", nargs="?", default=".")
+    parser.add_argument("--map", dest="maps", action="append", required=True,
+                        type=_parse_pair, metavar="옛=새",
+                        help="바꿀 태그 대응(여러 번 줄 수 있다)")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--include-bundles", action="store_true",
+                        help="상류 묶음 문서도 바꾼다(상류 저장소 전용)")
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as e:
+        return e.code if isinstance(e.code, int) else 2
+    root = Path(args.root).resolve()
+    if not root.is_dir():
+        print("Error: not a directory. 디렉토리가 아님 - %s" % root,
+              file=sys.stderr)
+        return 2
+    try:
+        mapping = build_mapping(args.maps)
+        report = retag(root, mapping, dry_run=args.dry_run,
+                       include_bundles=args.include_bundles)
+    except ValueError as e:
+        print("Error: invalid tag map. 대응이 잘못됨 - %s" % e, file=sys.stderr)
+        return 2
+    except OSError as e:
+        print("Error: retag failed. 쓰기 실패 - %s" % e, file=sys.stderr)
+        return 2
+    sections = (
+        ("바뀔 문서" if args.dry_run else "바뀐 문서", report.changed),
+        ("상류 묶음이라 건너뜀", report.skipped_bundle),
+        ("읽을 수 없음", report.unreadable),
+    )
+    for title, paths in sections:
+        print("# %s (%d)" % (title, len(paths)))
+        for p in paths:
+            print(p)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
