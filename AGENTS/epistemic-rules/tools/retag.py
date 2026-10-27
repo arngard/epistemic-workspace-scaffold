@@ -18,12 +18,13 @@ front matter 밖을 건드리거나 상류 문서를 바꾸는 사고가 규모�
 - 옛 태그와 지울 태그는 NFC로 바꾼 뒤 정확히 같은 표기만 바꾸거나 지운다.
   대소문자나 표기 변형은 변형마다 따로 준다.
 - 대응과 삭제는 원래 태그에 동시에 적용한다. 사슬로 잇지 않는다(a=b와 b=c는
-  a를 b로, b를 c로). 같은 태그를 대응의 옛 태그와 삭제에 함께 주면 거부한다.
-  지울 태그가 다른 대응의 새 태그이면 원래 있던 그 태그만 지워지고 대응으로
-  생긴 태그는 남는다.
+  a를 b로, b를 c로). 지울 태그가 대응의 옛 태그나 새 태그와 같으면 한 실행의
+  뜻이 모호하므로 거부한다.
 - 문서 범위를 --path(루트 상대 POSIX 경로, 파일이나 폴더)로 좁히면 그 파일과
-  그 폴더 아래 문서만 본다. "s"는 "s2/" 아래를 포함하지 않는다. 경로가 절대
-  경로이거나 ".."을 담거나 없으면 아무것도 쓰지 않고 거부한다.
+  그 폴더 아래 문서만 본다. "s"는 "s2/" 아래를 포함하지 않고 "."은 루트
+  전체다. 경로가 절대 경로이거나 ".."이나 역슬래시를 담거나 없거나, 태그를
+  모으는 문서가 하나도 맞지 않으면(대소문자만 다른 경로 등) 아무것도 쓰지
+  않고 거부한다.
 - 바꾼 뒤 같은 태그가 겹치면 처음 자리 하나만 남긴다.
 - 흐름형과 블록형 표기를 유지한다. 영역 안의 항목은 다시 써서 따옴표는 필요한
   항목에만 붙는다. 대응에 걸리는 태그가 없는 문서는 쓰지 않는다.
@@ -68,7 +69,8 @@ front matter 밖을 건드리거나 상류 문서를 바꾸는 사고가 규모�
 종료 코드:
     0  성공(건너뛴 문서, 읽을 수 없는 문서, 주의가 있어도 0)
     2  새 태그가 형태 규칙을 어김, 같은 옛 태그에 다른 새 태그, 같은 태그를
-       대응과 삭제에 함께 줌, 빈 지울 태그, 잘못된 --path, --map과 --drop이 둘
+       대응과 삭제에 함께 줌, 빈 지울 태그, 잘못되거나 문서가 맞지 않는
+       --path, --map과 --drop이 둘
        다 없음, 인자 오류, 루트가 디렉토리가 아님, 문서 하나라도 쓰지
        못함(나머지는 이미 바뀌었을 수 있으니 출력의 두 절로 확인한다)
 """
@@ -133,11 +135,15 @@ def build_mapping(pairs) -> "dict[str, str]":
 
 
 def build_drop(tags, mapping: "dict[str, str]") -> "frozenset[str]":
-    """지울 태그들을 NFC로 바꾼 집합. 빈 태그나 대응의 옛 태그가 있으면 ValueError."""
+    """지울 태그들을 NFC로 바꾼 집합.
+
+    빈 태그가 있거나, 지울 태그가 대응의 옛 태그나 새 태그와 같으면
+    ValueError를 낸다.
+    """
     drop = frozenset(nfc(t) for t in tags)
     if "" in drop:
         raise ValueError("지울 태그가 비어 있다")
-    both = sorted(drop & set(mapping))
+    both = sorted(drop & (set(mapping) | set(mapping.values())))
     if both:
         raise ValueError(
             '같은 태그를 대응과 삭제에 함께 주었다 - "%s"' % '", "'.join(both))
@@ -145,17 +151,18 @@ def build_drop(tags, mapping: "dict[str, str]") -> "frozenset[str]":
 
 
 def build_scope(root: Path, paths) -> "list[str] | None":
-    """--path 값들을 루트 상대 POSIX 경로 목록으로 맞춘다. None이면 범위 제한 없음.
+    """--path 값들을 루트 상대 POSIX 경로 목록으로 맞춘다.
 
-    절대 경로, ".." 성분, 루트 아래에 없는 경로는 ValueError를 낸다.
-    "."은 루트 전체다.
+    None이면 범위 제한이 없고, 빈 목록이면 아무 문서도 보지 않는다.
+    빈 값, 역슬래시, 절대 경로, ".." 성분, 루트 아래에 없는 경로는 ValueError를
+    낸다. "."은 루트 전체다.
     """
     if paths is None:
         return None
     scope = []
     for raw in paths:
         p = PurePosixPath(nfc(raw))
-        if not raw or p.is_absolute() or ".." in p.parts:
+        if not raw or "\\" in raw or p.is_absolute() or ".." in p.parts:
             raise ValueError("루트 상대 경로가 아니다 - %s" % raw)
         if not (root / p).exists():
             raise ValueError("경로가 없다 - %s" % raw)
@@ -167,8 +174,26 @@ def _in_scope(rel: str, scope: "list[str] | None") -> bool:
     """rel이 scope의 파일과 같거나 scope 폴더 아래에 있는가."""
     if scope is None:
         return True
-    rel = nfc(rel)
-    return any(s == "." or rel == s or rel.startswith(s + "/") for s in scope)
+    return any(_under(nfc(rel), s) for s in scope)
+
+
+def _under(rel: str, s: str) -> bool:
+    return s == "." or rel == s or rel.startswith(s + "/")
+
+
+def _check_scope_hits(scope: "list[str] | None", rels) -> None:
+    """범위 항목마다 태그를 모으는 문서가 하나라도 맞는지 본다.
+
+    맞는 문서가 없는 항목이 있으면 ValueError를 낸다. 파일 시스템이 대소문자를
+    가리지 않아 존재 확인을 통과한 경로가 문서 경로와 맞지 않는 경우 등을
+    잡는다.
+    """
+    if scope is None:
+        return
+    rels = [nfc(r) for r in rels]
+    for s in scope:
+        if not any(_under(r, s) for r in rels):
+            raise ValueError("태그를 모으는 문서가 맞지 않는 경로 - %s" % s)
 
 
 def _touches(tags, mapping: "dict[str, str]", drop: "frozenset[str]") -> bool:
@@ -279,11 +304,13 @@ def retag(
     """대응과 삭제를 태그를 모으는 문서의 front matter tags에 적용한다.
 
     drop은 지울 태그 집합, paths는 범위를 좁히는 루트 상대 POSIX 경로
-    목록이다(파일이나 폴더, None이면 전부). 새 태그가 형태 규칙을 어기거나,
-    대응이 모순이거나, 같은 태그가 대응의 옛 태그와 drop에 함께 있거나, drop에
-    빈 태그가 있거나, paths가 잘못되면 아무것도 하지 않고 ValueError를 낸다. 그 밖에는 바뀔 문서를 모두 계산한 뒤 쓴다. 쓰기는 문서마다
-    임시 파일과 os.replace로 해서 한 문서는 전부 쓰이거나 하나도 안 쓰이고,
-    쓰기 오류는 문서마다 failed에 모으며 나머지를 계속한다. 그래서 문서 사이에서는
+    목록이다(파일이나 폴더, None이면 전부, 빈 목록이면 아무 문서도 보지
+    않는다). 새 태그가 형태 규칙을 어기거나, 대응이 모순이거나, drop의 태그가
+    대응의 옛 태그나 새 태그와 같거나, drop에 빈 태그가 있거나, paths가
+    잘못되거나 문서가 맞지 않으면 아무것도 하지 않고 ValueError를 낸다.
+    그 밖에는 바뀔 문서를 모두 계산한 뒤 쓴다. 쓰기는 문서마다 임시 파일과
+    os.replace로 해서 한 문서는 전부 쓰이거나 하나도 안 쓰이고, 쓰기 오류는
+    문서마다 failed에 모으며 나머지를 계속한다. 그래서 문서 사이에서는
     일부만 바뀔 수 있고 changed(쓴 문서)와 failed(쓰지 못한 문서)가 그 경계다.
     dry_run이면 쓰지 않고 changed에 바뀔 문서를 담는다.
     """
@@ -295,6 +322,8 @@ def retag(
     def rel(p: Path) -> str:
         return p.relative_to(root).as_posix()
 
+    _check_scope_hits(
+        scope, [rel(p) for p in docs] + [rel(p) for p, _ in errors])
     docs = {p: t for p, t in docs.items() if _in_scope(rel(p), scope)}
     report = RetagReport()
     unreadable = {rel(p) for p, _ in errors if _in_scope(rel(p), scope)}
