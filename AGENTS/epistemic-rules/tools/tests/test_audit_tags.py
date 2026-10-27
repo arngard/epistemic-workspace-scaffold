@@ -12,11 +12,18 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import _audit_core  # noqa: E402
 from _audit_core import WARNING, is_bundle_path  # noqa: E402
 from _tags_core import (  # noqa: E402
-    TagFormatError, TagsBlock, find_tags_block, front_matter_tags, parse_tags,
-    tag_documents, tag_form_problem, tag_key, unreadable_tags)
+    TagFormatError, TagsBlock, find_tags_block, front_matter_tags, in_tag_scope,
+    parse_tags, tag_documents, tag_form_problem, tag_key, unreadable_tags)
 from audit_frontmatter import check_tags  # noqa: E402
 
 FM = "---\ndate created: 2026-01-01\ndate modified: 2026-01-01\n"
+
+
+class ScopeTest(unittest.TestCase):
+    def test_scope(self):
+        self.assertTrue(in_tag_scope(Path("a/x.md")))
+        for name in ("CLAUDE.md", "SKILL.md", "INDEX.md", "INDEX2.md"):
+            self.assertFalse(in_tag_scope(Path("a") / name))
 
 
 class ParseTest(unittest.TestCase):

@@ -265,6 +265,15 @@ def tag_form_problem(tag: str) -> "str | None":
     return None
 
 
+def in_tag_scope(path: Path) -> bool:
+    """iter_md_files가 낸 문서가 태그를 모으는 범위에 드는지 판정한다.
+
+    도구 전용 파일(EXEMPT_FILENAMES)과 생성 색인 쪽 파일은 범위 밖이다.
+    태그를 모으는 모든 도구가 이 함수 하나로 범위를 정한다.
+    """
+    return path.name not in EXEMPT_FILENAMES and not INDEX_PAGE_RE.match(path.name)
+
+
 def scan_tags(
     root: Path,
 ) -> "tuple[dict[Path, list[str]], list[tuple[Path, TagFormatError]]]":
@@ -277,7 +286,7 @@ def scan_tags(
     docs: "dict[Path, list[str]]" = {}
     errors: "list[tuple[Path, TagFormatError]]" = []
     for path in iter_md_files(root):
-        if path.name in EXEMPT_FILENAMES or INDEX_PAGE_RE.match(path.name):
+        if not in_tag_scope(path):
             continue
         try:
             tags = front_matter_tags(path)

@@ -205,6 +205,7 @@ class IdentityTest(BundleCase):
         self.append("AGENTS/epistemic-rules/x.md", "y\n")
         msg = self.identity()[0].message
         self.assertIn("--bundle-manifest", msg)
+        self.assertIn("상류 판으로 되돌리", msg)
 
     def test_bad_manifest_line(self):
         self.append(MANIFEST_REL, "zz\n")

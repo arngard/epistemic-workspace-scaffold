@@ -3,12 +3,12 @@
 from pathlib import Path
 
 from _audit_core import (
-    BUNDLE_NAME, EXEMPT_FILENAMES, INDEX_PAGE_RE, VIOLATION, WARNING, Finding,
-    is_bundle_path, iter_md_files, nfc)
+    BUNDLE_NAME, VIOLATION, WARNING, Finding, is_bundle_path, iter_md_files,
+    nfc)
 from _bundle_core import (
     MANIFEST_REL, ManifestFormatError, bundle_files, file_digest, own_root,
     read_manifest)
-from _tags_core import TagFormatError, front_matter_tags
+from _tags_core import TagFormatError, front_matter_tags, in_tag_scope
 
 _REMEDY = (
     "상류 저장소면 python3 AGENTS/epistemic-rules/tools/build_index.py . "
@@ -17,17 +17,22 @@ _REMEDY = (
 )
 
 
+def _shown(rel: str) -> str:
+    """목록의 POSIX 경로를 다른 감사 검사와 같은 표기(str(Path))로 바꾼다."""
+    return str(Path(rel))
+
+
 def check_source_tags(root: Path) -> list[Finding]:
     """상류 묶음 md의 출처 태그 검사 (항목 29, 범주 source-tag).
 
     묶음 안의 md가 tags에 epistemic-rules를 담지 않으면 위반, 묶음 밖 md가
-    그 태그를 담으면 경고다. 범위는 태그를 모으는 문서(iter_md_files에서
-    도구 전용 파일과 생성 색인 쪽 파일을 뺀 것)다. tags를 읽을 수 없는
+    그 태그를 담으면 경고다. 범위는 태그를 모으는 문서(iter_md_files 중
+    in_tag_scope가 참인 것)다. tags를 읽을 수 없는
     문서는 항목 14가 다루므로 건너뛴다.
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
-        if path.name in EXEMPT_FILENAMES or INDEX_PAGE_RE.match(path.name):
+        if not in_tag_scope(path):
             continue
         try:
             tags = front_matter_tags(path)
@@ -68,7 +73,7 @@ def check_bundle_identity(
     manifest_path = root / MANIFEST_REL
     if not manifest_path.is_file():
         return [Finding(
-            VIOLATION, "bundle", MANIFEST_REL,
+            VIOLATION, "bundle", _shown(MANIFEST_REL),
             f"상류 묶음 출고 목록이 없음. {_REMEDY}",
         )]
     try:
@@ -76,7 +81,7 @@ def check_bundle_identity(
     except ManifestFormatError as e:
         where = f" ({e.line}행)" if e.line else ""
         return [Finding(
-            VIOLATION, "bundle", MANIFEST_REL,
+            VIOLATION, "bundle", _shown(MANIFEST_REL),
             f"출고 목록 형식 오류{where} - {e}. 목록은 읽지 못해 대조하지 "
             f"않음. {_REMEDY}",
         )]
@@ -88,7 +93,7 @@ def check_bundle_identity(
         path = disk.get(rel)
         if path is None:
             out.append(Finding(
-                VIOLATION, "bundle", rel,
+                VIOLATION, "bundle", _shown(rel),
                 f"출고 목록에 있는 상류 묶음 파일이 없음. {_REMEDY}",
             ))
             continue

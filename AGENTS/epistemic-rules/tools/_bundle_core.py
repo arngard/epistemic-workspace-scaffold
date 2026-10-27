@@ -15,8 +15,8 @@ import re
 from pathlib import Path
 
 from _audit_core import (
-    EXEMPT_DIRS, IMPLEMENTATION_DIR, NORMS_DIR_NAME,
-    REFERENCE_DIR, is_bundle_path, nested_repo_dirs, nfc)
+    IMPLEMENTATION_DIR, NORMS_DIR_NAME, REFERENCE_DIR, is_bundle_path,
+    is_excluded, nfc)
 from _index_core import is_byproduct
 
 MANIFEST_REL = "AGENTS/epistemic-rules/tools/bundle-manifest.sha256"
@@ -48,17 +48,13 @@ def bundle_files(root: Path) -> "list[Path]":
     아래에서는 규범 폴더(AGENTS/)만 본다. 자료로 들여온 사본이나 하위
     프로젝트의 클론을 상류 묶음으로 오인하지 않으려는 것이다.
     """
-    nested = set(nested_repo_dirs(root))
     found: "list[tuple[str, Path]]" = []
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         d = Path(dirpath)
         parts = d.relative_to(root).parts
         keep = []
         for name in sorted(dirnames):
-            if name in EXEMPT_DIRS or _skipped_name(name):
-                continue
-            sub = d / name
-            if sub in nested or sub.is_symlink():
+            if _skipped_name(name) or is_excluded(root, d / name):
                 continue
             if (parts in _MATERIAL_PARTS and name != NORMS_DIR_NAME):
                 continue
@@ -66,7 +62,7 @@ def bundle_files(root: Path) -> "list[Path]":
         dirnames[:] = keep
         for name in filenames:
             path = d / name
-            if _skipped_name(name) or path.is_symlink():
+            if _skipped_name(name) or is_excluded(root, path):
                 continue
             if not is_bundle_path(root, path):
                 continue
