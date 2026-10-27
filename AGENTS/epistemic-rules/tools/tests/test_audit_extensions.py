@@ -6,11 +6,13 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from _audit_core import VIOLATION, WARNING  # noqa: E402
 from audit import run_audit  # noqa: E402
+import audit_extensions  # noqa: E402
 from audit_extensions import (  # noqa: E402
     EXTENSION_DIR_REL, EXTENSION_TIMEOUT, TOOLS_ENV, run_extensions)
 
@@ -77,6 +79,81 @@ class ExtensionTest(unittest.TestCase):
                  " \"message\": \"m\", \"extra\": 1}')\n")
         self.assertEqual(self.sev(), [WARNING])
 
+    def test_unicode_line_separators_inside_json(self):
+        msg = "a\u2028b\x85c\u2029d"
+        self.ext("a.py", emit("warning", "p", msg))
+        got = run_extensions(self.root)
+        self.assertEqual([f.severity for f in got], [WARNING])
+        self.assertEqual(got[0].message, msg)
+
+    def test_crlf_lines(self):
+        self.ext("a.py", "import sys\nsys.stdout.write(\n"
+                 "  '{\"severity\": \"warning\", \"path\": \"p\","
+                 " \"message\": \"m\"}\\r\\n')\n")
+        self.assertEqual(self.sev(), [WARNING])
+
+    def test_non_utf8_output_is_replaced(self):
+        self.ext("a.py", "import sys\nsys.stdout.buffer.write(\n"
+                 "  b'{\"severity\": \"warning\", \"path\": \"p\","
+                 " \"message\": \"a\\xffb\"}\\n')\n")
+        got = run_extensions(self.root)
+        self.assertEqual([f.severity for f in got], [WARNING])
+        self.assertEqual(got[0].message, "a\ufffdb")
+
+    def test_non_utf8_stderr_is_replaced(self):
+        self.ext("a.py", "import sys\nsys.stderr.buffer.write(b'e\\xff\\n')\n"
+                 "sys.exit(1)\n")
+        f = run_extensions(self.root)[0]
+        self.assertEqual(f.severity, VIOLATION)
+        self.assertIn("e\ufffd", f.message)
+
+    def test_unlaunchable_is_violation(self):
+        self.ext("a.py", emit("warning", "p", "m"))
+        self.ext("b.py", emit("warning", "q", "m"))
+        err = OSError("no exec")
+        with mock.patch.object(audit_extensions.subprocess, "run",
+                               side_effect=err):
+            got = run_extensions(self.root)
+        self.assertEqual([(f.category, f.severity) for f in got],
+                         [("ext:a", VIOLATION), ("ext:b", VIOLATION)])
+        self.assertIn("OSError", got[0].message)
+
+    def test_symlinked_file_warns_and_not_run(self):
+        target = self.write("outside/x.py", "raise SystemExit(1)\n")
+        link = self.root / EXT_DIR / "a.py"
+        link.parent.mkdir(parents=True)
+        link.symlink_to(target)
+        got = run_extensions(self.root)
+        self.assertEqual([(f.severity, f.category, f.path) for f in got],
+                         [(WARNING, "ext:a", EXT_DIR + "/a.py")])
+        self.assertIn("심볼릭 링크", got[0].message)
+
+    def test_symlinked_helper_ignored(self):
+        target = self.write("outside/x.py", "raise SystemExit(1)\n")
+        link = self.root / EXT_DIR / "_h.py"
+        link.parent.mkdir(parents=True)
+        link.symlink_to(target)
+        self.assertEqual(run_extensions(self.root), [])
+
+    def test_symlinked_folder_warns_and_not_run(self):
+        self.write("real/a.py", "raise SystemExit(1)\n")
+        link = self.root / EXT_DIR
+        link.parent.mkdir(parents=True)
+        link.symlink_to(self.root / "real", target_is_directory=True)
+        got = run_extensions(self.root)
+        self.assertEqual([(f.severity, f.category, f.path) for f in got],
+                         [(WARNING, "ext", EXT_DIR)])
+        self.assertIn("심볼릭 링크", got[0].message)
+
+    def test_symlink_does_not_stop_others(self):
+        target = self.write("outside/x.py", "pass\n")
+        link = self.root / EXT_DIR / "a.py"
+        link.parent.mkdir(parents=True)
+        link.symlink_to(target)
+        self.ext("b.py", emit("warning", "p", "m"))
+        cats = sorted(f.category for f in run_extensions(self.root))
+        self.assertEqual(cats, ["ext:a", "ext:b"])
+
     def test_empty_path_becomes_dot(self):
         self.ext("a.py", emit("warning", "", "m"))
         self.assertEqual(run_extensions(self.root)[0].path, ".")
@@ -130,11 +207,23 @@ class ExtensionTest(unittest.TestCase):
             '{"path": "p", "message": "m"}',
             '{"severity": "warning", "path": 1, "message": "m"}',
             '{"severity": "warning", "path": "p", "message": 2}',
+            '{"severity": ["x"], "path": "p", "message": "m"}',
+            '{"severity": {}, "path": "p", "message": "m"}',
+            '{"severity": null, "path": "p", "message": "m"}',
+            '{"severity": "warning", "path": ["p"], "message": "m"}',
+            "[" * 100000 + "]" * 100000,
         ]
         for line in bad:
             with self.subTest(line=line):
                 self.ext("a.py", "print(%r)\n" % line)
                 self.assertEqual(self.sev(), [VIOLATION])
+
+    def test_bad_line_does_not_stop_next_extension(self):
+        self.ext("a.py", 'print(\'{"severity": ["x"]}\')\n')
+        self.ext("b.py", emit("warning", "p", "m"))
+        got = run_extensions(self.root)
+        self.assertEqual([(f.category, f.severity) for f in got],
+                         [("ext:a", VIOLATION), ("ext:b", WARNING)])
 
     def test_bad_line_discards_partial_output(self):
         self.ext("a.py", emit("warning", "p", "m") + "print('oops')\n")

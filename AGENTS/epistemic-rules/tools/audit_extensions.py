@@ -1,8 +1,9 @@
 """감사 확장 지점: 루트 AGENTS/audit-checks/의 확장 검사를 실행한다.
 
 확장은 저장소 루트의 AGENTS/audit-checks/ 바로 아래에 둔 *.py 파일이다.
-이름이 _나 .으로 시작하는 파일은 도우미로 보고 실행하지 않으며, 하위 폴더와
-심볼릭 링크도 보지 않는다. 계약은 프로세스 경계의 텍스트 형식이다.
+이름이 _나 .으로 시작하는 파일은 도우미로 보고 실행하지 않으며, 하위 폴더는
+보지 않는다. 심볼릭 링크인 확장 파일이나 확장 폴더는 실행하지 않고 경고 1건으로
+알린다. 계약은 프로세스 경계의 텍스트 형식이다.
 
 - 실행: [sys.executable, "-B", <파일>, <루트>]. 작업 폴더는 루트이고 환경
   변수 EPISTEMIC_AUDIT_TOOLS에 이 도구 폴더를 넘긴다.
@@ -40,39 +41,61 @@ class _BadOutput(Exception):
     """확장의 표준 출력 줄이 계약 형식에 맞지 않음."""
 
 
-def _extension_files(root: Path) -> list[Path]:
-    """실행할 확장 파일을 이름 순으로 돌려준다."""
+def _extension_files(root: Path) -> "tuple[list[Path], list[Finding]]":
+    """실행할 확장 파일(이름 순)과 실행하지 않는 심볼릭 링크의 경고를 돌려준다."""
     folder = root / EXTENSION_DIR_REL
-    if folder.is_symlink() or not folder.is_dir():
-        return []
-    files = [
-        p for p in folder.iterdir()
-        if p.suffix == ".py" and not p.name.startswith(("_", "."))
-        and p.is_file() and not p.is_symlink()
-    ]
-    return sorted(files, key=lambda p: p.name)
+    if folder.is_symlink():
+        return [], [Finding(
+            WARNING, "ext", EXTENSION_DIR_REL,
+            "확장 폴더가 심볼릭 링크라 실행하지 않음",
+        )]
+    if not folder.is_dir():
+        return [], []
+    files: list[Path] = []
+    warnings: list[Finding] = []
+    for p in sorted(folder.iterdir(), key=lambda q: q.name):
+        if p.suffix != ".py" or p.name.startswith(("_", ".")):
+            continue
+        if p.is_symlink():
+            warnings.append(Finding(
+                WARNING, f"ext:{p.stem}", f"{EXTENSION_DIR_REL}/{p.name}",
+                "확장 파일이 심볼릭 링크라 실행하지 않음",
+            ))
+        elif p.is_file():
+            files.append(p)
+    return files, warnings
+
+
+def _parse_line(number: int, line: str) -> dict:
+    """한 줄을 JSON 객체로 읽는다. 어긋나면 _BadOutput."""
+    try:
+        item = json.loads(line)
+    except (ValueError, TypeError, RecursionError):
+        raise _BadOutput(f"{number}번째 줄이 JSON이 아님")
+    if not isinstance(item, dict):
+        raise _BadOutput(f"{number}번째 줄이 JSON 객체가 아님")
+    return item
 
 
 def _parse_output(stem: str, stdout: str) -> list[Finding]:
-    """표준 출력의 JSON 줄을 발견으로 바꾼다. 어긋난 줄이 있으면 _BadOutput."""
+    """표준 출력의 JSON 줄을 발견으로 바꾼다. 어긋난 줄이 있으면 _BadOutput.
+
+    줄은 \\n으로만 나눈다(다른 줄 경계 문자는 JSON 문자열 안에 올 수 있다).
+    """
     out: list[Finding] = []
-    for number, line in enumerate(stdout.splitlines(), 1):
+    for number, line in enumerate(stdout.split("\n"), 1):
+        line = line.rstrip("\r")
         if not line.strip():
             continue
-        try:
-            item = json.loads(line)
-        except ValueError:
-            raise _BadOutput(f"{number}번째 줄이 JSON이 아님")
-        if not isinstance(item, dict):
-            raise _BadOutput(f"{number}번째 줄이 JSON 객체가 아님")
-        severity = _SEVERITIES.get(item.get("severity"))
-        if severity is None:
-            raise _BadOutput(f"{number}번째 줄의 severity가 violation이나 warning이 아님")
+        item = _parse_line(number, line)
+        severity = item.get("severity")
         path = item.get("path")
         message = item.get("message")
+        if not isinstance(severity, str) or severity not in _SEVERITIES:
+            raise _BadOutput(f"{number}번째 줄의 severity가 violation이나 warning이 아님")
         if not isinstance(path, str) or not isinstance(message, str):
             raise _BadOutput(f"{number}번째 줄의 path나 message가 문자열이 아님")
-        out.append(Finding(severity, f"ext:{stem}", path or ".", message))
+        out.append(Finding(_SEVERITIES[severity], f"ext:{stem}", path or ".", message))
     return out
 
 
@@ -124,7 +147,7 @@ def run_extensions(root: Path, timeout: int = EXTENSION_TIMEOUT) -> list[Finding
     폴더가 없으면 빈 목록이다. 한 확장의 실패는 그 확장의 위반 1건으로
     격리되고 다음 확장이 계속 실행된다.
     """
-    findings: list[Finding] = []
-    for path in _extension_files(root):
+    files, findings = _extension_files(root)
+    for path in files:
         findings += _run_one(root, path, timeout)
     return findings
