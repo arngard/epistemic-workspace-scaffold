@@ -81,7 +81,11 @@ class ExtensionTest(unittest.TestCase):
 
     def test_unicode_line_separators_inside_json(self):
         msg = "a\u2028b\x85c\u2029d"
-        self.ext("a.py", emit("warning", "p", msg))
+        self.ext("a.py", "import json, sys\n"
+                 "d = {'severity': 'warning', 'path': 'p',\n"
+                 "     'message': 'a\\u2028b\\x85c\\u2029d'}\n"
+                 "line = json.dumps(d, ensure_ascii=False) + '\\n'\n"
+                 "sys.stdout.buffer.write(line.encode('utf-8'))\n")
         got = run_extensions(self.root)
         self.assertEqual([f.severity for f in got], [WARNING])
         self.assertEqual(got[0].message, msg)
