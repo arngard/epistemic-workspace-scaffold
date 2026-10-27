@@ -17,9 +17,11 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
   5. STATUS.md 레지스트리 표 외 서술 누적 - 위반
   6. TASK_TREE.md 속성 노드 표준 키 위반 - 위반
   7. 디스크립터(AGENTS.md) 없는 폴더 - 위반 (규범 폴더(`AGENTS/`와 그 아래) 제외)
+     (순차 분류로 선언된 폴더의 하위 제외, 그 하위에 남은 AGENTS.md와
+      CLAUDE.md는 경고)
   8. 폴더 직속 md 파일 수 임계 초과 - 경고 (분화 권고)
      (reference/ 하위는 제외 - 원본을 재편하지 않으므로 실행 불가능한 권고다.
-      색인 파일은 세지 않음)
+      순차 분류 하위 제외. 색인 파일은 세지 않음)
   9. 문서 간 상대 마크다운 링크 정합 (대소문자, 유니코드 정규화 포함)
  10. 파일명의 크로스 플랫폼 이식성 (윈도우 금지 문자, 예약어 등)
  11. 색인 정합 - 색인을 둘 폴더(규범 폴더 밖에서 AGENTS.md가 있는 폴더)의
@@ -69,7 +71,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      생성 색인 쪽 파일은 제외
      (ref: AGENTS/epistemic-rules/writing-style/reference-markers.md)
  25. AGENTS.md가 있는 폴더(규범 폴더 제외)의 CLAUDE.md 포인터 - 경고
-     (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님)
+     (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님. 순차 분류 하위 제외)
  26. `@` 가져오기 줄(줄 전체가 @경로)의 대상 부재 - 위반
      (경로는 줄을 둔 파일 위치 기준. 묶음 세부 폴더 AGENTS/epistemic-rules/ 안의
       가져오기는 경고. front matter와 코드 펜스 안은 제외)
