@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from _index_core import IndexFormatError, load_index_yaml  # noqa: E402
 from migrate_layout import (  # noqa: E402
-    _inverse_path, _repair_links, convert_reference_table, main, map_path, migrate,
-    rewrite_links, rewrite_mentions)
+    INDEX_YAML_HEADER, _inverse_path, _is_reference_material, _repair_links,
+    convert_reference_table, main, map_path, migrate, rewrite_links, rewrite_mentions)
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -136,17 +136,30 @@ class CodeSpanLinkTest(unittest.TestCase):
         self.assertEqual(out, "`[s](../../AGENTS.md)` [t](../../../AGENTS.md)\n")
 
 
+def _has_upstream_remote(root):
+    """git 원격 upstream이 있으면 참. 자손 저장소는 상류를 이 이름의 원격으로 둔다."""
+    out = subprocess.run(["git", "remote"], cwd=str(root), stdout=subprocess.PIPE,
+                         stderr=subprocess.DEVNULL, universal_newlines=True).stdout
+    return "upstream" in out.split()
+
+
 @unittest.skipUnless((REPO_ROOT / ".git").exists(), "git 작업 트리 밖")
 class RepositoryHeadTest(unittest.TestCase):
-    """이 저장소 자체에 다시 돌려도 옮기거나 바꿀 것이 없다."""
+    """이 저장소 자체에 다시 돌려도 옮기거나 변환할 것이 없다.
+
+    자손 저장소에는 옛 폴더 이름을 일부러 적은 지시문이 있을 수 있어, 본문을 바꿀 파일과
+    옛 경로가 남은 줄의 비어 있음은 상류 저장소 자신(upstream 원격이 없는 저장소)에서만 확인한다.
+    """
 
     def test_dry_run_on_repository_is_noop(self):
         rep = migrate(REPO_ROOT, dry_run=True)
         self.assertEqual(rep.moved, [])
-        self.assertEqual(rep.rewritten, [])
         self.assertEqual(rep.converted, [])
         self.assertEqual(rep.conflicts, [])
         self.assertEqual(rep.unconverted, [])
+        if not _has_upstream_remote(REPO_ROOT):
+            self.assertEqual(rep.rewritten, [])
+            self.assertEqual(rep.residual, [])
 
 class RewriteMentionsTest(unittest.TestCase):
     def test_paths_replaced(self):
@@ -360,12 +373,13 @@ class MigrateTest(unittest.TestCase):
             self.assertEqual((root / "reference/INDEX.yaml").read_text(encoding="utf-8"), existing)
 
     def test_shipped_empty_index_yaml_overwritten(self):
-        # 상류가 출고하는 reference/INDEX.yaml(머리 주석 한 줄)과 같은 내용이다.
-        shipped = (REPO_ROOT / "reference/INDEX.yaml").read_text(encoding="utf-8")
-        self.assertEqual(load_index_yaml(REPO_ROOT / "reference/INDEX.yaml"), {})
+        # 상류가 출고하는 reference/INDEX.yaml은 머리 주석 한 줄이다. 자료를 등록한 저장소에서도
+        # 시험이 같게 돌도록 저장소의 파일 대신 도구의 머리 주석 상수를 쓴다.
+        shipped = INDEX_YAML_HEADER
         files = {"reference/AGENTS.md": TABLE_ONE_ROW, "reference/INDEX.yaml": shipped}
         with tempfile.TemporaryDirectory() as tmp:
             root = _make_repo(tmp, files)
+            self.assertEqual(load_index_yaml(root / "reference/INDEX.yaml"), {})
             rep = migrate(root, dry_run=True)
             self.assertEqual(rep.unconverted, [])
             self.assertEqual(len(rep.converted), 1)
@@ -445,6 +459,132 @@ class ChildMergeTest(unittest.TestCase):
             self.assertEqual((again.moved, again.rewritten), ([], []))
             self.assertEqual(again.residual, rep.residual)
             self.assertEqual(_snapshot(root), before)
+
+
+OUTSIDE_LINKS = (
+    "[AGENTS.md](../../AGENTS.md)\n"
+    "[x](../../AGENTS/instance-specialization.md)\n"
+    "[implementation/](../../_implementation/AGENTS.md)\n")
+OUTSIDE_LINKS_FIXED = (
+    "[AGENTS.md](../AGENTS.md)\n"
+    "[x](../AGENTS/epistemic-rules/instance-specialization.md)\n"
+    "[implementation/](../implementation/AGENTS.md)\n")
+
+
+class OutsideLinkRepairTest(unittest.TestCase):
+    """현재 위치 기준으로 저장소 밖을 가리키는 옛 위치 기준 링크를 고친다."""
+
+    CUR = "worklog/TASK_TREE.md"
+    PRESENT = {"AGENTS.md", "AGENTS/epistemic-rules/instance-specialization.md",
+               "implementation/AGENTS.md"}
+
+    def _exists(self, calls):
+        def exists(p):
+            calls.append(p)
+            return p in self.PRESENT
+        return exists
+
+    def test_repaired_against_old_location(self):
+        calls = []
+        out = _repair_links(OUTSIDE_LINKS, self.CUR, self._exists(calls))
+        self.assertEqual(out, OUTSIDE_LINKS_FIXED)
+        self.assertEqual(_repair_links(out, self.CUR, self._exists(calls)), out)
+        self.assertEqual([p for p in calls if p == ".." or p.startswith("../")], [])
+
+    def test_missing_mapped_target_kept(self):
+        src = "[x](../../AGENTS/instance-specialization.md)\n[n](../../nothing.md)\n"
+        out = _repair_links(src, self.CUR, lambda p: p == "AGENTS.md")
+        self.assertEqual(out, src)
+
+    def test_untouched_kinds(self):
+        src = "[u](https://x.y/../../a.md) [b](/abs/x.md) [c](#절) [d]() [m](mailto:q@r)\n"
+        self.assertEqual(_repair_links(src, self.CUR, lambda p: False), src)
+
+    def test_migrate_repairs_and_rerun_is_noop(self):
+        files = dict(NEW_FIXTURE)
+        files["worklog/TASK_TREE.md"] = OUTSIDE_LINKS
+        files["AGENTS.md"] = "root\n"
+        files["AGENTS/epistemic-rules/instance-specialization.md"] = "x\n"
+        files["implementation/AGENTS.md"] = "impl\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            dry = migrate(root, dry_run=True)
+            self.assertEqual(dry.rewritten, ["worklog/TASK_TREE.md"])
+            rep = migrate(root)
+            self.assertEqual(rep.rewritten, ["worklog/TASK_TREE.md"])
+            self.assertEqual(rep.residual, [])
+            self.assertEqual((root / "worklog/TASK_TREE.md").read_text(encoding="utf-8"),
+                             OUTSIDE_LINKS_FIXED)
+            before = _snapshot(root)
+            again = migrate(root)
+            self.assertEqual((again.moved, again.rewritten), ([], []))
+            self.assertEqual(_snapshot(root), before)
+
+
+# 다른 워크스페이스를 통째로 복사해 둔 자료 사본의 본문. 옛 경로 언급과 링크가 든다.
+COPY_TEXT = ("`_docs/_worklog/` 언급\n[a](_docs/_worklog/x.md)\n"
+             "[b](../../_docs/_worklog/TASK_TREE.md)\n")
+
+
+class ReferenceMaterialTest(unittest.TestCase):
+    """reference/ 아래 자료 사본은 옮기기만 하고 본문을 바꾸지 않는다."""
+
+    def test_predicate(self):
+        for rel in ("reference/copy/AGENTS.md", "reference/copy/_docs/x.md", "reference/a.md",
+                    "reference/copy/INDEX.md", "reference/copy/CLAUDE.md",
+                    "reference/copy/AGENTS/x.md"):
+            self.assertTrue(_is_reference_material(rel), rel)
+        for rel in ("reference/AGENTS.md", "reference/CLAUDE.md", "reference/INDEX.md",
+                    "reference/INDEX2.md", "reference/AGENTS/epistemic-rules/x.md",
+                    "implementation/copy/x.md", "worklog/x.md", "reference"):
+            self.assertFalse(_is_reference_material(rel), rel)
+
+    def test_copy_bodies_kept(self):
+        files = dict(FIXTURE)
+        files["_reference/AGENTS.md"] = TABLE_ONE_ROW
+        files["_reference/a.pdf"] = "x\n"
+        files["_reference/INDEX.md"] = "`_docs/_worklog/` 색인\n"
+        files["_reference/AGENTS/note.md"] = "`_docs/_worklog/` 규범\n"
+        for rel in ("_reference/copy/AGENTS.md", "_reference/copy/_docs/x.md",
+                    "_reference/copy/INDEX.md", "reference/copy2/y.md"):
+            files[rel] = COPY_TEXT
+        copies = ["reference/copy/AGENTS.md", "reference/copy/_docs/x.md",
+                  "reference/copy/INDEX.md", "reference/copy2/y.md"]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            for dry in (True, False):
+                rep = migrate(root, dry_run=dry)
+                self.assertIn(("_reference/copy/_docs/x.md", "reference/copy/_docs/x.md"), rep.moved)
+                for rel in copies:
+                    self.assertNotIn(rel, rep.rewritten)
+                    self.assertEqual([r for r in rep.residual if r[0] == rel], [])
+                self.assertIn("reference/INDEX.md", rep.rewritten)
+                self.assertIn("reference/AGENTS/note.md", rep.rewritten)
+                self.assertIn("reference/AGENTS.md", rep.rewritten)
+                self.assertEqual(len(rep.converted), 1)
+            for rel in copies:
+                self.assertEqual((root / rel).read_text(encoding="utf-8"), COPY_TEXT, rel)
+            self.assertEqual((root / "reference/INDEX.md").read_text(encoding="utf-8"),
+                             "`worklog/` 색인\n")
+            self.assertEqual(list(load_index_yaml(root / "reference/INDEX.yaml")), ["a.pdf"])
+            self.assertNotIn("등록된 자료", (root / "reference/AGENTS.md").read_text(encoding="utf-8"))
+            _git(root, "add", "-A")
+            before = _snapshot(root)
+            again = migrate(root)
+            self.assertEqual((again.moved, again.rewritten), ([], []))
+            self.assertEqual(_snapshot(root), before)
+
+    def test_conflicted_copy_body_kept(self):
+        files = dict(FIXTURE)
+        files["_reference/copy/x.md"] = COPY_TEXT
+        files["reference/copy/x.md"] = "already here\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_repo(tmp, files)
+            rep = migrate(root)
+            self.assertIn(("_reference/copy/x.md", "reference/copy/x.md"), rep.conflicts)
+            self.assertNotIn("_reference/copy/x.md", rep.rewritten)
+            self.assertEqual([r for r in rep.residual if r[0] == "_reference/copy/x.md"], [])
+            self.assertEqual((root / "_reference/copy/x.md").read_text(encoding="utf-8"), COPY_TEXT)
 
 
 class EdgeCaseTest(unittest.TestCase):
@@ -662,6 +802,24 @@ class ReferenceTableTest(unittest.TestCase):
         body, yaml, bad = convert_reference_table(text)
         self.assertEqual((body, yaml, len(bad)), (text, "", 1))
         self.assertIn("모르는 열: 출처", bad[0])
+
+    def test_item_column_as_file(self):
+        text = ("## 등록된 자료\n\n| 항목 | 추가일 | 설명 | 상태 |\n|---|---|---|---|\n"
+                "| `name/` | d | 폴더 자료 | 처리 대기 |\n"
+                "| [a.pdf](a.pdf) | d | 보고서 | 처리됨 |\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual(bad, [])
+        self.assertNotIn("등록된 자료", body)
+        self.assertEqual(self._load(yaml), {
+            "name/": {"description": "폴더 자료", "status": "처리 대기"},
+            "a.pdf": {"description": "보고서", "status": "처리됨"}})
+
+    def test_item_and_file_columns_together_reported(self):
+        text = ("## 등록된 자료\n\n| 항목 | 파일 | 상태 |\n|---|---|---|\n"
+                "| a | a.pdf | 처리됨 |\n")
+        body, yaml, bad = convert_reference_table(text)
+        self.assertEqual((body, yaml, len(bad)), (text, "", 1))
+        self.assertIn("머리 칸", bad[0])
 
     def test_status_remainder_allowed_starts(self):
         for rest in ("(노드)", "- 노드", "[n](n.md)"):
