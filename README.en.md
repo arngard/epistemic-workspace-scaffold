@@ -47,12 +47,12 @@ For the rationale, see [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENT
 
 There are two ways to obtain the scaffold.
 
-- Staying connected to upstream: receive the scaffold history through a GitHub fork or a clone, and connect the original as the `upstream` remote. For a clone, rename the original remote with `git remote rename origin upstream` and add your own repository as `origin`. For a fork, add `git remote add upstream https://github.com/arngard/epistemic-workspace-scaffold.git`. Pull improvements from the parent scaffold with `git fetch upstream && git merge upstream/main`.
-- Without history: create a repository from the GitHub template, or copy the files into an existing project. You do not receive the scaffold history, so you cannot merge upstream improvements.
+- Staying connected to upstream: receive the scaffold history through a GitHub fork or a clone, and connect the original as the `upstream` remote. For a clone, run `git remote rename origin upstream` and add your own repository as `origin`. For a fork, add `git remote add upstream https://github.com/arngard/epistemic-workspace-scaffold.git`. Pull upstream improvements with `git fetch upstream && git merge upstream/main`.
+- Without history: create a repository from the GitHub template, or copy the files into an existing project. Without the scaffold history, you cannot merge upstream improvements.
 
 If you received the scaffold history, the `upstream` connection is not optional; it is the starting state. Audits use it to tell upstream commits from your own. Record the chosen approach and its rationale as a decision document.
 
-After obtaining it, rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md).
+After obtaining it, connect the pre-commit hook once per clone (command in [tools.md](AGENTS/epistemic-rules/tools.md) "색인 생성 스크립트"). Then rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md).
 
 ## Further reading
 

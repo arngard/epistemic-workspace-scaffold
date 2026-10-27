@@ -1,21 +1,21 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [architecture, 제약]
-description: 프로젝트 전반에 걸리는 핵심 설계 제약. 스캐폴드 상태 - 제약 목록 작성 필요
+description: 프로젝트 전반에 걸리는 핵심 설계 제약
 ---
 
 # 핵심 제약
 
 프로젝트 전반에 걸쳐 적용되는 설계 제약. 개별 상세는 각 링크 문서를 참조한다.
 
-## 0. 설계 원칙 (tiebreaker)
+## 설계 원칙 (tiebreaker)
 
 설계 판단이 갈릴 때의 우선 기준은 상류 규범 [AGENTS/epistemic-rules/design-principles.md](../../AGENTS/epistemic-rules/design-principles.md)에 있다.
 
 ## 원본 보호 원칙
 
-에이전트가 원본(데이터, 콘텐츠)을 다룰 때의 안전 기준은 [AGENTS/epistemic-rules/original-protection-principle.md](../../AGENTS/epistemic-rules/original-protection-principle.md) SSOT 참조 - 에이전트 행동 규범이므로 에이전트 폴더에 있다.
+에이전트가 원본(데이터, 콘텐츠)을 다룰 때의 안전 기준은 [AGENTS/epistemic-rules/original-protection-principle.md](../../AGENTS/epistemic-rules/original-protection-principle.md) SSOT 참조 - 에이전트 행동 규범이므로 상류 규범 묶음에 있다.
 
 ## 제약 목록
 

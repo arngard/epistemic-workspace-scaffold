@@ -52,7 +52,7 @@ description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 
 스캐폴드 이력을 받았다면 `upstream` 연결은 고를 수 있는 선택지가 아니라 시작 상태다. 감사는 이 연결로 상류 커밋과 자기 커밋을 구분한다. 고른 방식과 이유는 결정 문서로 남긴다.
 
-가져온 뒤에는 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
+가져온 뒤에는 클론마다 커밋 전 훅을 한 번 연결한다(명령은 [tools.md](AGENTS/epistemic-rules/tools.md) "색인 생성 스크립트"). 이어서 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 계승 자산을 바꿀 때는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
 
 ## 더 읽을 거리
 

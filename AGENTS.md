@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [규칙, 문서관리]
 ---
 
@@ -10,7 +10,7 @@ tags: [규칙, 문서관리]
 
 # AI Agent 지침
 
-> 이 파일은 모든 AI 도구(Claude, Kiro, Antigravity, Copilot 등)가 이 프로젝트를 다룰 때의 기본 지침이다. 각 도구의 진입점 파일(CLAUDE.md, .kiro/ 등)은 이 파일을 가리킨다.
+> 이 파일은 모든 AI 도구가 이 프로젝트를 다룰 때의 기본 지침이다. 출고된 진입점 파일(`CLAUDE.md`, `.github/copilot-instructions.md`)은 이 파일을 가리킨다. 도구별 진입점은 [tool-environment.md](AGENTS/epistemic-rules/tool-environment.md).
 
 ## 이 워크스페이스의 정체
 
