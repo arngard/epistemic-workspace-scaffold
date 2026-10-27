@@ -53,7 +53,11 @@ class TagUse:
 
 def inventory(root: Path) -> "list[TagUse]":
     """태그별 사용 현황을 tag_key 다음 tag 순으로 돌려준다."""
-    docs, _ = scan_tags(root)
+    return inventory_of(root, scan_tags(root)[0])
+
+
+def inventory_of(root: Path, docs: "dict[Path, list[str]]") -> "list[TagUse]":
+    """이미 훑은 문서 {경로: 태그 목록}으로 inventory와 같은 목록을 만든다."""
     uses: "dict[str, list[tuple[bool, str]]]" = {}
     for path, tags in docs.items():
         rel = path.relative_to(root).as_posix()
@@ -98,14 +102,14 @@ def main(argv: "list[str] | None" = None) -> int:
         print("Error: not a directory. 디렉토리가 아님 - %s" % root,
               file=sys.stderr)
         return 2
-    _, errors = scan_tags(root)
+    docs, errors = scan_tags(root)
     for path, err in sorted(errors, key=lambda e: e[0].relative_to(root).as_posix()):
         where = " (%d행)" % err.line if err.line else ""
         print("Error: unreadable tags. tags를 읽을 수 없음 - %s%s: %s"
               % (path.relative_to(root).as_posix(), where, err),
               file=sys.stderr)
     print("수\t태그\t상류\t예시")
-    for use in inventory(root):
+    for use in inventory_of(root, docs):
         print("%d\t%s\t%s\t%s" % (
             use.count, _cell(use.tag), "예" if use.upstream else "아니오",
             _cell("; ".join(use.examples))))

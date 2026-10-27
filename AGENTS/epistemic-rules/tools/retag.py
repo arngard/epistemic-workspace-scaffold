@@ -19,8 +19,11 @@ front matter 밖을 건드리거나 상류 문서를 바꾸는 사고가 규모�
 - 대응은 동시에 적용한다. 사슬로 잇지 않는다(a=b와 b=c는 a를 b로, b를 c로).
 - 바꾼 뒤 같은 태그가 겹치면 처음 자리 하나만 남긴다.
 - 흐름형과 블록형 표기를 유지한다. 영역 안의 항목은 다시 써서 따옴표는 필요한
-  항목에만 붙고 블록형 항목 줄의 주석은 사라진다. 대응에 걸리는 태그가 없는
-  문서는 쓰지 않는다.
+  항목에만 붙는다. 대응에 걸리는 태그가 없는 문서는 쓰지 않는다.
+- 영역 안에 주석이 있고(블록형 항목 줄의 "- a # 메모") 대응이 그 문서를
+  바꾸게 되면 쓰지 않고 따로 보고한다. 다시 쓰면 주석이 조용히 사라지기
+  때문이다. 주석을 지워도 되면 사용자가 그 문서를 직접 고친다.
+  닫는 대괄호 뒤의 주석은 영역 밖이라 그대로 남는다.
 - date modified를 바꾸지 않는다. 태그 병합은 기계적 변경이라 문서 내용을
   고쳤다는 뜻이 아니고, 날짜를 바꾸면 병합이 문서 수천 개의 수정일을 한꺼번에
   밀어 버린다.
@@ -29,6 +32,13 @@ front matter 밖을 건드리거나 상류 문서를 바꾸는 사고가 규모�
   동일성 검사(항목 30)가 위반으로 잡는다.
 - 새 태그가 형태 규칙(공백, 숫자만의 태그, 빈 태그 금지)을 어기거나 같은 옛
   태그에 다른 새 태그가 둘이면 아무것도 쓰지 않고 거부한다.
+- 쓰기는 문서마다 같은 폴더의 임시 파일에 쓴 뒤 os.replace로 바꾸고(원래 파일
+  모드를 유지한다), 읽기 전용 파일은 바꾸지 않는다. 문서 하나의 쓰기 오류는
+  그 문서만 실패로 모으고 나머지는 계속한다. 문서 안에서는 전부 쓰이거나 하나도
+  안 쓰이지만 문서 사이에서는 일부만 바뀔 수 있으므로, 바뀐 문서와 쓰지 못한
+  문서를 모두 보고한다.
+- 새 태그가 이미 있는 다른 표기(대소문자 등)와 열쇠(tag_key)가 같으면 쓰되
+  그 표기들을 주의로 알린다. 표기를 하나로 모으려면 그 표기도 대응에 넣는다.
 
 사용법:
     python3 AGENTS/epistemic-rules/tools/retag.py [루트] --map 옛=새
@@ -36,26 +46,35 @@ front matter 밖을 건드리거나 상류 문서를 바꾸는 사고가 규모�
     (루트를 생략하면 현재 디렉토리. --dry-run은 쓰지 않고 바뀔 문서만 낸다.
      옛 태그에 =가 있으면 쓸 수 없다. 첫 =가 옛과 새를 가른다)
 
-출력(표준 출력): 절 셋을 이 순서로 낸다. 문서는 루트 상대 POSIX 경로, 한 줄에
-하나, 경로 순이다.
+출력(표준 출력): 절 여섯을 이 순서로 항상 낸다. 문서는 루트 상대 POSIX 경로,
+한 줄에 하나, 경로 순이다.
     # 바뀐 문서 (N)        --dry-run이면 "# 바뀔 문서 (N)"
     # 상류 묶음이라 건너뜀 (N)
+    # tags 안 주석이라 건너뜀 (N)
     # 읽을 수 없음 (N)
+    # 쓰지 못함 (N)        사유는 표준 오류에 한 줄씩
+    # 주의: 표기만 다른 태그가 함께 남음 (N)   줄마다 표기들을 ", "로 이음
 
 종료 코드:
-    0  성공(읽을 수 없는 문서가 있어도 0)
+    0  성공(건너뛴 문서, 읽을 수 없는 문서, 주의가 있어도 0)
     2  새 태그가 형태 규칙을 어김, 같은 옛 태그에 다른 새 태그, 인자 오류,
-       루트가 디렉토리가 아님, 파일 쓰기 오류
+       루트가 디렉토리가 아님, 문서 하나라도 쓰지 못함(나머지는 이미 바뀌었을
+       수 있으니 출력의 두 절로 확인한다)
 """
 
 import argparse
+import errno
+import os
+import stat
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from _audit_core import FRONT_MATTER_RE, is_bundle_path, nfc
 from _tags_core import (
-    TagFormatError, find_tags_block, render_tags, scan_tags, tag_form_problem)
+    TagFormatError, find_tags_block, render_tags, scan_tags, tag_form_problem,
+    tag_key)
 
 _ENC = ("utf-8", "surrogateescape")
 
@@ -67,6 +86,17 @@ class RetagReport:
     changed: "list[str]" = field(default_factory=list)
     skipped_bundle: "list[str]" = field(default_factory=list)
     unreadable: "list[str]" = field(default_factory=list)
+    # tags 값 영역 안에 주석이 있어 쓰지 않은 문서.
+    skipped_comment: "list[str]" = field(default_factory=list)
+    # 쓰기에 실패한 문서와 사유. dry_run이면 비어 있다.
+    failed: "list[str]" = field(default_factory=list)
+    failed_reasons: "dict[str, str]" = field(default_factory=dict)
+    # 쓴 뒤 열쇠(tag_key)가 같은데 표기가 다른 채 함께 남는 태그 묶음.
+    collisions: "list[tuple[str, ...]]" = field(default_factory=list)
+
+
+class RegionCommentError(ValueError):
+    """tags 값 영역 안에 주석이 있어 다시 쓰면 주석이 사라진다."""
 
 
 def build_mapping(pairs) -> "dict[str, str]":
@@ -115,6 +145,8 @@ def rewrite_text(text: str, mapping: "dict[str, str]", expected: "list[str]"):
     new_tags = _map_tags(block.tags, mapping)
     if not any(mapping.get(t, t) != t for t in block.tags):
         return None
+    if block.comment:
+        raise RegionCommentError("tags 값 영역 안에 주석이 있다")
     start = m.start(1) + block.start
     end = m.start(1) + block.end
     newline = "\r\n" if text[start:end].startswith("\r\n") else "\n"
@@ -126,6 +158,50 @@ def rewrite_text(text: str, mapping: "dict[str, str]", expected: "list[str]"):
     return new_text
 
 
+def _write_atomic(path: Path, data: bytes) -> None:
+    """같은 폴더의 임시 파일에 쓴 뒤 바꿔 넣는다. 원래 파일 모드를 유지한다.
+
+    읽기 전용 파일은 바꾸지 않는다(폴더 권한만으로 바뀌지 않게 한다).
+    실패하면 임시 파일을 지우고 OSError를 그대로 올린다.
+    """
+    if not os.access(str(path), os.W_OK):
+        raise PermissionError(errno.EACCES, "쓰기 권한이 없다", str(path))
+    mode = stat.S_IMODE(path.stat().st_mode)
+    fd, tmp = tempfile.mkstemp(
+        dir=str(path.parent), prefix=".retag-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+        os.chmod(tmp, mode)
+        os.replace(tmp, str(path))
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
+def _collisions(
+    docs: "dict[Path, list[str]]",
+    rewritten: "dict[Path, list[str]]",
+    introduced: "set[str]",
+) -> "list[tuple[str, ...]]":
+    """쓴 뒤의 어휘에서 새로 들인 표기와 열쇠가 같은 다른 표기 묶음."""
+    spellings: "set[str]" = set()
+    for path, tags in docs.items():
+        spellings.update(rewritten.get(path, tags))
+    groups: "dict[str, set[str]]" = {}
+    for tag in spellings:
+        groups.setdefault(tag_key(tag), set()).add(tag)
+    out = []
+    for key in sorted(groups):
+        forms = groups[key]
+        if len(forms) > 1 and forms & introduced:
+            out.append(tuple(sorted(forms)))
+    return out
+
+
 def retag(
     root: Path,
     mapping: "dict[str, str]",
@@ -134,9 +210,12 @@ def retag(
 ) -> RetagReport:
     """대응을 태그를 모으는 문서의 front matter tags에 적용한다.
 
-    쓰기 전에 바뀔 문서를 모두 계산하므로 중간에 실패해도 일부만 바뀌지
-    않는다. dry_run이면 쓰지 않고 보고만 한다. 새 태그가 형태 규칙을 어기거나
-    대응이 모순이면 아무것도 하지 않고 ValueError를 낸다.
+    새 태그가 형태 규칙을 어기거나 대응이 모순이면 아무것도 하지 않고
+    ValueError를 낸다. 그 밖에는 바뀔 문서를 모두 계산한 뒤 쓴다. 쓰기는 문서마다
+    임시 파일과 os.replace로 해서 한 문서는 전부 쓰이거나 하나도 안 쓰이고,
+    쓰기 오류는 문서마다 failed에 모으며 나머지를 계속한다. 그래서 문서 사이에서는
+    일부만 바뀔 수 있고 changed(쓴 문서)와 failed(쓰지 못한 문서)가 그 경계다.
+    dry_run이면 쓰지 않고 changed에 바뀔 문서를 담는다.
     """
     mapping = build_mapping(mapping.items())
     docs, errors = scan_tags(root)
@@ -147,6 +226,8 @@ def retag(
     report = RetagReport()
     unreadable = {rel(p) for p, _ in errors}
     pending: "list[tuple[Path, str]]" = []
+    rewritten: "dict[Path, list[str]]" = {}
+    introduced: "set[str]" = set()
     for path in sorted(docs, key=rel):
         tags = docs[path]
         if not any(mapping.get(t, t) != t for t in tags):
@@ -157,16 +238,29 @@ def retag(
         try:
             text = path.read_bytes().decode(*_ENC)
             new_text = rewrite_text(text, mapping, tags)
-        except ValueError:
+        except RegionCommentError:
+            report.skipped_comment.append(rel(path))
+            continue
+        except (ValueError, OSError):
             unreadable.add(rel(path))
             continue
         if new_text is not None:
             pending.append((path, new_text))
-            report.changed.append(rel(path))
+            rewritten[path] = _map_tags(tuple(tags), mapping)
+            introduced.update(mapping[t] for t in tags if mapping.get(t, t) != t)
     report.unreadable = sorted(unreadable)
-    if not dry_run:
-        for path, new_text in pending:
-            path.write_bytes(new_text.encode(*_ENC))
+    report.collisions = _collisions(docs, rewritten, introduced)
+    for path, new_text in pending:
+        if dry_run:
+            report.changed.append(rel(path))
+            continue
+        try:
+            _write_atomic(path, new_text.encode(*_ENC))
+        except OSError as e:
+            report.failed.append(rel(path))
+            report.failed_reasons[rel(path)] = str(e)
+        else:
+            report.changed.append(rel(path))
     return report
 
 
@@ -218,13 +312,21 @@ def main(argv: "list[str] | None" = None) -> int:
     sections = (
         ("바뀔 문서" if args.dry_run else "바뀐 문서", report.changed),
         ("상류 묶음이라 건너뜀", report.skipped_bundle),
+        ("tags 안 주석이라 건너뜀", report.skipped_comment),
         ("읽을 수 없음", report.unreadable),
+        ("쓰지 못함", report.failed),
     )
     for title, paths in sections:
         print("# %s (%d)" % (title, len(paths)))
         for p in paths:
             print(p)
-    return 0
+    print("# 주의: 표기만 다른 태그가 함께 남음 (%d)" % len(report.collisions))
+    for forms in report.collisions:
+        print(", ".join(forms))
+    for p in report.failed:
+        print("Error: write failed. 쓰기 실패 - %s: %s"
+              % (p, report.failed_reasons[p]), file=sys.stderr)
+    return 2 if report.failed else 0
 
 
 if __name__ == "__main__":

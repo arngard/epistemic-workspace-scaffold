@@ -21,6 +21,7 @@ TagsBlock의 start, end는 받은 텍스트 안에서 tags 값 영역의 오프�
   줄바꿈과 항목 줄들이다(예: "\n  - a\n  - b"). CRLF 텍스트에서는 영역이
   tags: 줄의 CR에서 시작하고 마지막 항목의 CR 앞에서 끝나며 안쪽 CR을
   포함한다("\r\n  - a\r\n  - b"). 항목이 없으면 start와 end가 같다.
+  항목 줄 뒤의 주석은 영역 안에 들고 comment가 참이 된다.
 감사 경로의 _audit_core.read는 텍스트 모드로 열어 줄바꿈을 LF로 바꾸므로
 CRLF가 파서에 닿지 않는다. 바이트 수준으로 다시 쓰는 도구만 CRLF를 만난다.
 """
@@ -55,6 +56,10 @@ class TagsBlock:
     style: str  # "flow" 또는 "block"
     indent: str  # 블록형 항목 줄의 들여쓰기
     tags: "tuple[str, ...]"
+    # 블록형 값 영역 안에 항목 줄 주석이 있다. 영역을 다시 쓰면 그 주석이
+    # 사라지므로 다시 쓰는 도구는 이런 영역을 쓰지 않는다. 흐름형은 항상
+    # False다(닫는 대괄호 뒤 주석은 영역 밖이다).
+    comment: bool = False
 
 
 # 키 뒤에는 공백이나 줄 끝이 와야 한다(tags:[a]는 YAML이 키로 읽지 않는다).
@@ -76,7 +81,7 @@ def _check_plain(value: str, in_flow: bool, line: int) -> None:
         raise TagFormatError("따옴표 없는 값이 목록 표시로 시작한다", line)
     if ": " in value or value.endswith(":"):
         raise TagFormatError("항목이 매핑으로 읽힌다", line)
-    if " #" in value:
+    if re.search(r"[ \t]#", value):
         raise TagFormatError("항목 안의 주석", line)
     if in_flow and any(c in value for c in "[]{}"):
         raise TagFormatError("따옴표 없는 값에 괄호가 있다", line)
@@ -159,6 +164,7 @@ def _read_block(text: str, key_end: int, line: int):
     """tags: 줄 다음의 항목 줄들. (항목, 들여쓰기, 끝 오프셋)을 돌려준다."""
     items = []
     indent = None
+    comment = False
     end = key_end
     pos = text.find("\n", key_end)
     lineno = line
@@ -183,13 +189,16 @@ def _read_block(text: str, key_end: int, line: int):
                 raise TagFormatError("빈 항목", lineno)
             value, nxt = _read_scalar(text, vstart, content_end, False, lineno)
             _check_tail(text, nxt, content_end, lineno)
+            if text[nxt:content_end].strip(" \t"):
+                comment = True
             items.append(value)
             end = content_end
         elif _NEXT_KEY_RE.match(row):
             break  # 다음 키가 목록을 끝낸다
         else:
             raise TagFormatError("블록형 항목이 아니다", lineno)
-    return tuple(items), (_DEFAULT_INDENT if indent is None else indent), end
+    return (tuple(items), (_DEFAULT_INDENT if indent is None else indent),
+            end, comment)
 
 
 def find_tags_block(text: str) -> "TagsBlock | None":
@@ -212,8 +221,8 @@ def find_tags_block(text: str) -> "TagsBlock | None":
         tags, stop = _read_flow(text, start, end, line)
         return TagsBlock(start, stop, "flow", _DEFAULT_INDENT, tags)
     if not value or value.startswith("#"):
-        tags, indent, stop = _read_block(text, end, line)
-        return TagsBlock(end, stop, "block", indent, tags)
+        tags, indent, stop, comment = _read_block(text, end, line)
+        return TagsBlock(end, stop, "block", indent, tags, comment)
     raise TagFormatError("tags가 목록이 아니다(흐름형 [a, b]나 블록형만 읽는다)", line)
 
 
@@ -242,7 +251,9 @@ def render_tags(block: TagsBlock, tags: "list[str]", newline: str = "\n") -> str
     돌려준 문자열은 원문의 text[block.start:block.end]를 대신한다.
     - 흐름형: "[a, b]". 따옴표가 필요한 항목만 큰따옴표로 감싼다.
     - 블록형: 줄바꿈으로 시작해 항목마다 indent + "- 값". 줄바꿈 문자열은
-      newline으로 정한다(CRLF 문서는 CR과 LF를 이은 문자열을 준다). 항목 줄의 주석은 버린다.
+      newline으로 정한다(CRLF 문서는 CR과 LF를 이은 문자열을 준다).
+      항목 줄의 주석(block.comment)은 쓰지 못하고 사라지므로, 다시 쓰는
+      쪽이 block.comment가 참인 영역은 쓰지 않아야 한다.
     읽는 규칙을 이 모듈의 find_tags_block 하나로 두므로, 쓴 결과는 같은
     함수로 읽으면 tags와 같아야 한다.
     """

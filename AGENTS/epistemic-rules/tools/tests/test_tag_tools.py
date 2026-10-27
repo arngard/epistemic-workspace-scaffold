@@ -4,16 +4,21 @@ import contextlib
 import hashlib
 import io
 import os
+import stat
 import sys
 import tempfile
 import unittest
 import unicodedata
 from pathlib import Path
+from unittest import mock
 
 TOOLS = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, str(TOOLS))
 
-from _tags_core import TagsBlock, find_tags_block, render_tags  # noqa: E402
+import retag as retag_module  # noqa: E402
+import tag_inventory as inventory_module  # noqa: E402
+from _tags_core import (  # noqa: E402
+    TagFormatError, TagsBlock, find_tags_block, parse_tags, render_tags)
 from audit_frontmatter import check_tags  # noqa: E402
 from retag import RetagReport, main as retag_main, retag  # noqa: E402
 from tag_inventory import TagUse, inventory  # noqa: E402
@@ -136,6 +141,13 @@ class InventoryTest(Fixture):
         self.assertEqual(code, 0)
         self.assertEqual(len(err.strip().splitlines()), 1)
         self.assertIn("s/bad.md", err)
+
+    def test_main_walks_once(self):
+        with mock.patch.object(
+                inventory_module, "scan_tags",
+                wraps=inventory_module.scan_tags) as spy:
+            self.run_main()
+        self.assertEqual(spy.call_count, 1)
 
     def test_main_does_not_write(self):
         before = self.snapshot()
@@ -333,6 +345,152 @@ class RetagTest(Fixture):
         self.assertEqual(self.tags("s/a.md"), ["agents", "#z"])
 
 
+class RetagSafetyTest(Fixture):
+    def comment_doc(self, item="x # memo"):
+        return FM_HEAD + "tags:\n  - " + item + "\n  - y\n---\n\nbody\n"
+
+    def test_comment_region_skipped_byte_identical(self):
+        self.write_raw("s/b.md", self.comment_doc())
+        before = self.snapshot()
+        rep = retag(self.root, {"x": "z"})
+        self.assertEqual(rep.skipped_comment, ["s/b.md"])
+        self.assertNotIn("s/b.md", rep.changed)
+        after = self.snapshot()
+        self.assertEqual(before["s/b.md"], after["s/b.md"])
+
+    def test_comment_on_quoted_item_skipped(self):
+        self.write_raw("s/b.md", self.comment_doc('"x" # memo'))
+        rep = retag(self.root, {"x": "z"})
+        self.assertEqual(rep.skipped_comment, ["s/b.md"])
+
+    def test_comment_doc_without_mapped_tag_not_reported(self):
+        self.write_raw("s/b.md", self.comment_doc())
+        rep = retag(self.root, {"q": "r"})
+        self.assertEqual(rep.skipped_comment, [])
+
+    def test_comment_skipped_even_with_include_bundles(self):
+        self.write_raw("AGENTS/epistemic-rules/x.md", self.comment_doc(
+            "epistemic-rules # memo"))
+        rep = retag(self.root, {"epistemic-rules": "q"}, include_bundles=True)
+        self.assertIn("AGENTS/epistemic-rules/x.md", rep.skipped_comment)
+
+    def test_comment_main_output_and_exit_code(self):
+        self.write_raw("s/b.md", self.comment_doc())
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = retag_main([str(self.root), "--map", "x=z"])
+        self.assertEqual(code, 0)
+        self.assertIn("s/b.md", out.getvalue())
+        self.assertIn("주석", out.getvalue())
+        self.assertIn("x # memo", self.read("s/b.md"))
+
+    def test_block_comment_flag(self):
+        self.assertTrue(find_tags_block("tags:\n  - a # c").comment)
+        self.assertTrue(find_tags_block('tags:\n  - "a" # c\n  - b').comment)
+        self.assertFalse(find_tags_block("tags:\n  - a\n  - b").comment)
+        self.assertFalse(find_tags_block("tags: [a] # c").comment)
+
+    def failing_replace(self, name):
+        real = os.replace
+
+        def fake(src, dst, *a, **k):
+            if str(dst).endswith(name):
+                raise OSError("simulated")
+            return real(src, dst, *a, **k)
+        return fake
+
+    def test_write_failure_collected_and_reported(self):
+        before_b = self.read("s/b.md")
+        fake = self.failing_replace("b.md")
+        with mock.patch.object(retag_module.os, "replace", fake):
+            rep = retag(self.root, {"x": "z", "에이전트": "q"})
+        self.assertEqual(rep.changed, ["s/a.md"])
+        self.assertEqual(rep.failed, ["s/b.md"])
+        self.assertEqual(self.tags("s/a.md"), ["agents", "z"])
+        self.assertEqual(self.read("s/b.md"), before_b)
+        left = [p.name for p in (self.root / "s").iterdir()
+                if p.name.endswith(".tmp")]
+        self.assertEqual(left, [])
+
+    def test_write_failure_main_exit_2_with_lists(self):
+        fake = self.failing_replace("b.md")
+        out, err = io.StringIO(), io.StringIO()
+        with mock.patch.object(retag_module.os, "replace", fake):
+            with contextlib.redirect_stdout(out), \
+                    contextlib.redirect_stderr(err):
+                code = retag_main(
+                    [str(self.root), "--map", "x=z", "--map", "에이전트=q"])
+        self.assertEqual(code, 2)
+        text = out.getvalue()
+        self.assertIn("s/a.md", text)
+        self.assertIn("s/b.md", text)
+        self.assertLess(text.index("s/a.md"), text.index("s/b.md"))
+        self.assertIn("s/b.md", err.getvalue())
+
+    def test_read_only_file_not_replaced(self):
+        target = self.root / "s/b.md"
+        target.chmod(0o444)
+        self.addCleanup(target.chmod, 0o644)
+        if os.access(str(target), os.W_OK):
+            self.skipTest("쓰기 권한 검사가 듣지 않는 환경")
+        before = self.read("s/b.md")
+        rep = retag(self.root, {"x": "z", "에이전트": "q"})
+        self.assertEqual(rep.failed, ["s/b.md"])
+        self.assertEqual(rep.changed, ["s/a.md"])
+        self.assertEqual(self.read("s/b.md"), before)
+
+    def test_file_mode_preserved(self):
+        target = self.root / "s/a.md"
+        target.chmod(0o640)
+        retag(self.root, {"x": "z"})
+        self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o640)
+
+    def test_dry_run_writes_nothing_even_when_read_only(self):
+        before = self.snapshot()
+        rep = retag(self.root, {"x": "z"}, dry_run=True)
+        self.assertEqual(rep.failed, [])
+        self.assertEqual(before, self.snapshot())
+
+
+class RetagCollisionTest(Fixture):
+    def test_collision_with_other_spelling_warns_but_writes(self):
+        self.write("s/c.md", "[CAPEX]")
+        rep = retag(self.root, {"x": "CapEx"})
+        self.assertEqual(self.tags("s/a.md"), ["agents", "CapEx"])
+        self.assertEqual(rep.collisions, [("CAPEX", "CapEx")])
+
+    def test_no_collision_when_other_spelling_also_mapped(self):
+        self.write("s/c.md", "[CAPEX]")
+        self.write("s/d.md", "[CapEx]")
+        rep = retag(self.root, {"CapEx": "CAPEX"})
+        self.assertEqual(rep.collisions, [])
+
+    def test_no_collision_when_all_variants_mapped_to_one(self):
+        self.write("s/c.md", "[CAPEX]")
+        self.write("s/d.md", "[CapEx]")
+        rep = retag(self.root, {"CapEx": "capex", "CAPEX": "capex"})
+        self.assertEqual(rep.collisions, [])
+
+    def test_new_spellings_colliding_with_each_other(self):
+        self.write("s/c.md", "[p]")
+        rep = retag(self.root, {"x": "Foo", "p": "foo"})
+        self.assertEqual(rep.collisions, [("Foo", "foo")])
+
+    def test_skipped_bundle_spelling_counts(self):
+        rep = retag(self.root, {"x": "Agents"})
+        self.assertEqual(rep.collisions, [("Agents", "agents")])
+
+    def test_main_prints_caution_and_exits_0(self):
+        self.write("s/c.md", "[CAPEX]")
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = retag_main([str(self.root), "--map", "x=CapEx"])
+        self.assertEqual(code, 0)
+        self.assertIn("CAPEX", out.getvalue())
+        self.assertIn("CapEx", out.getvalue())
+        self.assertIn("주의", out.getvalue())
+
+
 class RetagMainTest(Fixture):
     def run_main(self, *args):
         out, err = io.StringIO(), io.StringIO()
@@ -441,6 +599,18 @@ class RenderTest(unittest.TestCase):
             else:
                 text = "tags:" + rendered
             self.assertEqual(list(find_tags_block(text).tags), samples)
+
+    def test_tab_hash_roundtrip(self):
+        for style_text in ("tags: [a]", "tags:\n  - a"):
+            b = self.block(style_text)
+            rendered = render_tags(b, ["m\t#n", "o #p"])
+            text = ("tags: " if b.style == "flow" else "tags:") + rendered
+            self.assertEqual(
+                list(find_tags_block(text).tags), ["m\t#n", "o #p"])
+
+    def test_plain_tab_hash_rejected_in_flow(self):
+        with self.assertRaises(TagFormatError):
+            parse_tags("tags: [a\t#b]")
 
     def test_returns_block_type(self):
         self.assertIsInstance(self.block("tags: [a]"), TagsBlock)
