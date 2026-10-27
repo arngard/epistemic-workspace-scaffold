@@ -15,8 +15,14 @@
 - 태그는 NFC로 바꿔 돌려준다.
 
 TagsBlock의 start, end는 받은 텍스트 안에서 tags 값 영역의 오프셋이다.
-흐름형은 여는 대괄호부터 닫는 대괄호 끝까지, 블록형은 tags: 줄 끝(주석
-뒤)부터 마지막 항목 줄 끝까지다. 줄 끝의 CR은 영역에 넣지 않는다.
+- 흐름형: 여는 대괄호부터 닫는 대괄호 끝까지(대괄호 포함).
+- 블록형: text[:start]는 tags: 줄의 끝(주석이 있으면 주석)까지이고,
+  text[end:]는 마지막 항목 뒤의 줄바꿈으로 시작한다. 영역은 그 사이의
+  줄바꿈과 항목 줄들이다(예: "\n  - a\n  - b"). CRLF 텍스트에서는 영역이
+  tags: 줄의 CR에서 시작하고 마지막 항목의 CR 앞에서 끝나며 안쪽 CR을
+  포함한다("\r\n  - a\r\n  - b"). 항목이 없으면 start와 end가 같다.
+감사 경로의 _audit_core.read는 텍스트 모드로 열어 줄바꿈을 LF로 바꾸므로
+CRLF가 파서에 닿지 않는다. 바이트 수준으로 다시 쓰는 도구만 CRLF를 만난다.
 """
 
 import re
@@ -51,30 +57,29 @@ class TagsBlock:
     tags: "tuple[str, ...]"
 
 
-_KEY_RE = re.compile(r"^tags[ \t]*:", re.MULTILINE)
+# 키 뒤에는 공백이나 줄 끝이 와야 한다(tags:[a]는 YAML이 키로 읽지 않는다).
+_KEY_RE = re.compile(r"^tags[ \t]*:(?=[ \t\r]|$)", re.MULTILINE)
+# 블록 목록을 끝내는 다음 매핑 키 줄(따옴표 키 포함).
+_NEXT_KEY_RE = re.compile(r"^(?:\"[^\"]*\"|'[^']*'|[^\s#\"'][^:]*?):(?:[ \t]|$)")
 _ITEM_RE = re.compile(r"^( *)-( +)(.*)$")
 # 따옴표 없는 값의 첫 글자로 쓸 수 없는 것(따옴표는 따로 처리한다).
 _PLAIN_BAD_FIRST = set("[]{},>|*&!%@#`")
 _DEFAULT_INDENT = "  "
 
 
-def _fail(message: str, line: int) -> TagFormatError:
-    return TagFormatError(message, line)
-
-
 def _check_plain(value: str, in_flow: bool, line: int) -> None:
     if not value:
-        raise _fail("빈 항목", line)
+        raise TagFormatError("빈 항목", line)
     if value[0] in _PLAIN_BAD_FIRST:
-        raise _fail(f'따옴표 없는 값은 "{value[0]}"로 시작할 수 없다', line)
+        raise TagFormatError(f'따옴표 없는 값은 "{value[0]}"로 시작할 수 없다', line)
     if value[:2] in ("- ", "? ") or value in ("-", "?"):
-        raise _fail("따옴표 없는 값이 목록 표시로 시작한다", line)
+        raise TagFormatError("따옴표 없는 값이 목록 표시로 시작한다", line)
     if ": " in value or value.endswith(":"):
-        raise _fail("항목이 매핑으로 읽힌다", line)
+        raise TagFormatError("항목이 매핑으로 읽힌다", line)
     if " #" in value:
-        raise _fail("항목 안의 주석", line)
+        raise TagFormatError("항목 안의 주석", line)
     if in_flow and any(c in value for c in "[]{}"):
-        raise _fail("따옴표 없는 값에 괄호가 있다", line)
+        raise TagFormatError("따옴표 없는 값에 괄호가 있다", line)
 
 
 def _read_scalar(text: str, i: int, end: int, in_flow: bool, line: int):
@@ -86,12 +91,12 @@ def _read_scalar(text: str, i: int, end: int, in_flow: bool, line: int):
         j = i + 1
         while True:
             if j >= end:
-                raise _fail("닫히지 않은 따옴표", line)
+                raise TagFormatError("닫히지 않은 따옴표", line)
             ch = text[j]
             if quote == '"' and ch == "\\":
                 nxt = text[j + 1] if j + 1 < end else ""
                 if nxt not in ('"', "\\"):
-                    raise _fail("큰따옴표 값은 \\\" 와 \\\\ 이스케이프만 읽는다", line)
+                    raise TagFormatError("큰따옴표 값은 \\\" 와 \\\\ 이스케이프만 읽는다", line)
                 buf.append(nxt)
                 j += 2
             elif ch == quote:
@@ -119,7 +124,7 @@ def _check_tail(text: str, i: int, end: int, line: int) -> None:
     """항목이나 닫는 대괄호 뒤에 공백과 주석만 있는지 본다."""
     tail = text[i:end]
     if tail.strip(" \t") and not re.match(r"[ \t]+#", tail):
-        raise _fail("항목 뒤에 읽을 수 없는 글자가 있다", line)
+        raise TagFormatError("항목 뒤에 읽을 수 없는 글자가 있다", line)
 
 
 def _read_flow(text: str, start: int, end: int, line: int):
@@ -129,7 +134,7 @@ def _read_flow(text: str, start: int, end: int, line: int):
         while i < end and text[i] in " \t":
             i += 1
         if i >= end:
-            raise _fail("닫는 대괄호가 없다(여러 줄 흐름형은 읽지 않는다)", line)
+            raise TagFormatError("닫는 대괄호가 없다(여러 줄 흐름형은 읽지 않는다)", line)
         if text[i] == "]":
             i += 1
             break
@@ -138,14 +143,14 @@ def _read_flow(text: str, start: int, end: int, line: int):
         while i < end and text[i] in " \t":
             i += 1
         if i >= end:
-            raise _fail("닫는 대괄호가 없다(여러 줄 흐름형은 읽지 않는다)", line)
+            raise TagFormatError("닫는 대괄호가 없다(여러 줄 흐름형은 읽지 않는다)", line)
         if text[i] == ",":
             i += 1
         elif text[i] == "]":
             i += 1
             break
         else:
-            raise _fail("항목 뒤에는 쉼표나 닫는 대괄호가 와야 한다", line)
+            raise TagFormatError("항목 뒤에는 쉼표나 닫는 대괄호가 와야 한다", line)
     _check_tail(text, i, end, line)
     return tuple(items), i
 
@@ -172,18 +177,18 @@ def _read_block(text: str, key_end: int, line: int):
             if indent is None:
                 indent = m.group(1)
             elif m.group(1) != indent:
-                raise _fail("블록형 항목의 들여쓰기가 다르다", lineno)
+                raise TagFormatError("블록형 항목의 들여쓰기가 다르다", lineno)
             vstart = begin + m.start(3)
             if vstart >= content_end:
-                raise _fail("빈 항목", lineno)
+                raise TagFormatError("빈 항목", lineno)
             value, nxt = _read_scalar(text, vstart, content_end, False, lineno)
             _check_tail(text, nxt, content_end, lineno)
             items.append(value)
             end = content_end
-        elif row[0] in " \t":
-            raise _fail("블록형 항목이 아니다", lineno)
+        elif _NEXT_KEY_RE.match(row):
+            break  # 다음 키가 목록을 끝낸다
         else:
-            break
+            raise TagFormatError("블록형 항목이 아니다", lineno)
     return tuple(items), (_DEFAULT_INDENT if indent is None else indent), end
 
 
@@ -209,7 +214,7 @@ def find_tags_block(text: str) -> "TagsBlock | None":
     if not value or value.startswith("#"):
         tags, indent, stop = _read_block(text, end, line)
         return TagsBlock(end, stop, "block", indent, tags)
-    raise _fail("tags가 목록이 아니다(흐름형 [a, b]나 블록형만 읽는다)", line)
+    raise TagFormatError("tags가 목록이 아니다(흐름형 [a, b]나 블록형만 읽는다)", line)
 
 
 def parse_tags(front: str) -> "list[str] | None":
@@ -260,7 +265,9 @@ def tag_form_problem(tag: str) -> "str | None":
     return None
 
 
-def scan_tags(root: Path):
+def scan_tags(
+    root: Path,
+) -> "tuple[dict[Path, list[str]], list[tuple[Path, TagFormatError]]]":
     """태그를 모으는 문서를 한 번 훑어 (읽은 문서, 읽지 못한 문서)를 돌려준다.
 
     범위는 iter_md_files에서 도구 전용 파일(EXEMPT_FILENAMES)과 생성 색인

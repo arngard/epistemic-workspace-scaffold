@@ -77,6 +77,13 @@ class ParseTest(unittest.TestCase):
         text = "date created: x\ntags: [a]\ndate modified: y"
         self.assertEqual(parse_tags(text), ["a"])
 
+    def test_key_needs_space_after_colon(self):
+        self.assertIsNone(parse_tags("tags:[a]"))
+        self.assertEqual(parse_tags("tags:\t[a]"), ["a"])
+
+    def test_block_ends_at_quoted_key(self):
+        self.assertEqual(parse_tags('tags:\n- a\n"k y": v'), ["a"])
+
     def test_key_must_start_line(self):
         self.assertIsNone(parse_tags("description: tags: [a]"))
         self.assertIsNone(parse_tags("  tags: [a]"))
@@ -102,6 +109,11 @@ class ParseTest(unittest.TestCase):
             "tags:\n  - a: b",
             "tags:\n  - \"a\" b",
             "tags:\n  key: v",
+            "tags:\n-\n- b\nx: y",
+            "tags:\n- a\n-b\nx: y",
+            "tags:\n- a\n# c\n- b\nx: y",
+            "tags:\n-\ta\nx: y",
+            "tags:\nfoo",
         ]
         for text in bad:
             with self.subTest(text=text):
@@ -143,6 +155,13 @@ class BlockOffsetTest(unittest.TestCase):
         self.assertEqual(text[blk.start:blk.end], "\n  - a\n  - b")
         self.assertEqual(text[:blk.start], "date: x\ntags:")
         self.assertEqual(text[blk.end:], "\nend: y")
+
+    def test_block_crlf_boundaries(self):
+        text = "d: x\r\ntags:\r\n  - a\r\n  - b\r\nend: y\r\n"
+        blk = find_tags_block(text)
+        self.assertEqual(text[blk.start:blk.end], "\r\n  - a\r\n  - b")
+        self.assertTrue(text[:blk.start].endswith("tags:"))
+        self.assertTrue(text[blk.end:].startswith("\r\nend"))
 
     def test_block_flush_indent(self):
         text = "tags:\n- a\n- b\n"
@@ -409,7 +428,7 @@ class CheckTagsTest(TagTreeCase):
         self.write("s/a.md", '["a b", "a b"]')
         found = check_tags(self.root)
         self.assertEqual(len(found), 1)
-        self.assertIn("1", found[0].message)
+        self.assertIn("(문서 1건)", found[0].message)
 
 
 if __name__ == "__main__":
