@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [소개]
 description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 ---
@@ -11,10 +11,10 @@ description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 
 문서를 인식론적 범주로 나누는 워크스페이스 골격. 인간과 AI가 함께 일할 때 상위 의도와 근거가 유실되지 않게 한다. 설계 문서를 네 범주로 분류한다.
 
-- Ontology: 무엇이 존재하는가
+- Ontology: 우리 도메인에 무엇이 존재하는가
 - Knowledge: 세상이 어떠한가
-- Strategy: 왜 이렇게 결정했는가
-- Architecture: 어떻게 만드는가
+- Strategy: 왜 이렇게 하기로 했는가
+- Architecture: 무엇을 어떻게 만드는가
 
 왜 이렇게 하는가는 [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md), 운영 지침과 원칙은 단일 진입점 [AGENTS.md](AGENTS.md)를 본다.
 

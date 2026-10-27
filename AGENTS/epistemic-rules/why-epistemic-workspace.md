@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-10-24
+date modified: 2026-10-27
 tags: [agents, 문서관리, 철학, epistemic-rules]
 ---
 
@@ -20,10 +20,10 @@ tags: [agents, 문서관리, 철학, epistemic-rules]
 
 시스템을 층위로 잘라 설명한다는 발상의 예시는 Zachman Framework, Domain-Driven Design, Architecture Decision Record, 아리스토텔레스의 네 원인, Popper의 세 세계 등이 있다. 이 스캐폴드는 AI와의 협업 맥락에 맞춰 설계 문서를 네 범주로 분류한다.
 
-- Ontology: 무엇이 존재하는가
+- Ontology: 우리 도메인에 무엇이 존재하는가
 - Knowledge: 세상이 어떠한가
-- Strategy: 왜 이렇게 결정했는가
-- Architecture: 어떻게 만드는가
+- Strategy: 왜 이렇게 하기로 했는가
+- Architecture: 무엇을 어떻게 만드는가
 
 정상과 비정상의 경계에 울타리를 쳐서 문제를 막으려는 접근이 하네스 엔지니어링이라면, 이 스캐폴드는 반대 방향이다. 명시적 기대를 한정함으로써 자유 영역을 오히려 더 명확하게 작업자에게 위임하고, 그들이 올바른 목표를 추구하도록 돕는다. 고차원적 맥락까지 빠뜨리지 않고 문서에 담아두고, 필요한 부분만 효율적으로 꺼내볼 수 있는 프레임워크를 목표로 한다.
 

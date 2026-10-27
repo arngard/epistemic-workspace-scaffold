@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [소개]
 description: 스캐폴드 소개의 영어판
 ---
@@ -11,10 +11,10 @@ description: 스캐폴드 소개의 영어판
 
 A workspace scaffold that partitions documentation by epistemic category. Keeps higher-level intent and rationale from getting lost when humans and AI work together. Design documents are classified into four categories.
 
-- Ontology: What exists
+- Ontology: What exists in our domain
 - Knowledge: How the world is
-- Strategy: Why we decided this way
-- Architecture: How we build it
+- Strategy: Why we decided to do it this way
+- Architecture: What we build and how
 
 For the rationale, see [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) (Korean); for operating guidance and principles, the single entry point [AGENTS.md](AGENTS.md).
 

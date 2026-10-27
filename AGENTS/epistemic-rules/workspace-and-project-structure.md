@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-27
 tags: [agents, 워크스페이스, epistemic-rules]
 ---
 
@@ -43,13 +43,13 @@ tags: [agents, 워크스페이스, epistemic-rules]
 ├── epistemic-structure.md
 ├── epistemic-structure/                <- 코드로 표현할 수 없는 지식
 │   ├── ontology.md                     <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
-│   ├── ontology/                       <- 도메인 개념 정의 ("무엇이 존재하는가")
+│   ├── ontology/                       <- 도메인 개념 정의 ("우리 도메인에 무엇이 존재하는가")
 │   ├── knowledge.md
 │   ├── knowledge/                      <- 외부 사실, 환경, 벤치마크 ("세상이 어떠한가")
 │   ├── strategy.md
 │   ├── strategy/                       <- 우리의 결정과 근거 ("왜 이렇게 하기로 했는가")
 │   ├── architecture.md
-│   └── architecture/                   <- 설계 명세 ("어떻게 만드는가")
+│   └── architecture/                   <- 설계 명세 ("무엇을 어떻게 만드는가")
 ├── implementation.md
 └── implementation/                     <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
     ├── <project-A>/                    <- 각 프로젝트의 실제 소스 (또는 서브모듈 포인터 등)

@@ -10,7 +10,7 @@ tags: [규칙, epistemic-rules]
 
 ## 에피스테믹 워크스페이스
 
-에피스테믹 워크스페이스다. 코드로 표현할 수 없는 지식을 인식론적 4범주로 나눠 상위 의도와 근거가 유실되지 않게 한다: `epistemic-structure/ontology`(무엇이 존재하는가), `knowledge`(우리 결정과 무관한 외부 사실, 환경), `strategy`(우리가 왜 그렇게 결정했는가), `architecture`(어떻게 만드는가).
+에피스테믹 워크스페이스다. 코드로 표현할 수 없는 지식을 인식론적 4범주로 나눠 상위 의도와 근거가 유실되지 않게 한다: `epistemic-structure/ontology`(우리 도메인에 무엇이 존재하는가), `knowledge`(세상이 어떠한가), `strategy`(왜 이렇게 하기로 했는가), `architecture`(무엇을 어떻게 만드는가).
 
 ## 비협상 게이트
 
