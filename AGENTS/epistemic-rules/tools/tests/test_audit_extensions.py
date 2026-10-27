@@ -303,6 +303,12 @@ class ExtensionTest(unittest.TestCase):
         self.ext(".DS_Store", "x\n")
         self.assertEqual(run_extensions(self.root), [])
 
+    def test_byproducts_silent(self):
+        self.ext("Thumbs.db", "x\n")
+        self.ext("desktop.ini", "x\n")
+        self.ext("a.py~", "raise SystemExit(1)\n")
+        self.assertEqual(run_extensions(self.root), [])
+
     def test_skipped_entries_do_not_stop_extensions(self):
         self.ext("notes.txt", "x\n")
         self.ext("a.py", emit("warning", "p", "m"))

@@ -93,9 +93,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       build_index.py --bundle-manifest로 목록을 다시 만들고, 상속한 저장소는
       파일을 되돌린다)
 
-확장 검사: 루트 AGENTS/audit-checks/ 바로 아래의 *.py(_와 .으로 시작하는 이름
-제외)를 별도 프로세스로 실행해 표준 출력의 JSON 줄을 발견으로 받는다. 범주는
-ext:<이름>. 실패와 시간 초과는 위반. 실행하지 않는 그 밖의 항목(.py가 아닌
+확장 검사: 루트 AGENTS/audit-checks/ 바로 아래의 *.py(_와 .으로 시작하는
+이름과 부산물 제외)를 별도 프로세스로 실행해 표준 출력의 JSON 줄을 발견으로
+받는다. 범주는 ext:<이름>. 실패와 시간 초과는 위반. 실행하지 않는 그 밖의 항목(.py가 아닌
 파일, 하위 폴더)은 범주 ext의 경고. 계약은 AGENTS/epistemic-rules/audit-extensions.md
 
 위치: AGENTS/epistemic-rules/tools/audit.py. 사용 안내 문서는 AGENTS/epistemic-rules/tools.md "기계 감사 스크립트".

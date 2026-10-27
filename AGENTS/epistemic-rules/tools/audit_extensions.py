@@ -1,7 +1,8 @@
 """감사 확장 지점: 루트 AGENTS/audit-checks/의 확장 검사를 실행한다.
 
 확장은 저장소 루트의 AGENTS/audit-checks/ 바로 아래에 둔 *.py 파일이다.
-이름이 _나 .으로 시작하는 파일과 폴더는 도우미로 보고 조용히 넘긴다. 그 밖의
+이름이 _나 .으로 시작하는 파일과 폴더는 도우미로, 운영체제와 편집기 부산물
+(_index_core.is_byproduct)은 부산물로 보고 조용히 넘긴다. 그 밖의
 .py가 아닌 파일과 하위 폴더는 실행하지 않고 하나마다 경고 1건(범주 ext)으로
 알린다. 심볼릭 링크인 확장 파일이나 확장 폴더도 실행하지 않고 경고 1건으로
 알린다. 계약은 프로세스 경계의 텍스트 형식이다.
@@ -28,6 +29,7 @@ import sys
 from pathlib import Path
 
 from _audit_core import VIOLATION, WARNING, Finding
+from _index_core import is_byproduct
 
 EXTENSION_DIR_REL = "AGENTS/audit-checks"
 # 확장 하나에 주는 제한 시간(초).
@@ -60,7 +62,7 @@ def _extension_files(root: Path) -> "tuple[list[Path], list[Finding]]":
     files: list[Path] = []
     warnings: list[Finding] = []
     for p in sorted(folder.iterdir(), key=lambda q: q.name):
-        if p.name.startswith(("_", ".")):
+        if p.name.startswith(("_", ".")) or is_byproduct(p.name):
             continue
         rel = f"{EXTENSION_DIR_REL}/{p.name}"
         if p.suffix == ".py" and p.is_symlink():
