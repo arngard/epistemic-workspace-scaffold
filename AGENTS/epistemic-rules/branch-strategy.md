@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-25
+date modified: 2026-10-27
 tags: [agents, git, 브랜치, epistemic-rules]
 ---
 
@@ -11,7 +11,7 @@ tags: [agents, git, 브랜치, epistemic-rules]
 트렁크 기반 개발 (Trunk-Based Development).
 
 - 장기 브랜치: `main` 하나만 유지
-- feature branch는 수명을 짧게 가져가고 PR을 통해 main에 머지
+- feature branch는 수명을 짧게 가져가고 단위 작업 종료에 main에 머지한다. 머지 방식은 [merge-types.md](unit-task-workflow/merge-types.md) "타입 결정"
 - release branch는 릴리스 시점에 main에서 분기 (필요 시)
 
 브랜치는 단위 작업 단위로 따며 단위 작업의 진입, 진행, 종료 전체 흐름은 [unit-task-workflow.md](unit-task-workflow.md) 참조. 단위 작업의 정의는 [unit-task.md](unit-task.md) 참조. 트렁크 기반 개발에서는 보통 메인 머지 1회 = 브랜치 1개.
