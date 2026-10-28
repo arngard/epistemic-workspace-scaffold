@@ -16,12 +16,16 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # 액션은 주 판으로 고정한다. 주 판 안의 수정판은 따라가고, 동작이 바뀔 수 있는
+      # 주 판 변경은 이 파일을 고쳐 받는다.
+      - uses: actions/checkout@v7
       # 파이썬 인터프리터를 명시적으로 확보한다. tools.md의 크로스
       # 플랫폼 실행 안내(python/py)와 정합 - 러너 기본 python3에 암묵 의존하지 않는다.
-      - uses: actions/setup-python@v5
+      # 판은 3.x 최신으로 두지 않고 부 판까지 고정해 새 판이 나와도 같은 판에서 감사한다.
+      # 도구가 지원하는 최소 판(3.9)은 tools.md "기계 감사 스크립트"에 있다.
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          python-version: "3.14"
       - name: Run mechanical audit
         shell: bash
         run: |
