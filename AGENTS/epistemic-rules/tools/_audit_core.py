@@ -7,6 +7,7 @@ Finding 데이터클래스, 상수, 공용 헬퍼(순회/읽기/링크 해석 �
 
 import os
 import re
+import subprocess
 import sys
 import unicodedata
 import urllib.parse
@@ -17,6 +18,8 @@ REFERENCE_DIR = "reference"
 IMPLEMENTATION_DIR = "implementation"
 WORKLOG_DIR = "worklog"
 # 도구 전용 파일은 front matter 면제 (ref: communication.md "문서 작성 스타일"). SKILL.md는 자체 규격(name, description).
+# 아래 두 목록이나 git 무시 경로의 처리(git_ignored_paths)를 바꾸면 communication.md
+# "문서 작성 스타일"의 도구 전용 파일과 대상 밖 목록도 함께 고친다.
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
 EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
 
@@ -201,6 +204,61 @@ def nested_repo_dirs(root: Path) -> tuple[Path, ...]:
     return _nested_repo_cache[root]
 
 
+_ignored_cache: "dict[Path, frozenset[str]]" = {}
+
+
+def _git_out(root: Path, args: "list[str]") -> "bytes | None":
+    """git 명령의 표준 출력. git이 없거나 실패하면 None."""
+    try:
+        r = subprocess.run(["git", *args], cwd=str(root),
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError:
+        return None
+    return r.stdout if r.returncode == 0 else None
+
+
+def git_ignored_paths(root: Path) -> "frozenset[str]":
+    """git이 무시하는 미추적 경로(루트 상대 POSIX, NFC, 끝 / 없음).
+
+    루트가 git 작업 트리의 최상위일 때만 읽는다. git이 없거나, 루트가 작업
+    트리 밖이거나 최상위가 아니면(바깥 저장소의 하위 폴더, 무시 폴더 안에 둔
+    사본 등) 빈 집합이라 파일시스템 순회를 그대로 쓴다. 통째로 무시되는
+    폴더는 폴더 하나로 든다. 추적 파일은 무시 패턴에 맞아도 들지 않는다.
+    core.precomposeunicode가 켜진 git은 이름을 NFC로 내므로 디스크 이름과
+    견줄 때 양쪽을 NFC로 맞춘다.
+    """
+    if root not in _ignored_cache:
+        found: "frozenset[str]" = frozenset()
+        top = _git_out(root, ["rev-parse", "--show-toplevel"])
+        if top is not None:
+            top_dir = top.decode("utf-8", "surrogateescape").strip()
+            if nfc(os.path.realpath(top_dir)) == nfc(os.path.realpath(str(root))):
+                out = _git_out(root, ["ls-files", "--others", "--ignored",
+                                      "--exclude-standard", "--directory", "-z"])
+                if out is not None:
+                    found = frozenset(
+                        nfc(s.decode("utf-8", "surrogateescape")).rstrip("/")
+                        for s in out.split(b"\0") if s)
+        _ignored_cache[root] = found
+    return _ignored_cache[root]
+
+
+def is_git_ignored(root: Path, path: Path) -> bool:
+    """path나 그 상위 폴더가 git이 무시하는 미추적 경로면 참 (git_ignored_paths)."""
+    ignored = git_ignored_paths(root)
+    if not ignored:
+        return False
+    rel = nfc(path.relative_to(root).as_posix())
+    if rel in ignored:
+        return True
+    i = rel.find("/")
+    while i != -1:
+        if rel[:i] in ignored:
+            return True
+        i = rel.find("/", i + 1)
+    return False
+
+
 def in_nested_repo(root: Path, path: Path) -> bool:
     return any(
         path == repo or repo in path.parents for repo in nested_repo_dirs(root)
@@ -210,8 +268,8 @@ def in_nested_repo(root: Path, path: Path) -> bool:
 def is_excluded(root: Path, path: Path) -> bool:
     """순회 공통 제외 판정 (iter_md_files, content_dirs, 이식성 검사 공유).
 
-    도구 전용 폴더(EXEMPT_DIRS) 하위, 중첩 git 레포 하위, 심볼릭 링크는
-    제외한다. 카테고리별 추가 규칙(reference, implementation)은 각 호출부가
+    도구 전용 폴더(EXEMPT_DIRS) 하위, 중첩 git 레포 하위, 심볼릭 링크,
+    git이 무시하는 미추적 경로(is_git_ignored)는 제외한다. 카테고리별 추가 규칙(reference, implementation)은 각 호출부가
     자기 책임으로 덧붙인다.
     """
     parts = path.relative_to(root).parts
@@ -220,6 +278,8 @@ def is_excluded(root: Path, path: Path) -> bool:
     if in_nested_repo(root, path):
         return True
     if path.is_symlink():  # 심링크는 순회 대상에서 뺀다 (루트 밖 탈출/순환 방지)
+        return True
+    if is_git_ignored(root, path):
         return True
     return False
 

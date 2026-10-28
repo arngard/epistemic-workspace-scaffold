@@ -53,7 +53,7 @@ def check_descriptors(root: Path) -> list[Finding]:
         direct_md = [
             p for p in d.iterdir()
             if p.is_file() and p.suffix == ".md" and p.name not in EXEMPT_FILENAMES
-            and not is_index_file(p.name)
+            and not is_index_file(p.name) and not is_git_ignored(root, p)
         ]
         if len(direct_md) > FOLDER_MD_LIMIT:
             out.append(Finding(
@@ -97,8 +97,8 @@ def check_empty_folders(root: Path) -> list[Finding]:
     """디스크립터 외 실체가 0건인 폴더 검출 (경고, 골격 폴더 제외).
 
     삭제 대상 잔재인지, 사양만 있고 실체 0건인 동결인지, 첫 실체 대기 중인
-    정상 신설인지는 감사자(LLM)가 판단한다. 생성 색인 쪽 파일과 INDEX.yaml은
-    실체로 세지 않는다.
+    정상 신설인지는 감사자(LLM)가 판단한다. 생성 색인 쪽 파일과 INDEX.yaml,
+    git이 무시하는 항목은 실체로 세지 않는다.
     """
     out: list[Finding] = []
     for d in content_dirs(root):
@@ -109,7 +109,7 @@ def check_empty_folders(root: Path) -> list[Finding]:
             entries = [
                 e for e in d.iterdir()
                 if e.name not in (DESCRIPTOR_NAME, "CLAUDE.md", NORMS_DIR_NAME)
-                and not is_index_file(e.name)
+                and not is_index_file(e.name) and not is_git_ignored(root, e)
             ]
         except OSError:
             # 목록 불가 폴더는 정적 감사 대상에서 조용히 건너뛴다.
@@ -136,9 +136,7 @@ def check_name_collision(root: Path) -> list[Finding]:
         if parts and parts[0] == REFERENCE_DIR:
             continue  # immutable raw 영역의 이름은 규약 대상이 아니다
         for sub in sorted(d.iterdir()):
-            if not sub.is_dir() or sub.name in EXEMPT_DIRS:
-                continue
-            if in_nested_repo(root, sub):
+            if not sub.is_dir() or is_excluded(root, sub):
                 continue
             doc = d / (sub.name + ".md")
             if not doc.exists():
