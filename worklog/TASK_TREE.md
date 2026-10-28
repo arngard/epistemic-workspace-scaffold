@@ -18,7 +18,7 @@ description: 작업의 계층 구조와 다음 작업 포인터
   - [ ] 워크스페이스 폴더 이름을 프로젝트에 맞게 변경
     - 설명: AI는 워크스페이스 부모 디렉토리를 직접 리네임할 수 없다 (현재 작업 디렉토리가 바뀌어 세션 상태가 깨짐). 인간에게 이름을 받은 뒤, 인간이 터미널에서 직접 리네임하고 에디터/세션을 재시작하도록 안내한다. 이미 원하는 이름으로 되어 있으면 이 작업을 `[x]`로 전환하고 다음으로 진행한다.
   - [ ] 문서 날짜 처리
-    - 설명: 상류와 연결했다면 날짜를 바꾸지 않는다(바꾸면 상류 머지마다 충돌한다). 이력 없이 가져왔다면 상류 묶음(각 폴더 `AGENTS/epistemic-rules.md`와 `AGENTS/epistemic-rules/` 아래) 밖 문서의 `date created`를 시작일로 갱신할 수 있다. 이때 `date modified`도 그 날 이후로 맞춘다. 묶음 파일은 감사가 바이트로 대조하므로 바꾸지 않는다. `date modified`는 내용을 바꿀 때만 갱신한다.
+    - 설명: 고른 채택 방식에 따라 [document-temporality.md](../AGENTS/epistemic-rules/document-temporality.md) "출고 문서의 날짜"를 따른다.
   - [ ] 워크스페이스 정체 특수화
     - 설명: [AGENTS.md](../AGENTS.md) "이 워크스페이스의 정체" 절을 도메인 정체성으로 특수화한다. 그 밖의 계승 자산은 [AGENTS/epistemic-rules/instance-specialization.md](../AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
   - [ ] README와 LICENSE 정리

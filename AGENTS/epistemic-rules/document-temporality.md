@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-05
-date modified: 2026-10-27
+date modified: 2026-10-28
 tags: [agents, 규칙, 문서관리, epistemic-rules]
 ---
 
@@ -17,6 +17,13 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 front matter의 `date created`, `date modified`는 두 종류 모두에 붙는다(ref: [communication.md](communication.md) "문서 작성 스타일"). 날짜 프리픽스는 그와 별개로, 시간 고정 여부를 파일명에서 즉시 식별하게 하는 표식이다. 현재적 문서의 갱신 이력은 front matter가, 히스토리 문서의 기준 시점은 파일명 프리픽스가 가리킨다.
 
 `date modified`는 문서 내용이 마지막으로 실제 변경된 시점이다. 상류 전파, 머지처럼 여러 판을 결합하는 절차 작업은 그 자체로 내용 변경이 아니므로, 이 값을 머지 수행일로 새로 찍지 않는다. 머지에서 `date modified`가 충돌하면 양쪽 중 최신 날짜를 취한다 - 실제로 양쪽 내용이 병합된 경우 최신 판의 저작 시점이 그 값이다. 한쪽 판을 그대로 채택해 내용이 바뀌지 않았으면 채택한 판의 `date modified`를 유지한다. `date created`도 절차 작업이 바꾸지 않는다 - 자식 워크스페이스가 자기 파일의 생성 시점을 정한 경우 상류 머지가 그것을 덮지 않는다.
+
+## 출고 문서의 날짜
+
+스캐폴드에서 시작한 워크스페이스는 함께 실려 온 문서의 날짜를 채택 방식에 따라 다룬다.
+
+- 상류와 연결했다면 날짜를 바꾸지 않는다. 바꾸면 상류 머지마다 충돌한다.
+- 이력 없이 가져왔다면 상류 묶음(각 폴더 `AGENTS/epistemic-rules.md`와 `AGENTS/epistemic-rules/` 아래) 밖 문서의 `date created`를 시작일로 갱신할 수 있다. 이때 `date modified`도 그날 이후로 맞춘다. 묶음 파일은 감사가 바이트로 대조하므로 바꾸지 않는다.
 
 ## 시간성 혼합 금지
 
