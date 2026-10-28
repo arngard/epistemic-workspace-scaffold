@@ -100,6 +100,11 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      부모 문서(X.md)가 없는 폴더 - 경고
      (규범 폴더, 순차 분류 최상위와 그 자손 제외. 디스크립터 없는 폴더는 항목 7 소관)
 
+등재한 진척 기록 폴더: reference/AGENTS.md에 인라인 코드로 적은
+reference/<자료 폴더>/AGENTS/ 안의 md는 자료가 아니라 운영 파일이라 위 항목의
+문서 검사를 받는다 (ref: reference/AGENTS/epistemic-rules/reference-folder.md
+"처리 여부 식별"). 항목 22는 reference/ 전체를 보지 않는다.
+
 확장 검사: 루트 AGENTS/audit-checks/ 바로 아래의 *.py(_와 .으로 시작하는
 이름과 부산물 제외)를 별도 프로세스로 실행해 표준 출력의 JSON 줄을 발견으로
 받는다. 범주는 ext:<이름>. 실패와 시간 초과는 위반. 실행하지 않는 그 밖의 항목(.py가 아닌
@@ -109,12 +114,15 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 
 사용법:
     python3 AGENTS/epistemic-rules/tools/audit.py [워크스페이스 루트]   # 생략 시 현재 디렉토리
+    python3 AGENTS/epistemic-rules/tools/audit.py --progress-folders [루트]
+        # 감사 대신 등재한 진척 기록 폴더를 루트 상대 경로(끝 /)로 한 줄에 하나씩 낸다
     (윈도우에서는 python 또는 py 런처로 동일하게 실행)
 
 종료 코드:
     0  위반 없음 (경고만 있거나 없음)
     1  위반 있음
     2  사용법 오류 (인자가 디렉토리가 아님)
+    --progress-folders는 목록을 내면 0, 사용법 오류면 2
 
 이식성 노트:
 - Python 3.9+ 표준 라이브러리만 사용. 특정 AI 도구, OS에 의존하지 않는다.
@@ -147,7 +155,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 import sys
 from pathlib import Path
 
-from _audit_core import Finding, VIOLATION, WARNING
+from _audit_core import Finding, VIOLATION, WARNING, registered_progress_dirs
 from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags
 from audit_links import (
     check_links, check_link_text, check_section_refs, check_link_whitespace,
@@ -167,6 +175,9 @@ from audit_worklog import (
     check_task_tree_attrs, check_task_tree_completed_branch,
 )
 from audit_content import check_size, check_temporality_mix, check_ascii_punctuation
+
+
+PROGRESS_OPTION = "--progress-folders"
 
 
 def run_audit(root: Path) -> list[Finding]:
@@ -215,10 +226,17 @@ def main() -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
 
-    root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd()
+    args = sys.argv[1:]
+    list_progress = PROGRESS_OPTION in args
+    args = [a for a in args if a != PROGRESS_OPTION]
+    root = Path(args[0]).resolve() if args else Path.cwd()
     if not root.is_dir():
         print(f"Error: not a directory. 디렉토리가 아님 - {root}", file=sys.stderr)
         return 2
+    if list_progress:
+        for d in registered_progress_dirs(root):
+            print(d)
+        return 0
 
     findings = run_audit(root)
     violations = [f for f in findings if f.severity == VIOLATION]

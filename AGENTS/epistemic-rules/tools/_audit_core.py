@@ -39,6 +39,12 @@ INDEX_YAML_NAME = "INDEX.yaml"
 INDEX_PAGE_RE = re.compile(r"^INDEX(?:[2-9]|[1-9]\d+)?\.md$")
 
 
+# 자료 폴더 안의 진척 기록 폴더 등재. reference/AGENTS.md에 인라인 코드로 적은
+# reference/<자료 폴더>/AGENTS/ 경로(끝 슬래시 포함)가 등재다 (ref:
+# reference/AGENTS/epistemic-rules/reference-folder.md "처리 여부 식별").
+PROGRESS_SPAN_RE = re.compile(r"`(reference/(?:[^`/\s]+/)+AGENTS/)`")
+
+
 def is_index_file(name: str) -> bool:
     """색인 쪽 파일(INDEX.md, INDEX2.md ...)이나 INDEX.yaml이면 참."""
     return bool(INDEX_PAGE_RE.match(name)) or name == INDEX_YAML_NAME
@@ -218,6 +224,35 @@ def is_excluded(root: Path, path: Path) -> bool:
     return False
 
 
+def registered_progress_dirs(root: Path) -> "tuple[str, ...]":
+    """reference/AGENTS.md가 등재한 진척 기록 폴더(루트 상대 POSIX, 끝 /, NFC).
+
+    front matter, 코드 펜스, HTML 주석 밖의 인라인 코드 가운데 경로 전체가
+    reference/<자료 폴더>/AGENTS/ 꼴인 것을 모은다. 자료 폴더 경로의 성분에
+    AGENTS가 있으면(규범 폴더 reference/AGENTS/ 아래) 등재가 아니다.
+    정렬하고 중복을 뺀다. 디스크립터가 없으면 빈 튜플이다.
+    """
+    path = root / REFERENCE_DIR / DESCRIPTOR_NAME
+    if not path.is_file():
+        return ()
+    text = body_of(path)
+    text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+    found = set()
+    for span in PROGRESS_SPAN_RE.findall(nfc(text)):
+        middle = span.split("/")[1:-2]
+        if NORMS_DIR_NAME in middle:
+            continue
+        found.add(span)
+    return tuple(sorted(found))
+
+
+def in_progress_dir(rel_posix: str, registered: "tuple[str, ...]") -> bool:
+    """루트 상대 POSIX 경로가 등재한 진척 기록 폴더 안이면 참."""
+    rel = nfc(rel_posix)
+    return any(rel.startswith(d) for d in registered)
+
+
 def iter_md_files(root: Path):
     """규약 검사 대상 .md 순회.
 
@@ -229,9 +264,12 @@ def iter_md_files(root: Path):
     그 하위 문서 폴더 AGENTS/만 검사한다.
     reference/와 implementation/ 직속의 생성 색인 쪽 파일(INDEX.md, INDEX2.md
     ...)은 감사 대상이다. 그 하위 폴더의 색인 쪽 파일은 대상이 아니다.
+    reference/AGENTS.md가 등재한 진척 기록 폴더(registered_progress_dirs) 안의
+    문서는 자료가 아니라 운영 파일이라 감사 대상이다.
     도구 전용 폴더, 중첩 git 레포, 심링크 제외는 is_excluded가 담당한다.
     """
     ref_descriptor = (root / REFERENCE_DIR / DESCRIPTOR_NAME).resolve()
+    progress = registered_progress_dirs(root)
     for path in sorted(root.rglob("*.md")):
         if is_excluded(root, path):
             continue
@@ -247,7 +285,9 @@ def iter_md_files(root: Path):
             or (parts[0] == IMPLEMENTATION_DIR and parts[1:] == (DESCRIPTOR_NAME,))
         )
         if in_material_content(root, path) and not descriptor:
-            continue
+            if not (parts[0] == REFERENCE_DIR
+                    and in_progress_dir("/".join(parts), progress)):
+                continue
         yield path
 
 
