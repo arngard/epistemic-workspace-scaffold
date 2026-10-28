@@ -26,14 +26,14 @@ description: 작업의 계층 구조와 다음 작업 포인터
   - [ ] 감사 주기 값 검토
     - 설명: [status-registry.md](AGENTS/epistemic-rules/status-registry.md) "주기 조건"의 값이 작업 빈도에 맞는지 검토한다. 바꿀 값이 있으면 [AGENTS.md](AGENTS.md)에 그 절의 형식으로 덮어쓰기 표를 만들어 둔다.
   - [ ] 프로젝트 수준 상위 결정 기록
-    - 설명: 프로젝트 목표, 첫 출시 핵심 목표와 스펙, 향후 확장, 대상 고객과 사용자 등 큰 결정을 [epistemic-structure/strategy/](../epistemic-structure/strategy/AGENTS.md) 아래 `why-*.md` 문서들로 분리 작성한다. 샘플 `project-overview.md`는 참고 후 삭제하거나 실제 내용으로 교체한다. 샘플을 지우면 부모 문서 [strategy.md](../epistemic-structure/strategy.md)의 샘플 언급도 고친다.
+    - 설명: 프로젝트 목표, 첫 출시 핵심 목표와 스펙, 향후 확장, 대상 고객과 사용자 등 큰 결정을 [epistemic-structure/strategy/](../epistemic-structure/strategy/AGENTS.md) 아래 `why-*.md` 문서들로 분리 작성한다. 샘플 `project-overview.md`는 참고 후 삭제하거나 실제 내용으로 교체한다. 실제 문서를 더하거나 샘플을 지우면 부모 문서 [strategy.md](../epistemic-structure/strategy.md)의 샘플 언급도 고친다.
   - [ ] 도메인 온톨로지 정의
-    - 설명: 의미가 갈릴 수 있는 핵심 용어를 식별하고 [epistemic-structure/ontology/](../epistemic-structure/ontology/AGENTS.md)에 정의한다. 튜토리얼용 `sample-term.md`를 삭제하고 실제 용어 정의 파일로 교체한다. 샘플을 지우면 부모 문서 [ontology.md](../epistemic-structure/ontology.md)의 샘플 언급도 고친다.
+    - 설명: 의미가 갈릴 수 있는 핵심 용어를 식별하고 [epistemic-structure/ontology/](../epistemic-structure/ontology/AGENTS.md)에 정의한다. 튜토리얼용 `sample-term.md`를 삭제하고 실제 용어 정의 파일로 교체한다. 실제 문서를 더하거나 샘플을 지우면 부모 문서 [ontology.md](../epistemic-structure/ontology.md)의 샘플 언급도 고친다.
   - [ ] 핵심 제약 목록 작성
     - 설명: [epistemic-structure/architecture/core-constraints.md](../epistemic-structure/architecture/core-constraints.md)의 "제약 목록" 섹션을 작성한다. 각 제약은 상세 문서와 링크로 연결한다. 작성 완료 후 '제약 목록' 섹션의 `[주의] 스캐폴드 상태` 주의문을 삭제한다.
   - [ ] 코딩 규약 확장
     - 설명: [epistemic-structure/architecture/conventions.md](../epistemic-structure/architecture/conventions.md)에 언어/빌드, 패키지 구조, 네이밍, 가시성, 의존성, 테스트 등 프로젝트 고유 규약을 추가한다. 작성 완료 후 `[주의] 스캐폴드 상태` 주의문을 삭제한다.
   - [ ] 남은 튜토리얼 샘플 제거
-    - 설명: [epistemic-structure/knowledge/sample-fact.md](../epistemic-structure/knowledge/sample-fact.md), [epistemic-structure/architecture/sample-spec.md](../epistemic-structure/architecture/sample-spec.md), [epistemic-structure/strategy/sample-decision.md](../epistemic-structure/strategy/sample-decision.md)를 실제 문서로 교체하거나 삭제한다. 샘플을 지우면 부모 문서 [knowledge.md](../epistemic-structure/knowledge.md), [architecture.md](../epistemic-structure/architecture.md), [strategy.md](../epistemic-structure/strategy.md)의 샘플 언급도 고친다.
+    - 설명: [epistemic-structure/knowledge/sample-fact.md](../epistemic-structure/knowledge/sample-fact.md), [epistemic-structure/architecture/sample-spec.md](../epistemic-structure/architecture/sample-spec.md), [epistemic-structure/strategy/sample-decision.md](../epistemic-structure/strategy/sample-decision.md)를 실제 문서로 교체하거나 삭제한다. 실제 문서를 더하거나 샘플을 지우면 부모 문서 [knowledge.md](../epistemic-structure/knowledge.md), [architecture.md](../epistemic-structure/architecture.md), [strategy.md](../epistemic-structure/strategy.md)의 샘플 언급도 고친다.
   - [ ] 구현 프로젝트 등록
     - 설명: 실제 소스 코드 프로젝트를 [implementation/](../implementation/AGENTS.md)에 프로젝트별 폴더로 추가한다.
