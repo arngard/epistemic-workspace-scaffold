@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-27
+date modified: 2026-10-28
 tags: [agents, 워크스페이스, epistemic-rules]
 ---
 
@@ -17,7 +17,7 @@ tags: [agents, 워크스페이스, epistemic-rules]
 - 워크스페이스 scaffolding(골격): 워크스페이스를 처음 세팅할 때 만들어지는 고정 골격. 정보가 어디에 놓이는지를 결정하는 구조. 프로젝트 수명 동안 추가되거나 사라지지 않는다. 루트에는 골격만 두고, `epistemic-structure/` 안에는 네 범주만 둔다.
 - 콘텐츠: 작업하면서 생기고 변하는 실제 산출물. 문서 파일, 프로젝트 폴더 등. 콘텐츠는 범주 폴더와 `implementation/`, `reference/` 안에서 시작하므로 골격과 같은 층에 섞이지 않는다.
 
-콘텐츠와 같은 층에 놓이는 운영 파일(`AGENTS.md`, `CLAUDE.md`, `AGENTS/`, `INDEX.md`, `INDEX.yaml`)은 대문자 이름으로 구분되고 파일시스템 정렬에서도 앞에 모인다. 골격이 사라지지 않는다는 성질은 감사 도구가 골격 이름 목록으로 안다.
+콘텐츠와 같은 층에 놓이는 운영 파일(`AGENTS.md`, `CLAUDE.md`, `AGENTS/`, `INDEX*.md`, `INDEX.yaml`)은 대문자 이름으로 구분되고 파일시스템 정렬에서도 앞에 모인다. 골격이 사라지지 않는다는 성질은 감사 도구가 골격 이름 목록으로 안다.
 
 ### 하위 문서 폴더 규칙
 
@@ -56,7 +56,7 @@ tags: [agents, 워크스페이스, epistemic-rules]
     └── <project-B>/
 ```
 
-`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" 참조. `reference/` 운용은 [`../../reference/AGENTS.md`](../../reference/AGENTS.md)와 [`ingest-workflow.md`](ingest-workflow.md) 참조.
+`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" 참조. `reference/` 운용은 [reference/AGENTS/epistemic-rules.md](../../reference/AGENTS/epistemic-rules.md)와 [`ingest-workflow.md`](ingest-workflow.md) 참조.
 
 워크스페이스 안의 단위 작업(자료 N건 묶음 ingest, 메타 결정, 정책 변경, 큰 마이그레이션 등)은 진입, 진행, 종료 흐름이 정해져 있다. 단위 작업의 정의는 [unit-task.md](unit-task.md) 참조. 단위 작업 시작 시 어떤 절차를 거쳐야 하는지는 [unit-task-workflow.md](unit-task-workflow.md) 참조. 워크로그(`worklog/`)의 TASK_TREE와 STATUS 레지스트리는 그 흐름의 진입, 종료 시점에서 갱신되는 운영 메타다. 완료 이력의 SSOT(single source of truth)는 git 이력이다.
 

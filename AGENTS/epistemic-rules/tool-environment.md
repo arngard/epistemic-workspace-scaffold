@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-10-28
 tags: [agents, 도구, 환경, IDE, epistemic-rules]
 ---
 
@@ -39,4 +39,4 @@ Claude Code에서 실측한 동작: 깊은 하위 폴더의 파일을 다루거�
 
 `.claude/skills/` 하위의 각 SKILL.md(ingest, unit-task-start, unit-task-finish, pr-create, pr-respond)는 절차 문서를 해당 시점에 로드하는 씬 래퍼다. 절차 내용을 복사하지 않고 트리거 조건과 SSOT(single source of truth) 링크만 담는다 - 복사하면 SSOT 위배 + drift. 다른 도구 사용자는 SSOT 절차 문서를 직접 읽으면 동일 효과를 얻는다.
 
-`.claude/agents/` 하위의 서브에이전트 정의도 같은 원칙을 따른다. 역할 정의 원본([agent-roles.md](agent-roles.md)가 링크하는 역할별 하위 문서)을 읽고 따르라는 지시, 도구별 제한, 호출 판단용 역할 요약(description)만 담고, 점검 항목이나 절차를 옮겨 적지 않는다 - 옮겨 적은 사본은 원본이 바뀔 때 어긋나며, 실제로 실행되는 것은 사본이다.
+`.claude/agents/` 하위의 서브에이전트 정의도 같은 원칙을 따른다. 역할 정의 원본(상류 역할은 [agent-roles.md](agent-roles.md)가 링크하는 역할별 문서, 인스턴스 역할은 루트 `AGENTS.md`가 링크하는 낱개 문서)을 읽고 따르라는 지시, 도구별 제한, 호출 판단용 역할 요약(description)만 담고, 점검 항목이나 절차를 옮겨 적지 않는다 - 옮겨 적은 사본은 원본이 바뀔 때 어긋나며, 실제로 실행되는 것은 사본이다.
