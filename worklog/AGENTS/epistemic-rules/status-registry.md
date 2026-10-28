@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-27
+date modified: 2026-10-28
 tags: [worklog, epistemic-rules]
 ---
 
@@ -18,13 +18,13 @@ tags: [worklog, epistemic-rules]
 
 ## 주기 조건
 
-STATUS 표는 이름과 마지막 수행만 담는다. 각 행이 언제 수행 대상이 되는지는 아래 표가 정한다. `check_semantic_audit.py`가 의미 감사 행의 임계 시간과 trailer 문구를 이 표에서 읽는다.
+STATUS 표는 이름과 마지막 수행만 담는다. 각 행이 언제 수행 대상이 되는지는 아래 표가 정한다. `check_semantic_audit.py`가 의미 감사 행의 임계 시간과 trailer 문구를 이 표에서 읽는다(자손 표에 의미 감사 행이 있으면 그 행을 먼저 읽는다).
 
 | 이름 | 주기/트리거 |
 |------|-------------|
 | 형식 감사 (`audit.py`) | 새 세션 시작 시, push/PR |
 | 에피스테믹 의미 감사 (epistemic-auditor) | 감사 클린 커밋(trailer `Semantic-Audit: clean`) 이후 새 커밋이 있고 마지막 수행 47시간 초과 시(클린 커밋이 이력에 없으면 그 자체로 성립), 긴 세션 종료 전, 큰 변경 후 |
 
-자손은 `worklog/AGENTS.md`에 같은 형식의 표(`| 이름 | 주기/트리거 |`)를 두어 이 절을 대체한다. 같은 이름의 행은 이 표의 행을 덮어쓰며, 자손 고유의 감사, 주기 작업의 주기도 그 표에 둔다. 이 표는 [instance-specialization.md](../../../AGENTS/epistemic-rules/instance-specialization.md) "특수화 방식"의 덮어쓰기 목록이 이 절에 대해 갖는 형식이며(덮어쓰기 목록의 특례), 표를 두는 것으로 이 절의 대체가 등재된다.
+자손은 `worklog/AGENTS.md`에 같은 형식의 표(`| 이름 | 주기/트리거 |`)를 두어 이 표를 행 단위로 덮어쓴다. 자손 표의 행은 이 표의 같은 이름 행을 덮어쓰고, 자손 표에 없는 행은 이 표를 따른다. 자손 고유의 감사, 주기 작업의 주기도 그 표에 둔다. 이 표는 [instance-specialization.md](../../../AGENTS/epistemic-rules/instance-specialization.md) "특수화 방식"의 덮어쓰기 목록이 이 절에 대해 갖는 형식이며(덮어쓰기 목록의 특례), 표를 두는 것으로 이 절의 덮어쓰기가 등재된다.
 
 `worklog/AGENTS.md`의 이 표에서 첫 칸에는 위 표의 행 이름을 그대로 적는다. `check_semantic_audit.py`는 그 파일에서 첫 칸에 "의미 감사"를 담은 첫 표 행을 읽으므로, 같은 파일의 덮어쓰기 목록 행은 첫 칸에 이 문구를 넣지 않는다.
