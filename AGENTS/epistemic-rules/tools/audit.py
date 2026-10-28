@@ -96,6 +96,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      (이 도구가 감사 대상 루트의 묶음에 있을 때만. 상류 저장소는
       build_index.py --bundle-manifest로 목록을 다시 만들고, 상속한 저장소는
       파일을 되돌린다)
+ 31. epistemic-structure/ 아래에서 디스크립터는 있는데 같은 층에 같은 이름의
+     부모 문서(X.md)가 없는 폴더 - 경고
+     (규범 폴더, 순차 분류 최상위와 그 자손 제외. 디스크립터 없는 폴더는 항목 7 소관)
 
 확장 검사: 루트 AGENTS/audit-checks/ 바로 아래의 *.py(_와 .으로 시작하는
 이름과 부산물 제외)를 별도 프로세스로 실행해 표준 출력의 JSON 줄을 발견으로
@@ -157,6 +160,7 @@ from audit_structure import (
     check_descriptors, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
     check_date_prefix_separator, check_claude_pointers, check_norms_dir_descriptors,
+    check_parent_documents,
 )
 from audit_worklog import (
     check_status_registry, check_status_schema,
@@ -190,6 +194,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_tags(root)
     findings += check_empty_folders(root)
     findings += check_name_collision(root)
+    findings += check_parent_documents(root)
     findings += check_filename_portability(root)
     findings += check_date_prefix_separator(root)
     findings += check_ascii_punctuation(root)
