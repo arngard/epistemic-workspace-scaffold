@@ -1,8 +1,7 @@
 """폴더 색인 정합과 색인 설명 원본 검사.
 
 색인 쪽 내용은 생성기와 같은 _index_core.render_all로 만들어 디스크와
-비교하므로 생성기와 감사가 어긋나지 않는다. 파일을 쓰지 않고 git에도
-의존하지 않는다. 규칙의 원본은 AGENTS/epistemic-rules/folder-index.md다.
+비교하므로 생성기와 감사가 어긋나지 않는다. 파일을 쓰지 않는다. 규칙의 원본은 AGENTS/epistemic-rules/folder-index.md다.
 
 공용 인프라는 _audit_core와 _index_core, 오케스트레이션은 audit.py.
 """

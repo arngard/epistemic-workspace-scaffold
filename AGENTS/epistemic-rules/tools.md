@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-27
+date modified: 2026-10-28
 tags: [규칙, 도구, epistemic-rules]
 ---
 
@@ -12,7 +12,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 검사 진입점은 [audit.py](tools/audit.py) 하나, 파일을 쓰는 생성 진입점은 [build_index.py](tools/build_index.py) 하나다. 검사 로직은 공용 인프라([_audit_core.py](tools/_audit_core.py) 등)와 의미별 검사 모듈로 나뉘며 audit.py가 import해 조합한다. 모듈 구성은 audit.py 모듈 docstring의 "구조"에 있다.
 
-그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git에 의존해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. `_docs/` 아래에 문서 폴더를 두던 옛 배치를 옮기는 배치 이전 도구 `migrate_layout.py`는 지금은 없고, 그 도구가 마지막으로 포함된 커밋은 2f2734c다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
+그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. `_docs/` 아래에 문서 폴더를 두던 옛 배치를 옮기는 배치 이전 도구 `migrate_layout.py`는 지금은 없고, 그 도구가 마지막으로 포함된 커밋은 2f2734c다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
 
 ## 시험
 
@@ -25,7 +25,7 @@ tags: [규칙, 도구, epistemic-rules]
 - 임계값은 공용 인프라 `tools/_audit_core.py` 상단의 상수이고 상류가 운영하며 조정한다. 상속한 저장소는 이 상수를 고치지 않는다(항목 30). 다른 값이 필요하면 경고를 의식적으로 수용하거나 상류에 변경을 제안한다.
 - `.tmp/`는 에이전트의 임시 작업 공간이다. gitignore 대상이며 감사에서 제외된다.
 - 실행: 새 세션 시작 시와 push, PR 시. 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/audit.py .` (윈도우는 `python` 또는 `py`). push와 pull request 시점에는 GitHub Actions([.github/workflows/epistemic-audit.yml](../../.github/workflows/epistemic-audit.yml))가 실행한다. 새 세션 시작 시의 실행 의무는 [session-boundaries.md](session-boundaries.md) "세션 시작".
-- 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS(operating system)에 의존하지 않는다. git에도 의존하지 않는다.
+- 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS(operating system)에 의존하지 않는다. git이 있으면 git이 무시하는 경로를 뺀다.
 - 종료 코드: 위반 없음(경고만 있거나 없음) 0, 위반 있음 1, 사용법 오류(인자가 디렉토리가 아님) 2.
 - 강제력: 위반(violation)은 CI를 실패시킨다(exit 1). 경고(warning)는 통과시킨다(exit 0) - 사람/LLM 판단이 필요한 신호라 기계적으로 차단하지 않는다. 그래서 경고는 방치하면 무한 누적될 수 있다. 감사 시 경고를 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)해 미결 경고가 쌓이지 않게 한다.
 

@@ -49,7 +49,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
       공백 든 자연어 문구, 타이틀은 제외하되 날짜 문서, 폴더 이름은 검사.
       폐지 파일명과 옛 경로 잔재 오도를 검출)
  18. 전략 문서(epistemic-structure/strategy 4범주 직속)의 추가 필수 속성 - 경고
-     (importance, urgency. ref: strategy/AGENTS/epistemic-rules.md. 하위 폴더/디스크립터 제외)
+     (importance, urgency. ref: strategy/AGENTS/epistemic-rules.md. 하위 폴더 문서,
+      디스크립터, 같은 이름 폴더가 있는 부모 문서 제외)
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
      (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
  20. 비ASCII 문장 부호 (em dash, 화살표, 가운뎃점, 말줄임표, 둥근 따옴표) - 경고
@@ -95,6 +96,14 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      (이 도구가 감사 대상 루트의 묶음에 있을 때만. 상류 저장소는
       build_index.py --bundle-manifest로 목록을 다시 만들고, 상속한 저장소는
       파일을 되돌린다)
+ 31. epistemic-structure/ 아래에서 디스크립터는 있는데 같은 층에 같은 이름의
+     부모 문서(X.md)가 없는 폴더 - 경고
+     (규범 폴더, 순차 분류 최상위와 그 자손 제외. 디스크립터 없는 폴더는 항목 7 소관)
+
+등재한 진척 기록 폴더: reference/AGENTS.md에 인라인 코드로 적은
+reference/<자료 폴더>/AGENTS/ 안의 md는 자료가 아니라 운영 파일이라 위 항목의
+문서 검사를 받는다 (ref: reference/AGENTS/epistemic-rules/reference-folder.md
+"처리 여부 식별"). 항목 22는 reference/ 전체를 보지 않는다.
 
 확장 검사: 루트 AGENTS/audit-checks/ 바로 아래의 *.py(_와 .으로 시작하는
 이름과 부산물 제외)를 별도 프로세스로 실행해 표준 출력의 JSON 줄을 발견으로
@@ -105,12 +114,15 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 
 사용법:
     python3 AGENTS/epistemic-rules/tools/audit.py [워크스페이스 루트]   # 생략 시 현재 디렉토리
+    python3 AGENTS/epistemic-rules/tools/audit.py --progress-folders [루트]
+        # 감사 대신 등재한 진척 기록 폴더를 루트 상대 경로(끝 /)로 한 줄에 하나씩 낸다
     (윈도우에서는 python 또는 py 런처로 동일하게 실행)
 
 종료 코드:
     0  위반 없음 (경고만 있거나 없음)
     1  위반 있음
     2  사용법 오류 (인자가 디렉토리가 아님)
+    --progress-folders는 목록을 내면 0, 사용법 오류면 2
 
 이식성 노트:
 - Python 3.9+ 표준 라이브러리만 사용. 특정 AI 도구, OS에 의존하지 않는다.
@@ -119,7 +131,10 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 - 링크 검사는 OS의 파일시스템 특성(대소문자 무시, 유니코드 정규화 무시)에
   기대지 않고 디렉토리 엔트리를 직접 대조한다. 어느 OS에서 실행해도 같은
   결과가 나오는 것이 목표다.
-- git에 의존하지 않는다. 파일시스템 정적 상태만 본다.
+- git 없이 파일시스템 정적 상태만으로 돈다. git이 있고 루트가 작업 트리의
+  최상위이면 git이 무시하는 미추적 경로(통째로 무시되는 폴더 포함)를 순회에서
+  뺀다. 추적 파일과 무시되지 않은 미추적 파일은 본다. 그 밖의 경우(git 없음,
+  작업 트리 밖, 하위 폴더를 루트로 줌)에는 이 제외 없이 디스크를 훑는다.
 - 순회는 심볼릭 링크를 따르지 않고(루트 밖 탈출/순환 방지) 중첩 git 레포와
   도구 전용 폴더를 가지치기한다.
 
@@ -143,7 +158,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
 import sys
 from pathlib import Path
 
-from _audit_core import Finding, VIOLATION, WARNING
+from _audit_core import Finding, VIOLATION, WARNING, registered_progress_dirs
 from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags
 from audit_links import (
     check_links, check_link_text, check_section_refs, check_link_whitespace,
@@ -156,12 +171,16 @@ from audit_structure import (
     check_descriptors, check_empty_folders,
     check_name_collision, check_filename_portability, check_scaffold_state_markers,
     check_date_prefix_separator, check_claude_pointers, check_norms_dir_descriptors,
+    check_parent_documents,
 )
 from audit_worklog import (
     check_status_registry, check_status_schema,
     check_task_tree_attrs, check_task_tree_completed_branch,
 )
 from audit_content import check_size, check_temporality_mix, check_ascii_punctuation
+
+
+PROGRESS_OPTION = "--progress-folders"
 
 
 def run_audit(root: Path) -> list[Finding]:
@@ -189,6 +208,7 @@ def run_audit(root: Path) -> list[Finding]:
     findings += check_tags(root)
     findings += check_empty_folders(root)
     findings += check_name_collision(root)
+    findings += check_parent_documents(root)
     findings += check_filename_portability(root)
     findings += check_date_prefix_separator(root)
     findings += check_ascii_punctuation(root)
@@ -209,10 +229,17 @@ def main() -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
 
-    root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd()
+    args = sys.argv[1:]
+    list_progress = PROGRESS_OPTION in args
+    args = [a for a in args if a != PROGRESS_OPTION]
+    root = Path(args[0]).resolve() if args else Path.cwd()
     if not root.is_dir():
         print(f"Error: not a directory. 디렉토리가 아님 - {root}", file=sys.stderr)
         return 2
+    if list_progress:
+        for d in registered_progress_dirs(root):
+            print(d)
+        return 0
 
     findings = run_audit(root)
     violations = [f for f in findings if f.severity == VIOLATION]

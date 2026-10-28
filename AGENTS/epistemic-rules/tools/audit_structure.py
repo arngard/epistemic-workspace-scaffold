@@ -53,7 +53,7 @@ def check_descriptors(root: Path) -> list[Finding]:
         direct_md = [
             p for p in d.iterdir()
             if p.is_file() and p.suffix == ".md" and p.name not in EXEMPT_FILENAMES
-            and not is_index_file(p.name)
+            and not is_index_file(p.name) and not is_git_ignored(root, p)
         ]
         if len(direct_md) > FOLDER_MD_LIMIT:
             out.append(Finding(
@@ -97,8 +97,8 @@ def check_empty_folders(root: Path) -> list[Finding]:
     """디스크립터 외 실체가 0건인 폴더 검출 (경고, 골격 폴더 제외).
 
     삭제 대상 잔재인지, 사양만 있고 실체 0건인 동결인지, 첫 실체 대기 중인
-    정상 신설인지는 감사자(LLM)가 판단한다. 생성 색인 쪽 파일과 INDEX.yaml은
-    실체로 세지 않는다.
+    정상 신설인지는 감사자(LLM)가 판단한다. 생성 색인 쪽 파일과 INDEX.yaml,
+    git이 무시하는 항목은 실체로 세지 않는다.
     """
     out: list[Finding] = []
     for d in content_dirs(root):
@@ -109,7 +109,7 @@ def check_empty_folders(root: Path) -> list[Finding]:
             entries = [
                 e for e in d.iterdir()
                 if e.name not in (DESCRIPTOR_NAME, "CLAUDE.md", NORMS_DIR_NAME)
-                and not is_index_file(e.name)
+                and not is_index_file(e.name) and not is_git_ignored(root, e)
             ]
         except OSError:
             # 목록 불가 폴더는 정적 감사 대상에서 조용히 건너뛴다.
@@ -136,9 +136,7 @@ def check_name_collision(root: Path) -> list[Finding]:
         if parts and parts[0] == REFERENCE_DIR:
             continue  # immutable raw 영역의 이름은 규약 대상이 아니다
         for sub in sorted(d.iterdir()):
-            if not sub.is_dir() or sub.name in EXEMPT_DIRS:
-                continue
-            if in_nested_repo(root, sub):
+            if not sub.is_dir() or is_excluded(root, sub):
                 continue
             doc = d / (sub.name + ".md")
             if not doc.exists():
@@ -253,4 +251,38 @@ def check_norms_dir_descriptors(root: Path) -> list[Finding]:
                     VIOLATION, "norms-descriptor", path.relative_to(root).as_posix(),
                     f"규범 폴더 안의 {name}. 규범 폴더는 디스크립터와 CLAUDE.md를 두지 않는다",
                 ))
+    return out
+
+
+EPISTEMIC_DIR = "epistemic-structure"
+
+
+def check_parent_documents(root: Path) -> list[Finding]:
+    """부모 문서 없는 분류 폴더 검출 (경고).
+
+    `epistemic-structure/` 아래 폴더 X/(규범 폴더 제외)가 디스크립터를 갖는데
+    같은 층에 같은 이름의 부모 문서 X.md가 없으면 경고한다. 분류용 하위 폴더도
+    부모 문서를 둔다 (ref: workspace-and-project-structure.md "하위 문서 폴더
+    규칙"). 순차 분류 최상위와 그 자손은 예외다. 디스크립터가 없는 폴더는
+    check_descriptors가 위반으로 내므로 여기서는 보지 않는다.
+    """
+    out: list[Finding] = []
+    tops = sequential_tops(root, strict=False)
+    for d in content_dirs(root):
+        if d == root:
+            continue
+        parts = d.relative_to(root).parts
+        if len(parts) < 2 or parts[0] != EPISTEMIC_DIR:
+            continue
+        if in_norms_dir(root, d) or not (d / DESCRIPTOR_NAME).is_file():
+            continue
+        if d in tops or under_sequential(d, tops):
+            continue
+        if (d.parent / (d.name + ".md")).is_file():
+            continue
+        out.append(Finding(
+            WARNING, "parent-doc", d.relative_to(root).as_posix(),
+            f"부모 문서 {d.name}.md 없음. 분류 폴더는 같은 층에 같은 이름의 "
+            "부모 문서를 둔다 (순차 분류 예외)",
+        ))
     return out
