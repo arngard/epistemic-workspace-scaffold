@@ -61,7 +61,9 @@ def check_strategy_fields(root: Path) -> list[Finding]:
 
     strategy/AGENTS/epistemic-rules.md가 일반 필수 필드 외에 요구하는 importance/urgency를
     검사한다.
-    하위 폴더 문서와 디스크립터에는 강제하지 않는다. 경고 수준으로 두는 것은
+    하위 폴더 문서와 디스크립터, 부모 문서(같은 이름 폴더 X/가 있는 X.md)에는
+    강제하지 않는다. 부모 문서는 그 폴더를 소개하는 문서이지 결정 문서가
+    아니다 (ref: folder-structure.md "폴더 구조와 디스크립터"). 경고 수준으로 두는 것은
     자식/메타 레포의 채택 여부가 정책 결정이기 때문 - 상향(위반) 여부는 사용자
     결정.
     """
@@ -74,6 +76,8 @@ def check_strategy_fields(root: Path) -> list[Finding]:
             continue
         if p.name == DESCRIPTOR_NAME or p.name in EXEMPT_FILENAMES:
             continue
+        if (d / p.stem).is_dir():
+            continue  # 부모 문서
         m = FRONT_MATTER_RE.match(read(p))
         if not m:
             continue  # front matter 부재는 check_front_matter가 잡는다
