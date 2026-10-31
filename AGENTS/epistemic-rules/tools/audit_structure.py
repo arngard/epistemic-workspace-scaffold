@@ -255,6 +255,8 @@ def check_norms_dir_descriptors(root: Path) -> list[Finding]:
 
 
 EPISTEMIC_DIR = "epistemic-structure"
+# 날짜 순차 분류 폴더 이름: 연(yyyy), 연월(yyyy-MM), 연월일(yyyy-MM-dd).
+DATE_FOLDER_RE = re.compile(r"\d{4}(-\d{2}(-\d{2})?)?")
 
 
 def check_parent_documents(root: Path) -> list[Finding]:
@@ -263,8 +265,8 @@ def check_parent_documents(root: Path) -> list[Finding]:
     `epistemic-structure/` 아래 폴더 X/(규범 폴더 제외)가 디스크립터를 갖는데
     같은 층에 같은 이름의 부모 문서 X.md가 없으면 경고한다. 분류용 하위 폴더도
     부모 문서를 둔다 (ref: workspace-and-project-structure.md "하위 문서 폴더
-    규칙"). 순차 분류 최상위와 그 자손은 예외다. 디스크립터가 없는 폴더는
-    check_descriptors가 위반으로 내므로 여기서는 보지 않는다.
+    규칙"). 순차 분류 최상위와 그 자손, 이름이 날짜인 폴더는 예외다. 디스크립터가
+    없는 폴더는 check_descriptors가 위반으로 내므로 여기서는 보지 않는다.
     """
     out: list[Finding] = []
     tops = sequential_tops(root, strict=False)
@@ -277,6 +279,8 @@ def check_parent_documents(root: Path) -> list[Finding]:
         if in_norms_dir(root, d) or not (d / DESCRIPTOR_NAME).is_file():
             continue
         if d in tops or under_sequential(d, tops):
+            continue
+        if DATE_FOLDER_RE.fullmatch(d.name):
             continue
         if (d.parent / (d.name + ".md")).is_file():
             continue

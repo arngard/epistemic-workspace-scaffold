@@ -106,6 +106,25 @@ class ParentDocMissingTest(unittest.TestCase):
         self.write(K + "/topic/a.md", FM)
         self.assertEqual(self.found(), [])
 
+    def test_date_named_folders_exempt(self):
+        # 상위에 순차 분류 선언이 없어도 날짜 이름 폴더는 부모 문서를 요구하지 않는다.
+        for name in ("2026", "2026-09", "2026-09-01"):
+            self.write(f"{K}/{name}/AGENTS.md", FM)
+        self.assertEqual(self.found(), [])
+
+    def test_date_like_folder_name_still_warns(self):
+        for name in ("2026-9", "2026-09-review", "v2026"):
+            self.write(f"{K}/{name}/AGENTS.md", FM)
+        self.assertEqual(
+            sorted(p for _, _, p in self.found()),
+            sorted(f"{K}/{name}" for name in ("2026-9", "2026-09-review", "v2026")),
+        )
+
+    def test_folder_under_date_named_folder_still_warns(self):
+        self.write(f"{K}/2026/AGENTS.md", FM)
+        self.write(f"{K}/2026/topic/AGENTS.md", FM)
+        self.assertEqual([p for _, _, p in self.found()], [f"{K}/2026/topic"])
+
     def test_sequential_top_and_descendants_exempt(self):
         self.write(K + "/daily/AGENTS.md", FM)
         self.write(K + "/daily/INDEX.yaml", DECL)
