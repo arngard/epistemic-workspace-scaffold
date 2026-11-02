@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-26
+date modified: 2026-11-02
 tags: [worklog, epistemic-rules]
 ---
 
@@ -9,7 +9,7 @@ tags: [worklog, epistemic-rules]
 [TASK_TREE.md](../../TASK_TREE.md)의 노드 유형, 표기, 갱신 규칙, 삭제 규칙이다.
 
 작업의 계층 구조. 큰 작업이 어떤 하위 작업으로 구성되는지를 기록한다.
-현재와 가까운 전후의 작업 상태를 표현하는 현재적 문서이며, 이력 보관소가 아니다. 완료 이력의 SSOT(single source of truth)는 git 이력이다.
+현재와 가까운 전후의 작업 상태를 표현하는 현재적 문서이며, 이력 보관소가 아니다.
 "다음에 뭘 해야 하는가"는 이 트리에서 `[ ]` ready인 것 중 가장 앞에 있는 리프 노드.
 
 노드 유형 2종:

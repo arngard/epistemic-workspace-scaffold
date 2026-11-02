@@ -1,12 +1,10 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-26
+date modified: 2026-11-02
 tags: [ontology, epistemic-rules]
 ---
 
 # 온톨로지 규범
-
-같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 이 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다.
 
 ## 정의
 

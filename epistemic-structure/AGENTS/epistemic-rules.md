@@ -1,12 +1,10 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-27
+date modified: 2026-11-02
 tags: [epistemic-structure, epistemic-rules]
 ---
 
 # 범주 판별
-
-같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 이 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다.
 
 `epistemic-structure/`는 네 범주로 나뉜다. 각 범주의 정의는 그 범주 묶음 요지의 "정의"가 SSOT(single source of truth)다.
 

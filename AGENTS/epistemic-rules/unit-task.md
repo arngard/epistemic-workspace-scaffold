@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-10
-date modified: 2026-10-26
+date modified: 2026-11-02
 tags: [agents, 단위작업, epistemic-rules]
 ---
 
@@ -10,7 +10,7 @@ tags: [agents, 단위작업, epistemic-rules]
 
 ## 단위 작업
 
-전후와 의미적으로 분절되는 작업 덩어리. 문법 구조에 빗대면 괄호를 칠 수 있는 구간이고, 프로그래밍 언어의 statement에 해당한다. 트랜잭션처럼 하나로 완결된다.
+전후와 의미적으로 분절되어 하나로 완결되는 작업 덩어리, 곧 괄호를 칠 수 있는 구간이다.
 
 정의를 주는 것은 의미다. 작업 트리 노드, 브랜치, 커밋은 그 단위를 나타내는 표현이지 정의가 아니다. 트리에 자기 노드가 없는 작업도 의미적으로 분절되면 단위 작업이며, 이때는 표현이 빠진 것이므로 노드를 신설해 맞춘다.
 
@@ -19,7 +19,6 @@ tags: [agents, 단위작업, epistemic-rules]
 리프/중위는 노드의 종류가 아니라 그 노드가 재귀할 자식을 갖느냐의 위치 구분이다(ref: [task-tree.md](../../worklog/AGENTS/epistemic-rules/task-tree.md) - 노드 유형). 워크플로우 형태가 갈리는 것도 이 차이에서 나온다 - 자식이 있으면 재귀 진행, 없으면 그 자리의 구체 작업.
 
 - 커밋, 브랜치 단위가 아니라 의미 단위다. 직후에 바로 이어지는 정정 커밋은 별도 단위 작업이 아니라 앞 작업과 같은 단위 작업의 일부다 - 의미가 정정 전후로 같은 한 묶음이기 때문.
-- 앞뒤 트리 갱신: 착수 직전에 해당 노드를 `[/]`로, 완료 직후에 `[x]`로 바꾼다. 이 두 갱신이 단위 작업의 시작과 끝을 표시한다.
 
 ### 정형 대응
 
@@ -75,13 +74,3 @@ unit-task-workflow는 일반 프레임(진입/진행/종료 + 재귀)을 정의�
 분량이 크고 자체 완결적인 세부 규칙은 `unit-task/` 아래 하위 문서로 둔다.
 
 - [stage-authority.md](unit-task/stage-authority.md): 여러 단계로 나뉜 워크플로우에서 판정 권한을 두는 기준. 여러 단계로 나뉜 절차나 에이전트 분업을 설계할 때 읽는다.
-
-## 관련 문서
-
-- [unit-task-workflow.md](unit-task-workflow.md): 위 프레임의 운영 절차 (진입 준비, 브랜치, 진행 커밋, 종료 머지). 절차 축약과 main 머지 타입 분기는 그 하위 문서 [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md), [merge-types.md](unit-task-workflow/merge-types.md).
-- [session-boundaries.md](session-boundaries.md): 세션 경계의 재진입과 다른 세션 산출물 격리.
-- [submodule-pointer-sync.md](submodule-pointer-sync.md): 종료 흐름에 조립되는 서브모듈 pointer 재귀 정합화.
-- [pr-workflow.md](pr-workflow.md): PR 조립 모듈 (생성, 검토 대응, 머지, 후속).
-- [ingest-workflow.md](ingest-workflow.md): 새 정보 유입 조립 모듈.
-- [branch-strategy.md](branch-strategy.md): 브랜치 네이밍과 운영 모델, 작업 공간(워크트리).
-- [TASK_TREE.md](../../worklog/TASK_TREE.md): 작업 트리 본체와 갱신 규칙.

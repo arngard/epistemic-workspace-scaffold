@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-08-02
+date modified: 2026-11-02
 tags: [agents, 소통, git, epistemic-rules]
 ---
 
@@ -8,7 +8,7 @@ tags: [agents, 소통, git, epistemic-rules]
 
 AI가 사용자의 토큰, 계정으로 외부 협업 시스템(GitHub PR 본문, 이슈, 댓글, 리뷰 reply 등)에 글을 쓸 때의 공통 소통 규약. PR 맥락의 조립 절차는 [pr-workflow.md](pr-workflow.md)와 그 하위 문서에 두고, 본 규약은 PR 밖(이슈, 일반 댓글, 그 외 외부로 나가는 협업 채널)에도 적용된다.
 
-적용 범위 밖: 채팅 응답, 세션 내 의사 소통, 로컬 명령 출력. 그 경로는 발화자가 AI임이 1:1 대화 맥락에서 자명해 본 규약이 정보를 추가하지 않는다.
+적용 범위 밖: 채팅 응답, 세션 내 의사 소통, 로컬 명령 출력.
 
 ## 명시적 멘션 의무
 

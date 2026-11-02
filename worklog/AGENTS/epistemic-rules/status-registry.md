@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-28
+date modified: 2026-11-02
 tags: [worklog, epistemic-rules]
 ---
 
@@ -8,13 +8,12 @@ tags: [worklog, epistemic-rules]
 
 [STATUS.md](../../STATUS.md)는 감사, 주기 작업의 레지스트리다. 현재적 문서이며 항상 최신값으로 덮어쓴다 (시간성 규약의 "히스토리 문서"와 구별된다 - ref: [document-temporality.md](../../../AGENTS/epistemic-rules/document-temporality.md)).
 
-진행 서사를 일절 두지 않는다. 진행 상태는 [TASK_TREE.md](../../TASK_TREE.md)가, 완료 이력은 git 이력이 담당한다.
+진행 서사를 일절 두지 않는다. 진행 상태는 [TASK_TREE.md](../../TASK_TREE.md)가 담당한다.
 
 ## 갱신 규칙
 
 - 감사, 주기 작업을 수행할 때마다 해당 행의 "마지막 수행"을 갱신한다. 시각은 KST 기준 `yyyy-MM-dd HH:mm:ss`이며 시간대 표기는 생략한다. 아직 한 번도 수행하지 않은 행의 마지막 수행은 `(아직 없음)`으로 둔다. 출고 상태의 STATUS는 모든 행이 이 표기다.
 - 자식 워크스페이스는 자기 감사, 주기 작업 행을 STATUS 표에 추가한다.
-- 전역 브랜치 상태는 두지 않는다 - git에는 부모 브랜치 개념이 없어(커밋 DAG만 존재) 정합 유지가 불가능한 파생 정보다. 브랜치는 TASK_TREE에서 단위 작업의 속성으로 다룬다.
 
 ## 주기 조건
 

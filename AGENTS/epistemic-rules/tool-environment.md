@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-28
+date modified: 2026-11-02
 tags: [agents, 도구, 환경, IDE, epistemic-rules]
 ---
 
@@ -18,8 +18,6 @@ tags: [agents, 도구, 환경, IDE, epistemic-rules]
 | Codex | 저장소 루트부터 작업 폴더까지의 `AGENTS.md` | 저장소 루트에서 작업 폴더까지 경로에 있는 `AGENTS.md`를 읽는다. `@` 줄을 가져오기로 펼치지 않는다. 별도 진입점 파일을 두지 않는다. | 2026-10-25 |
 | GitHub Copilot | [.github/copilot-instructions.md](../../.github/copilot-instructions.md) | 저장소 전체 지침으로 읽는다. 저장소의 `AGENTS.md`도 에이전트 지침으로 읽으며 에이전트 작업에서는 가장 가까운 `AGENTS.md`가 우선한다. `@` 가져오기 펼침과 IDE별 읽기 대상은 조회한 문서에 없다. | 2026-10-26 |
 | Antigravity | 없음 | `agy` CLI가 루트 [AGENTS.md](../../AGENTS.md)를 직접 자동 로드한다(미확인). 별도 진입점 파일을 두지 않는다. | 미확인 |
-| Kiro | `.kiro/` 디렉토리 | AWS의 VS Code 기반 AI IDE. spec-driven development 지원. 디렉토리 세팅은 도구 자체가 수행. | 미확인 |
-| Cursor | `.cursor/rules/` 또는 `.cursorrules` | 현 스캐폴드는 진입점을 포함하지 않는다. Cursor를 사용하는 경우 별도 설정한다. | 미확인 |
 
 출처: [Claude Code memory](https://code.claude.com/docs/en/memory), [Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md), [Copilot repository instructions](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions). "미확인"은 공식 문서로 확인하지 못한 행이다.
 
