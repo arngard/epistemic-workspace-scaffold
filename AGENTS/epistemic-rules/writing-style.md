@@ -6,9 +6,7 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 # 일반 문서 작성 스타일
 
-문장, 서술 수준의 작성 규약. 진입자가 첫 화면에서 봐야 할 핵심(담백한 평서문, 서식 절제, 마크다운 링크와 참조 표지, 약어와 줄임말, front matter)은 [communication.md](communication.md) "문서 작성 스타일"에서, 평어체와 응답 언어는 같은 문서 "응답 언어"에서, 추측 금지와 사실/의견 분리는 [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트"에서 보고, 본 문서는 그 외 규약의 본문이다.
-
-문서의 배치와 분할은 [document-units.md](document-units.md)와 [folder-structure.md](folder-structure.md), 문서 시간성은 [document-temporality.md](document-temporality.md) 참조.
+문장, 서술 수준의 작성 규약의 세부다. 늘 적재되는 핵심은 [communication.md](communication.md)와 [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트"에 있다.
 
 ## 코드 블록 절제
 
@@ -28,6 +26,13 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 - 겉멋 든 전문 용어나 불필요한 외래어를 정확함으로 착각해 끌어들이지 않는다. 이미 뜻이 정확한 표준어가 있으면 기술적으로 들린다는 이유로 바꾸지 않는다.
 - 진짜 전문 용어(그 개념의 표준 명칭)는 정확성을 우선해 그대로 쓰고, 첫 등장 시 풀어쓴다(약어 병기는 [communication.md](communication.md) "문서 작성 스타일" 참조).
+
+## 통용되는 개념의 정의
+
+통용되는 개념은 정의를 새로 적지 않고 그 말을 그대로 쓴다. 통용 여부는 그 문서의 독자가 설명 없이 같은 뜻으로 읽는가로 가리며, 액면 그대로 뜻이 통하는 말도 여기에 든다. 뜻이 갈려 읽는 사람이 행동을 정할 수 없을 때만 정의한다.
+
+- 통용되는 뜻과 다르게 쓰거나 좁혀 쓰면 달라지는 부분만 적는다. 도메인 용어의 정의는 [온톨로지 규범](../../epistemic-structure/ontology/AGENTS/epistemic-rules.md)을 따른다.
+- 독자에게 통용되지 않는 표준 전문 용어는 같은 문서 "정확한 개념어와 담백한 문체"에 따라 첫 등장 시 풀어쓴다.
 
 ## 출처와 주체 표기의 범위
 
