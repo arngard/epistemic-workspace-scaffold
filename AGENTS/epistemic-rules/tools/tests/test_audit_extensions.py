@@ -47,6 +47,12 @@ class ExtensionTest(unittest.TestCase):
     def ext(self, name, body):
         return self.write(EXT_DIR + "/" + name, body)
 
+    def symlink(self, link, target, **kwargs):
+        try:
+            link.symlink_to(target, **kwargs)
+        except (OSError, NotImplementedError):
+            self.skipTest("심링크를 만들 수 없다")
+
     def sev(self):
         return [f.severity for f in run_extensions(self.root)]
 
@@ -126,7 +132,7 @@ class ExtensionTest(unittest.TestCase):
         target = self.write("outside/x.py", "raise SystemExit(1)\n")
         link = self.root / EXT_DIR / "a.py"
         link.parent.mkdir(parents=True)
-        link.symlink_to(target)
+        self.symlink(link, target)
         got = run_extensions(self.root)
         self.assertEqual([(f.severity, f.category, f.path) for f in got],
                          [(WARNING, "ext:a", EXT_DIR + "/a.py")])
@@ -136,14 +142,14 @@ class ExtensionTest(unittest.TestCase):
         target = self.write("outside/x.py", "raise SystemExit(1)\n")
         link = self.root / EXT_DIR / "_h.py"
         link.parent.mkdir(parents=True)
-        link.symlink_to(target)
+        self.symlink(link, target)
         self.assertEqual(run_extensions(self.root), [])
 
     def test_symlinked_folder_warns_and_not_run(self):
         self.write("real/a.py", "raise SystemExit(1)\n")
         link = self.root / EXT_DIR
         link.parent.mkdir(parents=True)
-        link.symlink_to(self.root / "real", target_is_directory=True)
+        self.symlink(link, self.root / "real", target_is_directory=True)
         got = run_extensions(self.root)
         self.assertEqual([(f.severity, f.category, f.path) for f in got],
                          [(WARNING, "ext", EXT_DIR)])
@@ -153,7 +159,7 @@ class ExtensionTest(unittest.TestCase):
         target = self.write("outside/x.py", "pass\n")
         link = self.root / EXT_DIR / "a.py"
         link.parent.mkdir(parents=True)
-        link.symlink_to(target)
+        self.symlink(link, target)
         self.ext("b.py", emit("warning", "p", "m"))
         cats = sorted(f.category for f in run_extensions(self.root))
         self.assertEqual(cats, ["ext:a", "ext:b"])

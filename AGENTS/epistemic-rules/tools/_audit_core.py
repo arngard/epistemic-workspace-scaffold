@@ -149,7 +149,8 @@ class Finding:
     """감사 발견 1건. 서식 문자열 대신 구조화된 데이터로 다룬다.
 
     severity는 VIOLATION 또는 WARNING. category는 검사 종류 태그
-    (front-matter, link, size 등). path는 워크스페이스 루트 상대 경로 표기.
+    (front-matter, link, size 등). path는 워크스페이스 루트 상대 경로 표기로,
+    운영체제와 무관하게 슬래시로 고정한다.
     출력 서식은 format()이 한 곳에서 결정한다.
     """
 
@@ -157,6 +158,10 @@ class Finding:
     category: str
     path: str
     message: str
+
+    def __post_init__(self) -> None:
+        if os.sep != "/":
+            object.__setattr__(self, "path", self.path.replace(os.sep, "/"))
 
     def format(self) -> str:
         body = f"[{self.category}] {self.path}: {self.message}"
