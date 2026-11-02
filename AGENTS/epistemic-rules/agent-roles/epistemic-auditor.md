@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-10
-date modified: 2026-11-02
+date modified: 2026-11-03
 tags: [agents, 역할, 감사, epistemic-rules]
 ---
 
@@ -44,7 +44,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - 걸러도 의미 있는 묶음이 생기지 않는 태그의 삭제안
    - 방법과 보고 형식은 [procedure.md](epistemic-auditor/procedure.md)
 7. 규범 문장 (의미 판단)
-   - 직전 감사 이후 바뀐 규범이 [norm-authoring.md](../norm-authoring.md) "규범을 정할 때"와 [writing-style.md](../writing-style.md) "통용되는 개념의 정의"에 맞는가
+   - 직전 클린 커밋 이후 바뀐 규범이 [norm-authoring.md](../norm-authoring.md) "규범을 정할 때"와 [writing-style.md](../writing-style.md) "통용되는 개념의 정의"에 맞는가
    - 방법과 보고 형식은 [procedure.md](epistemic-auditor/procedure.md)
 
 수행 순서와 보고 형식은 [epistemic-auditor/procedure.md](epistemic-auditor/procedure.md)를 따른다. 감사자로서 감사를 수행할 때 읽는다.
