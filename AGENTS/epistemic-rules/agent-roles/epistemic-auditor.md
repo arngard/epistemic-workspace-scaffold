@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-10
-date modified: 2026-10-28
+date modified: 2026-11-02
 tags: [agents, 역할, 감사, epistemic-rules]
 ---
 
@@ -34,7 +34,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - 항목별 기준과 명령은 [git-context.md](epistemic-auditor/git-context.md)
 4. 카테고리 배치 적절성 (의미 판단)
    - 각 `epistemic-structure/X/` 안의 문서가 그 카테고리의 정의에 부합하는가
-   - 항목 4와 6은 의미 판단이라 항목 1, 2, 3, 5보다 신뢰도가 낮다. 모호한 사례는 "확실하지 않음"으로 처리
+   - 항목 4, 6, 7은 의미 판단이라 항목 1, 2, 3, 5보다 신뢰도가 낮다. 모호한 사례는 "확실하지 않음"으로 처리
 5. 메타-컨텐츠 영역 혼동 (직전 7~10개 단위 작업의 행동 패턴)
    - 메타 영역(스캐폴드 자체 개발, 외부 컨테이너 관리, 운영 정책, 다른 인스턴스의 작업 이력)의 사실을 인스턴스 컨텐츠 영역에 기재했거나 메타 정책을 모른 채 컨텐츠 작업을 진행한 사례를 찾는다. 단위 작업은 커밋이 아니라 의미 단위로 본다 (ref: [unit-task.md](../unit-task.md)).
    - 입력은 본 레포의 최근 머지 커밋 목록과 그 본문, TASK_TREE의 활성, 후속 항목이다. 세션 기록과 상속된 상류 이력은 입력하지 않는다.
@@ -42,6 +42,9 @@ tags: [agents, 역할, 감사, epistemic-rules]
 6. 태그 어휘 (의미 판단)
    - 뜻이 같은 태그 묶음(한영 쌍, 동의어, 단수와 복수)의 병합안
    - 걸러도 의미 있는 묶음이 생기지 않는 태그의 삭제안
+   - 방법과 보고 형식은 [procedure.md](epistemic-auditor/procedure.md)
+7. 규범 문장 (의미 판단)
+   - 직전 감사 이후 바뀐 규범이 [norm-authoring.md](../norm-authoring.md) "규범을 정할 때"와 [writing-style.md](../writing-style.md) "통용되는 개념의 정의"에 맞는가
    - 방법과 보고 형식은 [procedure.md](epistemic-auditor/procedure.md)
 
 수행 순서와 보고 형식은 [epistemic-auditor/procedure.md](epistemic-auditor/procedure.md)를 따른다. 감사자로서 감사를 수행할 때 읽는다.
