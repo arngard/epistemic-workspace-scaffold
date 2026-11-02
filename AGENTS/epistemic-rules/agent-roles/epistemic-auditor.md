@@ -30,7 +30,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
    - 스크립트가 실체 0건 폴더 경고를 낸 폴더가 삭제할 잔재인지, 사양만 있고 실체 0건인 동결(보류 명시 또는 첫 실체 필요)인지, 첫 실체를 기다리는 정상 신설인지
    - 현재적 문서의 근거 보존 예외로 남긴 근거 요지가 경위 서사로 비대해지지 않았는가 (ref: [document-temporality.md](../document-temporality.md) "시간성 혼합 금지")
 3. git 맥락 검출 (스크립트 미담당)
-   - TASK_TREE 노드의 마크 커밋 없는 삭제와 완료 루트의 과다 잔존, 브랜치 속성의 실존, `reference/` 원본의 수정, 삭제, 이동, `date closed` 히스토리 문서의 본문 변경, 상류 머지 밖의 상류 묶음 목록 변경
+   - TASK_TREE 노드의 마크 커밋 없는 삭제와 완료 노드의 과다 잔존, 브랜치 속성의 실존, `reference/` 원본의 수정, 삭제, 이동, `date closed` 히스토리 문서의 본문 변경, 상류 머지 밖의 상류 묶음 목록 변경
    - 항목별 기준과 명령은 [git-context.md](epistemic-auditor/git-context.md)
 4. 카테고리 배치 적절성 (의미 판단)
    - 각 `epistemic-structure/X/` 안의 문서가 그 카테고리의 정의에 부합하는가
