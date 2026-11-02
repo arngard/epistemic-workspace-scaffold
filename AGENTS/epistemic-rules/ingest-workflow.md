@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-03
-date modified: 2026-10-27
+date modified: 2026-11-02
 tags: [agents, 절차, ingest, epistemic-rules]
 ---
 
@@ -47,17 +47,6 @@ tags: [agents, 절차, ingest, epistemic-rules]
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 
-## 빠뜨림 방지의 명시적 의도
-
-본 절차의 표준 시퀀스 9번 "종료 전 빠뜨림 검사"는 디스크립터 갱신, 양방향 링크 한쪽처럼 워크스페이스 작업 중 누락되기 쉬운 자잘한 작업을 줄이려고 둔 의도적인 자체 점검 단계다.
-
 ## 세부 절차
 
 - [reference-folder.md](../../reference/AGENTS/epistemic-rules/reference-folder.md): `reference/` 폴더 자료의 처리 절차. `reference/`에 자료가 들어왔거나 세션 시작 시 대조할 때 읽는다.
-
-## 참고
-
-- see: [session-boundaries.md](session-boundaries.md) "세션 시작" - 본 워크플로의 트리거 위치
-- ref: [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트" - 사실/의견 주체 분리 원칙
-- sub: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) - 카테고리 판별 규칙
-- see: [`reference/INDEX.md`](../../reference/INDEX.md) - raw 자료 보관 영역의 인벤토리 + 처리 상태

@@ -1,12 +1,12 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-28
+date modified: 2026-11-02
 tags: [규칙, epistemic-rules]
 ---
 
 # 설계 원칙
 
-설계 판단이 갈릴 때의 우선 기준이다.
+설계 판단이 갈릴 때의 최후 우선 기준(tiebreaker)이다.
 
 ## 모든 규약과 구조 결정
 
@@ -14,7 +14,6 @@ tags: [규칙, epistemic-rules]
 - 일관성(consistency): 예외적 패턴을 최소화한다. 한 번 익힌 패턴이 어디서나 재사용된다.
 - 예측 가능성(predictability): 새 요소를 추가할 때 그 위치와 형식이 기존 패턴에서 자동으로 도출된다.
 
-이 세 원칙은 모든 규약과 구조 결정의 최후 tiebreaker이다.
 
 ## 코드와 데이터 모델 결정
 
