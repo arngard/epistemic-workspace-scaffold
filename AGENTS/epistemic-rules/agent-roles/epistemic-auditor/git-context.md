@@ -12,11 +12,11 @@ description: 감사자가 git 이력과 상태로 보는 점검 항목의 기준
 ## 점검 대상
 
 - TASK_TREE 노드의 마크 커밋 없는 삭제
-- 아직 열린 작업이 기대는 내용을 옮기지 않은 완료 노드 삭제
+- 아직 열린 작업이 기대는 내용이나 오래 남길 결정 근거를 옮기지 않은 완료 노드 삭제
 - TASK_TREE 브랜치 속성이 가리키는 브랜치와 워크트리의 실존 대조
 - `reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반). 운영 파일([workspace-and-project-structure.md](../../workspace-and-project-structure.md) "네이밍 규칙: 워크스페이스 scaffolding과 콘텐츠")과 등재된 진척 기록 폴더의 변경은 제외한다.
 - `date closed` 히스토리 문서의 본문 변경(동결 위반 - 후속 문서 링크 추가와 정합 유지 수정은 허용, ref: [document-temporality.md](../../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
-- TASK_TREE `[x]` 완료 노드의 과다 잔존 - [task-tree.md](../../../../worklog/AGENTS/epistemic-rules/task-tree.md) 삭제 규칙의 대상인데 남은 노드
+- TASK_TREE `[x]`/`[-]` 노드의 과다 잔존 - [task-tree.md](../../../../worklog/AGENTS/epistemic-rules/task-tree.md) 삭제 규칙의 대상인데 보류 표시 없이 남은 노드
 - 상류 머지 밖에서 상류 묶음 목록(`tools/bundle-manifest.sha256`)을 바꾼 본 레포 커밋
 
 ## 확인 방법
