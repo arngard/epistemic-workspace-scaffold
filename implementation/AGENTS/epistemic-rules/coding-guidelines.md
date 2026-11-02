@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-02
-date modified: 2026-10-25
+date modified: 2026-11-02
 tags: [agents, 코딩, epistemic-rules]
 ---
 
@@ -18,25 +18,6 @@ tags: [agents, 코딩, epistemic-rules]
 
 단, 테스트는 타입이 닿지 못하는 행동, 회귀, 경계 조건을 고정하는 보완적 검증이다. [design-principles.md](../../../AGENTS/epistemic-rules/design-principles.md) 설계 원칙의 강타입(correctness by construction)에 따라, 타입이 잡아야 할 오류를 테스트에 위임하지 않는다.
 
-## 코드의 단순함
+## 메시지
 
-[working-principles.md](../../../AGENTS/epistemic-rules/working-principles.md) 단순함 우선의 코드 형태.
-
-- 20줄로 될 것을 200줄로 쓰지 않는다. 200줄을 쓰고 있는데 50줄로 될 것 같으면 다시 쓴다.
-- 미래에도 단일 사용처에서만 쓰일 코드라면, 추상화를 만들지 않는다.
-- 요청되지 않은 유연성, 설정 가능성을 넣지 않는다.
-- 일어날 수 없는 시나리오에 대한 예외 처리를 넣지 않는다.
-
-## 코드의 외과적 변경
-
-[working-principles.md](../../../AGENTS/epistemic-rules/working-principles.md) 외과적 변경의 코드 형태.
-
-- 기존 코드를 편집할 때 인접 코드, 주석, 포맷을 덤으로 손대지 않는다.
-- 내가 다르게 짰을 코드라도 기존 스타일에 맞춘다.
-- 내 변경으로 쓰이지 않게 된 import, 변수, 함수만 정리한다. 원래 있던 데드코드는 요청이 없으면 지우지 말고 언급한다.
-
-## 참고
-
-- see: [working-principles.md](../../../AGENTS/epistemic-rules/working-principles.md) - 일반 작업 수행 원칙.
-- see: [design-principles.md](../../../AGENTS/epistemic-rules/design-principles.md) - 설계 원칙(강타입). 원본 보호 원칙은 [original-protection-principle.md](../../../AGENTS/epistemic-rules/original-protection-principle.md).
-- see: [unit-task-workflow.md](../../../AGENTS/epistemic-rules/unit-task-workflow.md) - 단위 작업 운영 흐름.
+에러 메시지는 첫 문장 영문 + 상세 한국어로 쓴다.

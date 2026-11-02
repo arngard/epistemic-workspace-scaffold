@@ -1,12 +1,12 @@
 ---
 date created: 2026-10-26
-date modified: 2026-10-27
+date modified: 2026-11-02
 tags: [규칙, epistemic-rules]
 ---
 
 # 워크스페이스 상류 규범 요지
 
-워크스페이스 전체에 걸치는 상류 규범의 요지다. 세부 규약은 `epistemic-rules/` 아래 SSOT(single source of truth) 문서에 두고, 여기서는 규칙의 존재를 이름으로 짚어 에이전트가 인지하고 찾아보게 한다. 같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 이 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다.
+세부 규약은 `epistemic-rules/` 아래 SSOT(single source of truth) 문서에 있다. 같은 사안에 자손 규범이 있으면 자손 규범이 우선한다. 자손 규범은 각 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md에 있다. 이 우선순위는 모든 폴더의 묶음에 같게 적용된다.
 
 ## 에피스테믹 워크스페이스
 
@@ -14,7 +14,7 @@ tags: [규칙, epistemic-rules]
 
 ## 비협상 게이트
 
-비가역이거나 치명적인 소수만 하드 게이트로 둔다(게이트 피로 방지). 데이터 안전 항목의 근거 원리는 [원본 보호 원칙](epistemic-rules/original-protection-principle.md).
+되돌리기 어렵거나 문서의 신뢰를 해치는 소수만 둔다(많아지면 지켜지지 않는다). 데이터 안전 항목의 근거 원리는 [원본 보호 원칙](epistemic-rules/original-protection-principle.md).
 
 - **`main` 브랜치에 직접 커밋하지 않는다** (ref: [브랜치 전략](epistemic-rules/branch-strategy.md)).
 - **`epistemic-structure/`와 `worklog/` 파일을 사람 확인 없이 삭제하거나 대폭 재편하지 않는다.**
@@ -53,5 +53,4 @@ tags: [규칙, epistemic-rules]
 - 새 클래스나 모듈 생성, 모듈 구성, 의존성, 도메인의 운영 절차의 변경, 명세 신설 -> [architecture/](../epistemic-structure/architecture/INDEX.md)
 - 설계 판단이 갈릴 때 -> [설계 원칙](epistemic-rules/design-principles.md)
 - 구현 착수 전 -> [핵심 제약](../epistemic-structure/architecture/core-constraints.md)
-- 스캐폴드 취지 의문, 신규 진입자 온보딩 -> [4범주의 이유](epistemic-rules/why-epistemic-workspace.md)
-- 진입점 구조, scaffolding 구조 의문 -> [진입점 근거](epistemic-rules/why-agents-md-not-conventions-md.md), [scaffolding 근거](epistemic-rules/why-scaffolding-not-single-file.md)
+- 스캐폴드 구조의 이유를 확인할 때 -> [4범주의 이유](epistemic-rules/why-epistemic-workspace.md), [진입점 근거](epistemic-rules/why-agents-md-not-conventions-md.md), [scaffolding 근거](epistemic-rules/why-scaffolding-not-single-file.md)

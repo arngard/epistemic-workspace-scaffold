@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-05
-date modified: 2026-10-27
+date modified: 2026-11-02
 tags: [agents, 규칙, 문서관리, epistemic-rules]
 ---
 
@@ -28,7 +28,6 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 - 겉멋 든 전문 용어나 불필요한 외래어를 정확함으로 착각해 끌어들이지 않는다. 이미 뜻이 정확한 표준어가 있으면 기술적으로 들린다는 이유로 바꾸지 않는다.
 - 진짜 전문 용어(그 개념의 표준 명칭)는 정확성을 우선해 그대로 쓰고, 첫 등장 시 풀어쓴다(약어 병기는 [communication.md](communication.md) "문서 작성 스타일" 참조).
-- 정확함으로 착각한 치장 어휘는 정확성과 담백함을 동시에 위반한다. 둘이 충돌하는 것처럼 보이는 경우는 대개 치장을 정확함으로 오인한 것이다.
 
 ## 출처와 주체 표기의 범위
 
@@ -58,13 +57,13 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 ## 도구 전용 설정 파일 예외
 
-도구가 형식을 정하는 파일은 그 도구의 형식을 따르고 front matter 의무에서 빠진다. 대상 파일은 [communication.md](communication.md) "문서 작성 스타일"이 정한다.
+도구가 형식을 정하는 파일(어디에 있든 이름이 `CLAUDE.md`, `SKILL.md`, `copilot-instructions.md`인 파일과 도구 폴더 `.claude/`, `.github/`, `.kiro/` 아래 파일)은 그 도구의 형식을 따르고 front matter 의무에서 빠진다. 생성 색인과 `.git/`, `node_modules/`, `.tmp/`, `__pycache__/` 아래, git이 무시하는 경로는 문서 영역이 아니라 대상 밖이다. `description`은 없어도 감사가 경고하지 않는다 (see: [folder-index.md](folder-index.md)).
 
 ## 하위 문서
 
 분량이 크고 자체 완결적인 세부 규약은 `writing-style/` 아래 하위 문서로 둔다.
 
-- [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (링크 대상 자체를 가리킴, audit 기계 검사). 문서 간 링크를 작성할 때 읽는다.
-- [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외. 문서를 작성하거나 부호를 입력할 때 읽는다.
+- [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (링크 대상 자체를 가리킴, audit 기계 검사). 감사가 표시텍스트 위반을 낼 때 읽는다.
+- [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외. 감사가 문장 부호를 지적할 때 읽는다.
 - [reference-markers.md](writing-style/reference-markers.md): 참조 표지 `ref:`, `sub:`, `see:`의 판정, 형태, 자리 (본문 링크 우선). 문서 간 참조를 따로 둘 때 읽는다.
 - [conversation-reporting.md](writing-style/conversation-reporting.md): 대화 보고의 구성 (결론 선행, 질문은 마지막, 산출물만, 내부 라벨 금지). 사용자에게 보고하거나 답변할 때 읽는다.
