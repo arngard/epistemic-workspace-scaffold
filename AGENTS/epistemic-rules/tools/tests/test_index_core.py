@@ -463,9 +463,12 @@ class RenderTest(unittest.TestCase):
         self.assertIn("- [u/](u/) - 폴더 설명", self.page("INDEX.md"))
 
     def test_operational_files_excluded(self):
-        for name in ("INDEX.md", "INDEX2.md", "s/INDEX.md", ".git/x",
-                     "node_modules/a.js", "__pycache__/a.pyc", "Thumbs.db",
-                     "desktop.ini", "a.md~", "Icon\r"):
+        names = ["INDEX.md", "INDEX2.md", "s/INDEX.md", ".git/x",
+                 "node_modules/a.js", "__pycache__/a.pyc", "Thumbs.db",
+                 "desktop.ini", "a.md~"]
+        if os.name != "nt":  # 윈도우는 제어 문자 이름을 못 만든다
+            names.append("Icon\r")
+        for name in names:
             self.write(name, "x\n")
         names = [e.name for e in list_entries(self.root, self.root)]
         self.assertEqual(names, ["LICENSE", "reference/", "s.md"])
@@ -527,14 +530,20 @@ class RenderTest(unittest.TestCase):
         self.assertEqual(names, ["app/"])
 
     def test_link_encoding(self):
-        self.write("s/a(1)#[x]?%.pdf", "x\n")
+        self.write("s/a(1)#[x]%.pdf", "x\n")
         self.write("s/한글 이름.md", FM)
         es = {e.name: e for e in list_entries(self.root, self.root / "s")}
-        self.assertEqual(es["a(1)#[x]?%.pdf"].links[0][1],
-                         "a%281%29%23%5Bx%5D%3F%25.pdf")
+        self.assertEqual(es["a(1)#[x]%.pdf"].links[0][1],
+                         "a%281%29%23%5Bx%5D%25.pdf")
         self.assertEqual(es["한글 이름.md"].links[0][1], "한글%20이름.md")
         text = self.page("s/INDEX.md")
-        self.assertIn("[a(1)#\\[x\\]?%.pdf](a%281%29", text)
+        self.assertIn("[a(1)#\\[x\\]%.pdf](a%281%29", text)
+
+    @unittest.skipIf(os.name == "nt", "윈도우는 물음표 이름을 못 만든다")
+    def test_link_encoding_question_mark(self):
+        self.write("s/a?.pdf", "x\n")
+        es = {e.name: e for e in list_entries(self.root, self.root / "s")}
+        self.assertEqual(es["a?.pdf"].links[0][1], "a%3F.pdf")
 
     @unittest.skipIf(os.name == "nt", "윈도우는 역슬래시 이름을 못 만든다")
     def test_backslash_name_is_portability_violation(self):

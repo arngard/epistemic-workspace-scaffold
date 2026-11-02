@@ -8,12 +8,13 @@ import tempfile
 import unicodedata
 import unittest
 from pathlib import Path
+from unittest import mock
 
 TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, TOOLS)
 
 from _audit_core import (  # noqa: E402
-    VIOLATION, WARNING, content_dirs, git_ignored_paths, iter_md_files,
+    Finding, VIOLATION, WARNING, content_dirs, git_ignored_paths, iter_md_files,
     registered_progress_dirs)
 from audit_frontmatter import check_front_matter  # noqa: E402
 from audit_structure import check_descriptors, check_empty_folders  # noqa: E402
@@ -37,6 +38,18 @@ REGISTRY = FM + """
 `reference/fenced/AGENTS/`
 ```
 """
+
+
+class FindingPathTest(unittest.TestCase):
+    def test_windows_separator_becomes_slash(self):
+        with mock.patch("_audit_core.os.sep", "\\"):
+            found = Finding(WARNING, "size", "a\\b\\c.md", "m")
+        self.assertEqual(found.path, "a/b/c.md")
+
+    def test_backslash_in_posix_name_kept(self):
+        with mock.patch("_audit_core.os.sep", "/"):
+            found = Finding(WARNING, "size", "a/b\\c.md", "m")
+        self.assertEqual(found.path, "a/b\\c.md")
 
 
 class ProgressRegistryTest(unittest.TestCase):
@@ -194,6 +207,7 @@ class GitIgnoredScopeTest(GitScopeBase):
         found = [(f.severity, f.path) for f in check_empty_folders(self.root)]
         self.assertIn((WARNING, "docs/empty"), found)
 
+    @unittest.skipIf(sys.platform != "darwin", "core.precomposeunicode는 macOS git에서만 듣는다")
     def test_nfd_folder_name_nfc_pattern(self):
         name = "\ube44\ubc00"
         nfd = unicodedata.normalize("NFD", name)

@@ -148,7 +148,7 @@ def check_name_collision(root: Path) -> list[Finding]:
             if not has_sub:
                 out.append(Finding(
                     WARNING, "naming", str(doc.relative_to(root)),
-                    f"동명 폴더 {sub.relative_to(root)}/에 하위 문서가 없음. "
+                    f"동명 폴더 {sub.relative_to(root).as_posix()}/에 하위 문서가 없음. "
                     "하위 문서 묶음 관계가 아니면 한쪽을 개명한다",
                 ))
     return out

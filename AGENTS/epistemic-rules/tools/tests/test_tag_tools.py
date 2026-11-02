@@ -439,6 +439,7 @@ class RetagSafetyTest(Fixture):
         self.assertEqual(rep.changed, ["s/a.md"])
         self.assertEqual(self.read("s/b.md"), before)
 
+    @unittest.skipIf(os.name == "nt", "윈도우는 권한 비트를 쓰기 보호로만 다룬다")
     def test_file_mode_preserved(self):
         target = self.root / "s/a.md"
         target.chmod(0o640)

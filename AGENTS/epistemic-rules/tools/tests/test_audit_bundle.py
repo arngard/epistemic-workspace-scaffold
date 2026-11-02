@@ -180,7 +180,7 @@ class IdentityTest(BundleCase):
 
     def test_crlf_checkout_clean(self):
         p = self.root / "AGENTS/epistemic-rules/x.md"
-        data = p.read_bytes().replace(b"\n", b"\r\n")
+        data = p.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
         p.write_bytes(data)
         self.assertEqual(self.identity(), [])
 
@@ -318,8 +318,8 @@ class MaterialScopeTest(BundleCase):
         seen29 = {f.path for f in check_source_tags(self.root)
                   if f.severity == VIOLATION}
         seen30 = set(self.paths(VIOLATION))
-        expected = {str(Path("reference/AGENTS/epistemic-rules/b.md")),
-                    str(Path("implementation/AGENTS/epistemic-rules.md"))}
+        expected = {"reference/AGENTS/epistemic-rules/b.md",
+                    "implementation/AGENTS/epistemic-rules.md"}
         self.assertEqual(seen29, expected)
         self.assertEqual(seen30, expected)
 
