@@ -16,7 +16,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 2. 형식 감사 `python3 AGENTS/epistemic-rules/tools/audit.py .`를 실행하고, 보고된 위반은 정리하거나 사용자에게 짚는다 (윈도우는 `python` 또는 `py`. see: [tools.md](tools.md) "기계 감사 스크립트").
 3. 의미 감사 트리거를 `python3 AGENTS/epistemic-rules/tools/check_semantic_audit.py .`(윈도우는 위와 같다)로 판정하고, 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [trigger-baseline.md](agent-roles/epistemic-auditor/trigger-baseline.md)).
 4. [reference/INDEX.md](../../reference/INDEX.md)에서 `미등록`과 `처리 대기` 항목을 보고, 2번 감사가 `reference/INDEX.yaml`에 낸 경고를 확인한다. 미처리 자료는 [ingest-workflow.md](ingest-workflow.md)로 진행한다.
-5. 작업 범위의 `epistemic-structure/` 문서([epistemic-rules.md](../epistemic-rules.md) "이럴 때 읽는다")를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [ingest-workflow.md](ingest-workflow.md)를 따른다.
+5. 읽기 목록 [when-to-read.md](when-to-read.md)를 열어 작업 범위의 규범과 `epistemic-structure/` 문서를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [ingest-workflow.md](ingest-workflow.md)를 따른다.
 
 ## 끊김, 재진입
 

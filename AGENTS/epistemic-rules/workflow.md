@@ -12,7 +12,7 @@ tags: [규칙, epistemic-rules]
 
 ## 단위 작업
 
-단위 작업 시작과 종료 시 TASK_TREE를 갱신하고, main 머지는 사용자 검토를 통과한 뒤에만 한다(AI 자율 머지 금지). 흐름은 [AGENTS/epistemic-rules/unit-task-workflow.md](unit-task-workflow.md), PR 조립은 [AGENTS/epistemic-rules/pr-workflow.md](pr-workflow.md).
+단위 작업 시작과 종료 시 TASK_TREE를 갱신하고, main 머지는 사용자 검토를 통과한 뒤에만 한다. 흐름은 [AGENTS/epistemic-rules/unit-task-workflow.md](unit-task-workflow.md), PR 조립은 [AGENTS/epistemic-rules/pr-workflow.md](pr-workflow.md).
 
 ## 작업 수행 원칙
 
