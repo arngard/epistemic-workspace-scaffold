@@ -10,7 +10,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 
 ## 수행 순서
 
-1. 진입점 [AGENTS.md](../../../../AGENTS.md)와 그것이 가져오는 [epistemic-rules.md](../../../epistemic-rules.md) "이럴 때 읽는다"를 읽고 워크스페이스 구조를 파악한다.
+1. 진입점 [AGENTS.md](../../../../AGENTS.md)와 그것이 가져오는 [epistemic-rules.md](../../../epistemic-rules.md), 요지가 가리키는 읽기 목록 [when-to-read.md](../../when-to-read.md)를 읽고 워크스페이스 구조를 파악한다.
 2. 최근 커밋(`git log --oneline -20` 등)과 STATUS 레지스트리, TASK_TREE를 대조해 워크로그 최신성을 본다.
 3. 형식 감사 `python3 -B AGENTS/epistemic-rules/tools/audit.py .`를 실행해 결과를 수집한다.
 4. [epistemic-structure/AGENTS/epistemic-rules.md](../../../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙"을 그대로 적용한다. 그 문서가 링크한 각 범주 요지의 "정의"를 확인한 뒤, 각 `epistemic-structure/X/` 문서의 첫 단락이나 front matter `description`으로 카테고리 부합 여부를 본다. 판정이 서지 않으면 본문을 더 읽고, 그래도 모호하면 "확실하지 않음"으로 둔다. 한 문서가 두 범주에 걸치면 같은 문서의 "교차 링크" 절에 따라 주 위치 하나를 정하고 나머지를 링크로 분리할 수 있는지 본다. 분리할 수 없거나 주 위치가 모호하면 "확실하지 않음"으로 보고한다.

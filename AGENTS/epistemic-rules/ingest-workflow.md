@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-03
-date modified: 2026-11-02
+date modified: 2026-11-03
 tags: [agents, 절차, ingest, epistemic-rules]
 ---
 
@@ -39,11 +39,11 @@ tags: [agents, 절차, ingest, epistemic-rules]
 5. 카테고리 결정: [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" 적용.
 6. 노드 결정: 기존 노드에 추가 vs 신규 노드 생성. 기존 노드의 주제 응집성을 깨면 신규로 분리 (한 문서는 한 관심사 원칙).
 7. 교차 참조 갱신: 같은 정보가 여러 노드에 걸쳐 있으면 노드 간 마크다운 링크로 연결한다. 워크스페이스가 양방향 그래프 패턴을 채택했다면 그 양방향 의무도 같은 단계에서 처리한다.
-8. 디스크립터 점검: 규범 문서를 신설했으면 상류 규범은 그 묶음 요지의 트리거나 부모 문서 본문에, 자손 규범은 그 폴더 `AGENTS.md`에 링크한다 (ref: [instance-specialization.md](instance-specialization.md) "특수화 방식"). 문서를 신설했으면 그 문서의 `description`을 단다. `reference/` 자료를 처리했으면 `reference/INDEX.yaml`의 항목을 갱신한다 (ref: [folder-index.md](folder-index.md) "자료 처리 상태").
+8. 디스크립터 점검: 규범 문서를 신설했으면 상류 규범은 그 묶음의 트리거(루트 묶음은 [when-to-read.md](when-to-read.md))나 부모 문서 본문에, 자손 규범은 그 폴더 `AGENTS.md`에 링크한다 (ref: [instance-specialization.md](instance-specialization.md) "특수화 방식"). 문서를 신설했으면 그 문서의 `description`을 단다. `reference/` 자료를 처리했으면 `reference/INDEX.yaml`의 항목을 갱신한다 (ref: [folder-index.md](folder-index.md) "자료 처리 상태").
 9. 종료 전 빠뜨림 검사: 위 단계 중 누락이 있는지 자체 review.
    - 출처, 시점, 주체를 빠뜨렸는가?
    - 기존 노드 검색을 했는가? 충돌 검사를 했는가?
-   - 규범 문서 링크(묶음 요지의 트리거나 부모 문서 본문, 자손 규범은 폴더 `AGENTS.md`)와 문서의 `description`과 `reference/INDEX.yaml` 항목 갱신을 했는가?
+   - 규범 문서 링크(묶음의 트리거나 부모 문서 본문, 자손 규범은 폴더 `AGENTS.md`)와 문서의 `description`과 `reference/INDEX.yaml` 항목 갱신을 했는가?
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 
