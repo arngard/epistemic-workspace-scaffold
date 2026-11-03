@@ -31,7 +31,7 @@ tags: [agents, 코딩, epistemic-rules]
 
 ## 주석과 스크립트 머리의 이력
 
-코드 주석과 스크립트 머리(모듈 설명, docstring)도 문서처럼 현재 동작과 그 이유를 쓴다 (ref: [document-temporality.md](../../../AGENTS/epistemic-rules/document-temporality.md) "시간성 혼합 금지"). 이름, 값, 동작이 바뀐 사실을 보존하려고만 남기는 이력(옛 이름, 바뀌기 전 값)은 적지 않고 커밋에 맡긴다. 옛 상태를 언급해야 지금의 선택이 설명될 때만 그 이유가 드러나게 짧게 쓴다.
+코드 주석과 스크립트 머리(모듈 설명, docstring)도 문서처럼 현재 동작과 그 이유를 쓴다 (ref: [document-temporality.md](../../../AGENTS/epistemic-rules/document-temporality.md) "시간성 혼합 금지"). 이름, 값, 동작이 바뀐 사실을 보존하려고만 남기는 이력(옛 이름, 바뀌기 전 값)은 적지 않고 커밋에 맡긴다. 특이한 선택이 이유를 모른 채 원복될 위험이 예상될 때만 그 근거 요지를 남기고 경위는 쓰지 않는다(그 절의 근거 보존 예외).
 
 ## 메시지
 
