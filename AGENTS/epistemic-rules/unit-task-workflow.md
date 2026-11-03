@@ -31,21 +31,19 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 ## 종료 흐름
 
-브랜치를 소유한 노드(진입에서 한 단위 작업으로 정한 그 노드 - 대개 메인 머지 1회 = 브랜치 1개)의 종료에서 아래를 밟는다. 그 아래 자식들의 종료는 트리 마크 + 커밋까지이지 별도 머지가 아니다.
+브랜치를 소유한 노드(진입에서 한 단위 작업으로 정한 그 노드 - 대개 메인 머지 1회 = 브랜치 1개)의 종료에서 아래를 순서대로 밟는다. 그 아래 자식들의 종료는 트리 마크 + 커밋까지이지 별도 머지가 아니다. 단계마다 담을 것과 기준은 [closing-steps.md](unit-task-workflow/closing-steps.md)에 있고, 종료할 때 그 문서를 읽는다.
 
-1. 마무리 커밋: 미캡처 보강, 학습 사항 반영, TASK_TREE 완료 마크와 브랜치 속성 제거를 담는다. 이 시점의 워크로그는 main 머지된 이후의 상태를 미리 기록한다 - 머지 직후 그대로 정합이 되어 별도 정정 커밋이 안 생기게.
-2. TASK_TREE 정리: 완료 마크(`[x]`/`[-]`)가 커밋에 남은 뒤에만 노드를 삭제한다(마크 커밋과 삭제 커밋 분리). 무엇을 언제 삭제하는가는 [task-tree.md](../../worklog/AGENTS/epistemic-rules/task-tree.md)의 삭제 규칙을 따른다.
-3. 사용자 검토 통과: 변경 요약(브랜치명, 변경 파일 수, 핵심 변경 + 짚을 점)을 보고하고 결정 신호를 받는다. AI 자율 판단으로 머지하지 않는다.
-   - 결정 갈래: OK 머지 / 추가 정정(명시받아 커밋 후 본 단계 반복) / 롤백(브랜치 폐기).
-   - 시그널은 명시적이어야 한다. 침묵이나 다음 작업 시작을 OK로 추론하지 않는다. 채팅 내 명시 승인("머지해")과 PR Approve가 등가다.
-   - 단발 작업, 오탈자처럼 절차를 축약해 처리하는 작은 변경은 본 단계도 면제한다 (sub: [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md)).
-4. main 머지 - 타입 분기: PR 타입과 브랜치 관리자 타입(직접 머지) 중 하나로 진행한다. 타입 결정 규칙, 두 타입의 절차, 환경 안전망, 잔존 점검은 [merge-types.md](unit-task-workflow/merge-types.md)를 따른다.
-5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): 본 레포가 다른 레포의 서브모듈이면 [submodule-pointer-sync.md](submodule-pointer-sync.md)를 조립한다.
+1. 마무리 커밋: TASK_TREE 완료 마크와 브랜치 속성 제거를 담는다.
+2. TASK_TREE 정리: 마크 커밋과 분리한 커밋으로 노드를 삭제한다.
+3. 사용자 검토 통과: 명시적인 결정 신호를 받는다. AI 자율 판단으로 머지하지 않는다.
+4. main 머지 - 타입 분기: [merge-types.md](unit-task-workflow/merge-types.md).
+5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): [submodule-pointer-sync.md](submodule-pointer-sync.md).
 
 ## 하위 문서
 
 분량이 크고 자체 완결적인 세부 절차는 `unit-task-workflow/` 아래 하위 문서로 둔다.
 
 - [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md): 절차 축약의 조건, 착수 시점 판정, 브랜치와 등재의 형태 일관성. 작은 변경에 착수하며 절차를 줄일지 정할 때 읽는다.
+- [closing-steps.md](unit-task-workflow/closing-steps.md): 종료 흐름 다섯 단계의 세부. 단위 작업을 종료할 때 읽는다.
 - [merge-types.md](unit-task-workflow/merge-types.md): main 머지의 타입 결정, PR 타입과 브랜치 관리자 타입의 절차, 환경 안전망과 잔존 점검. 단위 작업 종료에서 main에 머지할 때 읽는다.
 - [stopping-points.md](unit-task-workflow/stopping-points.md): 진행 중 멈추는 자리. 여러 자식이나 여러 건을 이어 처리할 때 읽는다.
