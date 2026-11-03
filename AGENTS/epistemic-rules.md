@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-02
+date modified: 2026-11-03
 tags: [규칙, epistemic-rules]
 ---
 
@@ -59,6 +59,6 @@ tags: [규칙, epistemic-rules]
 
 ### 확인
 
-- 도구 환경 확인 -> [도구 환경](epistemic-rules/tool-environment.md)
+- 도구 환경 확인, 교정이나 교훈을 기록할 자리 확인 -> [도구 환경](epistemic-rules/tool-environment.md)
 - 외부 사실, 결정 근거 확인 -> [knowledge/](../epistemic-structure/knowledge/INDEX.md), [strategy/](../epistemic-structure/strategy/INDEX.md)
 - 스캐폴드 구조의 이유를 확인할 때 -> [4범주의 이유](epistemic-rules/why-epistemic-workspace.md), [진입점 근거](epistemic-rules/why-agents-md-not-conventions-md.md), [scaffolding 근거](epistemic-rules/why-scaffolding-not-single-file.md)

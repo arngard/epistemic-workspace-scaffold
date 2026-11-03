@@ -54,7 +54,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  19. 로컬 .md 링크 뒤 인용 섹션명의 대상 헤딩 실존 - 경고
      (dangling 섹션 참조 검출. 헤딩 번호 접두는 정규화. 대상 부재는 항목 9 소관)
  20. 비ASCII 문장 부호 (em dash, 화살표, 가운뎃점, 말줄임표, 둥근 따옴표) - 경고
-     (백틱/코드펜스 예시와 고정폭 box-drawing 트리, 생성 색인 쪽 파일은 제외.
+     (인라인 코드/코드펜스 안의 코드와 고정폭 box-drawing 트리, 생성 색인 쪽 파일은 제외.
       ref: AGENTS/epistemic-rules/writing-style/ascii-punctuation.md)
  21. front matter description의 스캐폴드 상태 마커와 본문 마커 대조 - 경고
      (description에 "스캐폴드 상태"가 있는데 본문에 없으면 검출. 인스턴스가

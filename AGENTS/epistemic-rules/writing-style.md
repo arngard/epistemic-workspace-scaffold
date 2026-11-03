@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-05
-date modified: 2026-11-02
+date modified: 2026-11-03
 tags: [agents, 규칙, 문서관리, epistemic-rules]
 ---
 
@@ -69,6 +69,6 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 분량이 크고 자체 완결적인 세부 규약은 `writing-style/` 아래 하위 문서로 둔다.
 
 - [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (링크 대상 자체를 가리킴, audit 기계 검사). 감사가 표시텍스트 위반을 낼 때 읽는다.
-- [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외. 감사가 문장 부호를 지적할 때 읽는다.
+- [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외. 감사가 문장 부호를 지적할 때, 부호 자체를 가리키는 글을 쓸 때 읽는다.
 - [reference-markers.md](writing-style/reference-markers.md): 참조 표지 `ref:`, `sub:`, `see:`의 판정, 형태, 자리 (본문 링크 우선). 문서 간 참조를 따로 둘 때 읽는다.
 - [conversation-reporting.md](writing-style/conversation-reporting.md): 대화 보고의 구성 (결론 선행, 질문은 마지막, 산출물만, 내부 라벨 금지). 사용자에게 보고하거나 답변할 때 읽는다.
