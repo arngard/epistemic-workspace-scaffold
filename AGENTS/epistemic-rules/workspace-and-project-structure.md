@@ -62,4 +62,4 @@ tags: [agents, 워크스페이스, epistemic-rules]
 
 ## 문서와 코드의 역할 분담
 
-`epistemic-structure/`는 코드로 표현할 수 없는 것을 담고, 모듈 인터페이스, 타입, 에러 계약은 코드 자체가 명세다. 위치별로 담는 것과 확정된 레이어의 보호는 [docs-and-code.md](workspace-and-project-structure/docs-and-code.md).
+`epistemic-structure/`는 코드로 표현할 수 없는 것 위주로 담고, 구현이 시작되면 모듈 인터페이스, 타입, 에러 계약은 코드 자체가 명세가 된다. 위치별로 담는 것과 확정된 레이어의 보호는 [docs-and-code.md](workspace-and-project-structure/docs-and-code.md).

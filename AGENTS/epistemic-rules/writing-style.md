@@ -36,7 +36,7 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 ## 출처와 주체 표기의 범위
 
-의견과 다른 사람이 달리 볼 수 있는 사실에만 주체와 출처를 달고, 추론은 추론임을 문장에 드러낸다. 표기할 것과 하지 않을 것, 추론의 표시, 누락 대응은 [attribution-scope.md](writing-style/attribution-scope.md).
+의견, 검증이 필요하거나 논쟁적인 사실, 외부 출처에서 온 사실에 주체와 출처를 달고, 추론은 추론임을 문장에 드러낸다. 표기할 것과 하지 않을 것, 추론의 표시, 결격 대응은 [attribution-scope.md](writing-style/attribution-scope.md).
 
 ## 요약과 축약의 정보 보존
 

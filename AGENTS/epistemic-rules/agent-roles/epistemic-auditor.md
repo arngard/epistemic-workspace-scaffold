@@ -51,7 +51,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 
 ## 호출 시점
 
-- 새 세션 시작 시 트리거 조건을 충족하면 착수 전 호출 (see: [session-boundaries.md](../session-boundaries.md) "세션 시작"). 임계 조건의 SSOT는 `worklog/AGENTS/epistemic-rules/status-registry.md`의 "주기 조건" 절이다. 자손이 `worklog/AGENTS.md`에 표를 두면 그 표의 행이 같은 이름 행보다 먼저이고, 그 표에 없는 행은 상류 표를 따른다. 판정은 `check_semantic_audit.py`로 하고, 호출 뒤 trailer `Semantic-Audit: clean`을 단 커밋으로 기준점을 남긴다. 판정 기준과 기준점 갱신은 [trigger-baseline.md](epistemic-auditor/trigger-baseline.md).
+- 새 세션 시작 시 트리거 조건을 충족하면 착수 전 호출 (see: [session-boundaries.md](../session-boundaries.md) "세션 시작"). 임계 조건의 SSOT는 `worklog/AGENTS/epistemic-rules/status-registry.md`의 "주기 조건" 절이다. 자손이 `worklog/AGENTS.md`에 표를 두면 그 표의 행이 같은 이름 행보다 먼저이고, 그 표에 없는 행은 상류 표를 따른다. 판정은 `check_semantic_audit.py`로 하고, 호출 뒤 trailer `Semantic-Audit: clean`을 단 커밋(머지 커밋 포함)으로 기준점을 남긴다. 판정 기준과 기준점 갱신은 [trigger-baseline.md](epistemic-auditor/trigger-baseline.md).
 - 긴 세션 종료 전, 큰 변경 후
 - 사용자가 정합성 의심 시
 - 주기적 점검 (별도 세션으로 사용자가 수동 호출)
