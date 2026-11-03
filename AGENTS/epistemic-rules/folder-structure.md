@@ -23,4 +23,4 @@ tags: [agents, 규칙, 구조, epistemic-rules]
 
 ## 폴더, 파일 이동 시 연쇄 갱신
 
-폴더, 파일 이동 또는 리네임은 참조 경로, 디스크립터 안내, 색인, 요지의 트리거를 같은 커밋에서 함께 고치는 연쇄 갱신을 요구한다. 고칠 목록과 확인 방법은 [move-cascade.md](folder-structure/move-cascade.md)이고, 옮기기 전에 읽는다.
+폴더, 파일 이동 또는 리네임은 같은 커밋에서 연쇄 갱신을 요구한다. 참조 경로(`.claude/`, `implementation/` 등 다른 위치의 마크다운 포함), 디스크립터 안내, 색인, 요지의 트리거를 함께 고치고, 자매 폴더 일괄 작업은 교차 확인하며, 큰 개편은 종료 전 감사를 받는다. 각 항목의 세부는 [move-cascade.md](folder-structure/move-cascade.md)이고, 옮기기 전에 읽는다.
