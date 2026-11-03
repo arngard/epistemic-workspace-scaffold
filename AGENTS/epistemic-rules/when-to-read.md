@@ -7,7 +7,7 @@ description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확
 
 # 이럴 때 읽는 문서
 
-루트 요지 [epistemic-rules.md](../epistemic-rules.md) "이럴 때 읽는다"가 가리키는 상황별 읽기 목록이다. 작업을 시작할 때와 작업의 종류나 상황이 바뀔 때 이 문서를 열고, 폴더의 AGENTS.md와 [workflow.md](workflow.md)가 짚는 문서에 더해, 아래에 해당하는 문서를 연다.
+루트 요지 [epistemic-rules.md](../epistemic-rules.md) "이럴 때 읽는다"가 가리키는 상황별 읽기 목록이다. 폴더의 AGENTS.md와 [workflow.md](workflow.md)가 짚는 문서에 더해, 아래에 해당하는 문서를 연다.
 
 ## 작업
 
