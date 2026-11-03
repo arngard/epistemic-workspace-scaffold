@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-02
+date modified: 2026-11-03
 tags: [규칙, epistemic-rules]
 ---
 
@@ -36,6 +36,7 @@ tags: [규칙, epistemic-rules]
 - 문서 신설, 범주 판단, 날짜 프리픽스 문서 작성과 수정, 문서 폐기 -> [문서 작성](epistemic-rules/document-authoring.md)
 - 규범, 절차, 스킬, 역할 정의의 신설, 변경, 삭제 -> [규범 작성](epistemic-rules/norm-authoring.md)
 - 새 사실, 의견, 예측, 결정, 자료가 들어올 때 -> [정보 유입 처리](epistemic-rules/ingest-workflow.md)
+- 사용자 교정이나 작업 교훈을 기록할 때 -> [도구 환경](epistemic-rules/tool-environment.md) "도구별 자동 참조 파일"
 - 브랜치와 워크트리 생성, 정리 -> [브랜치 전략](epistemic-rules/branch-strategy.md)
 - PR 생성, PR 검토 대응 -> [PR 워크플로우](epistemic-rules/pr-workflow.md)
 - 본 레포가 상위 레포의 서브모듈일 때 단위 작업 종료 -> [포인터 정합화](epistemic-rules/submodule-pointer-sync.md)
