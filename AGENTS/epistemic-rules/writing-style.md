@@ -36,13 +36,7 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 ## 출처와 주체 표기의 범위
 
-사실과 의견을 구분하고 의견에 주체를 명시하는 원칙은 [epistemic-rules.md](../epistemic-rules.md) "비협상 게이트" 참조. 본 절은 그 표기를 어디까지 하는가를 정한다.
-
-- 표기가 필요한 것: 의견, 주장, 분석, 판단의 주체. 검증이 필요하거나 논쟁적인 사실, 특정 외부 출처에서 온 사실의 출처. 같은 사실이 진술 주체의 소속, 직책, 이해관계에 따라 다르게 진술될 수 있으면 출처와 그 출처의 입장을 함께 명시한다.
-- 표기가 필요 없는 것: 프로젝트 참여자 누구나 같게 받아들이는 공유 전제. 이런 사실에까지 출처를 다는 것은 잡음이며, 정작 출처가 중요한 진술을 가린다.
-- 판단 기준: 이것이 누군가의 의견이나 주장이라서 다른 사람은 달리 볼 수 있는가.
-- 추론의 표시: 확인한 사실이 아니라 추론한 것은 "~로 추론된다", "~일 가능성이 있다"처럼 추론임을 문장에 드러낸다. 확인한 사실과 같은 단정형으로 쓰지 않는다.
-- 결격 대응: 주체나 출처가 누락된 의견, 정보를 발견하면 추측으로 채우지 않고 작성자에게 보완을 요청한다.
+의견, 검증이 필요하거나 논쟁적인 사실, 외부 출처에서 온 사실에 주체와 출처를 달고, 추론은 추론임을 문장에 드러낸다. 표기할 것과 하지 않을 것, 추론의 표시, 결격 대응은 [attribution-scope.md](writing-style/attribution-scope.md).
 
 ## 요약과 축약의 정보 보존
 
@@ -68,6 +62,7 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 
 분량이 크고 자체 완결적인 세부 규약은 `writing-style/` 아래 하위 문서로 둔다.
 
+- [attribution-scope.md](writing-style/attribution-scope.md): 출처와 주체 표기의 범위와 추론의 표시. 의견, 출처, 추론을 문장에 적을 때 읽는다.
 - [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (링크 대상 자체를 가리킴, audit 기계 검사). 감사가 표시텍스트 위반을 낼 때 읽는다.
 - [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외. 감사가 문장 부호를 지적할 때, 부호 자체를 가리키는 글을 쓸 때 읽는다.
 - [reference-markers.md](writing-style/reference-markers.md): 참조 표지 `ref:`, `sub:`, `see:`의 판정, 형태, 자리 (본문 링크 우선). 문서 간 참조를 따로 둘 때 읽는다.

@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-02
+date modified: 2026-11-03
 tags: [agents, 워크스페이스, epistemic-rules]
 ---
 
@@ -28,7 +28,7 @@ tags: [agents, 워크스페이스, epistemic-rules]
 - 동명 문서-폴더 쌍(`X.md` + `X/`)은 하위 문서 묶음 관계의 예약 신호다. 그 관계가 아닌 파일과 폴더에 같은 이름을 쓰지 않는다 - 무관한 동명 쌍은 계층 관계로 오독된다. 감사 스크립트가 하위 문서 없는 동명 쌍을 검출한다.
 - 자식이 또 자식을 가지면 같은 규칙을 재귀 적용한다 (`X.md`, `X/Y.md`, `X/Y/Z.md`).
 - 하위 문서 폴더를 신설하면 그 폴더의 디스크립터(AGENTS.md)와 `CLAUDE.md`를 같은 커밋에 동반한다 (ref: [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터"). 규범 폴더(`AGENTS/`와 그 아래)는 예외다.
-- 이동, 리네임에 따른 연쇄 갱신은 [folder-structure.md "폴더, 파일 이동 시 연쇄 갱신"](folder-structure.md) 참조.
+- 이동, 리네임에 따른 연쇄 갱신은 [move-cascade.md](folder-structure/move-cascade.md) 참조.
 
 ## 최상위 구조
 
@@ -62,14 +62,4 @@ tags: [agents, 워크스페이스, epistemic-rules]
 
 ## 문서와 코드의 역할 분담
 
-`epistemic-structure/`는 코드로 표현할 수 없는 것 위주로 담는다. 도메인 개념, 외부 사실, 결정 근거, 상위 수준의 구조 결정이 이에 해당한다.
-
-구현이 시작되면, 모듈의 상세 스펙(인터페이스 시그니처, 데이터 타입, 에러 계약)은 코드 자체가 명세가 된다. 확정된 추상화 레이어에는 `[to:@AGENT: 확정된 추상화 레이어]` 형식의 공용 태그 주석을 달아 변경을 통제한다. 태그 형식은 [agent-tag-format.md](agent-tag-format.md) 참조.
-
-코드와 1:1 대응되는 대규모의 명세 문서를 별도로 유지관리하지 않는다. 문서에서 코드의 동작을 설명하거나 맥락을 제공하는 것은 자연스러운 일이며, 그것 자체가 문제는 아니다.
-
-| 위치 | 담는 것 |
-|------|---------|
-| `epistemic-structure/` | 코드로 표현할 수 없는 것: 도메인 개념, 외부 사실, 결정 근거, 상위 구조 결정. |
-| 코드 (인터페이스 + 공용 태그 주석) | 모듈 인터페이스, 타입, 에러 계약. 코드가 곧 명세. 확정된 레이어는 `[to:@AGENT]` 태그로 보호. |
-| 코드 (구현) | 모듈 내부 구현. 자기설명적 코드 + 필요 시 주석. |
+`epistemic-structure/`는 코드로 표현할 수 없는 것 위주로 담고, 구현이 시작되면 모듈 인터페이스, 타입, 에러 계약은 코드 자체가 명세가 된다. 위치별로 담는 것과 확정된 레이어의 보호는 [docs-and-code.md](workspace-and-project-structure/docs-and-code.md).
