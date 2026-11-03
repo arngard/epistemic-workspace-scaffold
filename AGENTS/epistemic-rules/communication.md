@@ -22,4 +22,4 @@ tags: [규칙, epistemic-rules]
 
 ## 대화 보고
 
-긴 보고는 결론을 앞에 두고, 답을 받아야 하는 질문은 마지막에 모으며, 요청받은 산출물은 산출물만 내놓고, 작업 중 매긴 내부 라벨을 쓰지 않는다. 추론은 추론임을 드러내고, 확인할 수 있는 주장은 확인한 뒤 보고한다. 세부는 [conversation-reporting.md](writing-style/conversation-reporting.md), 추론 표시는 [attribution-scope.md](writing-style/attribution-scope.md), 확인 후 보고는 [working-principles.md](working-principles.md) "기억보다 실제 상태".
+긴 보고는 결론을 앞에 두고, 답을 받아야 하는 질문은 마지막에 모으며, 요청받은 산출물은 산출물만 내놓고, 작업 중 매긴 내부 라벨을 쓰지 않는다. 추론은 추론임을 드러내고, 확인할 수 있는 주장은 확인한 뒤 보고한다. 세부는 [conversation-reporting.md](writing-style/conversation-reporting.md), 추론 표시는 [attribution-scope.md](writing-style/attribution-scope.md), 확인 후 보고는 [working-principles.md](working-principles.md) "기억보다 실제 상태". PR, 이슈, 댓글처럼 외부 협업 시스템에 글을 쓸 때는 [external-communication.md](external-communication.md)를 따른다.
