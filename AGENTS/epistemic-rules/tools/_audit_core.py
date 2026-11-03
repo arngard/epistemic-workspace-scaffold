@@ -126,8 +126,9 @@ STATUS_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( KST)?$"
 STATUS_HEADER_CELLS = ["이름", "마지막 수행"]
 STATUS_PLACEHOLDER = {"(아직 없음)", "-"}
 # 비ASCII 문장 부호 검출 대상과 ASCII 대체 힌트 (ref: writing-style/ascii-punctuation.md).
-# 코드 펜스, 인라인 코드는 검사 전 제거하므로 규칙 자체의 백틱 예시, 코드,
-# 고정폭 box-drawing 트리는 검출에서 빠진다.
+# 코드 펜스, 인라인 코드는 검사 전 제거하므로 코드와 고정폭 box-drawing 트리는
+# 검출에서 빠진다. 백틱으로 감싼 부호 원형도 빠지므로, 부호를 가리키는 표기를
+# 이름과 코드포인트로 쓰는 일은 규칙이 맡는다.
 NON_ASCII_PUNCT = {
     "—": "em dash - 부연은 ' - ', 정의는 ': ', 분리는 '. '",
     "→": "화살표 - 흐름/상태 변화는 '->'",
