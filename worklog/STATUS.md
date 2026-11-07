@@ -1,13 +1,13 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-26
+date modified: 2026-11-07
 tags: [worklog]
 description: 감사와 주기 작업의 마지막 수행 시각
 ---
 
 # 상태 레지스트리
 
-> 감사, 주기 작업의 마지막 수행 시각을 항상 최신값으로 덮어쓴다. 갱신 규칙과 주기 조건은 [status-registry.md](AGENTS/epistemic-rules/status-registry.md).
+> 감사, 주기 작업의 마지막 수행 시각을 항상 최신값으로 덮어쓴다. 갱신 규칙과 주기 조건은 [status-registry.md](AGENTS/epistemic-rules/status-registry.md)에 있다.
 
 | 이름 | 마지막 수행 |
 |------|------------|
