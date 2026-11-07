@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-10
-date modified: 2026-11-02
+date modified: 2026-11-07
 tags: [agents, 단위작업, epistemic-rules]
 ---
 
@@ -18,7 +18,7 @@ tags: [agents, 단위작업, epistemic-rules]
 
 리프/중위는 노드의 종류가 아니라 그 노드가 재귀할 자식을 갖느냐의 위치 구분이다(ref: [task-tree.md](../../worklog/AGENTS/epistemic-rules/task-tree.md) - 노드 유형). 워크플로우 형태가 갈리는 것도 이 차이에서 나온다 - 자식이 있으면 재귀 진행, 없으면 그 자리의 구체 작업.
 
-- 커밋, 브랜치 단위가 아니라 의미 단위다. 직후에 바로 이어지는 정정 커밋은 별도 단위 작업이 아니라 앞 작업과 같은 단위 작업의 일부다 - 의미가 정정 전후로 같은 한 묶음이기 때문.
+- 커밋, 브랜치 단위가 아니라 의미 단위다. 직후에 바로 이어지는 정정 커밋은 별도 단위 작업이 아니라 앞 작업과 같은 단위 작업의 일부다 - 정정 전후가 의미상 같은 한 묶음이기 때문이다.
 
 ### 정형 대응
 
@@ -63,7 +63,7 @@ tags: [agents, 단위작업, epistemic-rules]
 [종료] 내 노드 [x]
 ```
 
-리프 노드의 워크플로우는 자식 재귀가 없고 그 자리의 구체 작업 자체다. 이 작업이 특정 유형이면 그 유형의 워크플로우가 여기에 조립된다 - 새 정보 유입이면 [ingest-workflow.md](ingest-workflow.md), main 머지 단계면 [merge-types.md](unit-task-workflow/merge-types.md)가 타입을 가르고 PR 타입이면 [pr-workflow.md](pr-workflow.md)가 조립된다. 조립되는 워크플로우는 단독으로도 재사용된다.
+리프 노드의 워크플로우는 자식 재귀가 없고 그 자리의 구체 작업 자체다. 이 작업이 특정 유형이면 그 유형의 워크플로우가 여기에 조립된다 - 새 정보 유입이면 [ingest-workflow.md](ingest-workflow.md), main 머지 단계면 [merge-types.md](unit-task-workflow/merge-types.md)가 타입을 구분하고 PR 타입이면 [pr-workflow.md](pr-workflow.md)가 조립된다. 조립되는 워크플로우는 단독으로도 재사용된다.
 
 unit-task-workflow는 일반 프레임(진입/진행/종료 + 재귀)을 정의하고, 구체 워크플로우는 그 프레임의 정해진 단계에 조립된다.
 

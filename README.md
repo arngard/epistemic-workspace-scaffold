@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-27
+date modified: 2026-11-07
 tags: [소개]
 description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 ---
@@ -47,8 +47,8 @@ description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 
 스캐폴드를 가져오는 방식은 둘이다.
 
-- 상류와 연결하는 방식: GitHub fork나 clone으로 스캐폴드 이력을 받고, 원본을 `upstream` 원격으로 연결한다. clone이면 `git remote rename origin upstream`으로 원본 원격의 이름을 `upstream`으로 바꾸고 자기 저장소를 `origin`으로 추가한다. fork면 `git remote add upstream https://github.com/arngard/epistemic-workspace-scaffold.git`로 추가한다. 부모의 개선은 `git fetch upstream && git merge upstream/main`으로 받는다.
-- 이력 없이 가져오는 방식: GitHub template으로 저장소를 만들거나 기존 프로젝트에 파일을 복사한다. 스캐폴드 이력을 받지 않으므로 상류 개선을 머지로 받을 수 없다.
+- 상류와 연결하는 방식: GitHub fork나 clone으로 스캐폴드 이력을 받고, 원본을 `upstream` 원격으로 연결한다. clone이면 `git remote rename origin upstream`으로 원본 원격의 이름을 `upstream`으로 바꾸고 자기 레포(레포지토리)를 `origin`으로 추가한다. fork면 `git remote add upstream https://github.com/arngard/epistemic-workspace-scaffold.git`로 추가한다. 부모의 개선은 `git fetch upstream && git merge upstream/main`으로 받는다.
+- 이력 없이 가져오는 방식: GitHub template으로 레포를 만들거나 기존 프로젝트에 파일을 복사한다. 스캐폴드 이력을 받지 않으므로 상류 개선을 머지로 받을 수 없다.
 
 스캐폴드 이력을 받았다면 `upstream` 연결은 고를 수 있는 선택지가 아니라 시작 상태다. 감사는 이 연결로 상류 커밋과 자기 커밋을 구분한다. 고른 방식과 이유는 결정 문서로 남긴다.
 

@@ -1,12 +1,12 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-27
+date modified: 2026-11-07
 tags: [규칙, 문서관리]
 ---
 
 @AGENTS/epistemic-rules.md
 
-> `@`로 시작하는 줄은 그 경로의 파일을 지금 읽으라는 뜻이다. 경로는 저장소 루트가 아니라 그 줄이 든 파일의 위치 기준이다. 가져오기를 펼치지 않는 도구는 그 파일을 직접 열어 읽는다.
+> `@`로 시작하는 줄은 그 경로의 파일을 지금 읽으라는 뜻이다. 경로는 레포(레포지토리) 루트가 아니라 그 줄이 든 파일의 위치 기준이다. 가져오기를 펼치지 않는 도구는 그 파일을 직접 열어 읽는다.
 
 # AI Agent 지침
 
@@ -14,7 +14,7 @@ tags: [규칙, 문서관리]
 
 ## 이 워크스페이스의 정체
 
-이 파일은 스캐폴드 template이다. 인스턴스(자식 워크스페이스)는 위에서 가져온 상류 규범(요지 [AGENTS/epistemic-rules.md](AGENTS/epistemic-rules.md)와 그 묶음)을 upstream으로 상속하고 본 절을 자기 도메인 정체성으로 특수화한다. 상속 자산의 변경과 특수화는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다 - 계승된 자산을 제자리에서 고치기 전에 상류 반영과 도메인 특수화를 분기해 사용자에게 짚는다.
+이 파일은 스캐폴드 템플릿이다. 인스턴스(자식 워크스페이스)는 위에서 가져온 상류 규범(요지 [AGENTS/epistemic-rules.md](AGENTS/epistemic-rules.md)와 그 묶음)을 상속하고 본 절을 자기 도메인 정체성으로 특수화한다. 상속 자산의 변경과 특수화는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다 - 상속된 자산을 제자리에서 고치기 전에 상류 반영과 도메인 특수화를 분기해 사용자에게 짚는다.
 
 ## 이 워크스페이스의 규범
 

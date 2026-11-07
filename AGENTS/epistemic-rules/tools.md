@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-04
+date modified: 2026-11-07
 tags: [규칙, 도구, epistemic-rules]
 ---
 
@@ -20,14 +20,14 @@ tags: [규칙, 도구, epistemic-rules]
 
 ## 기계 감사 스크립트
 
-[tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위는 front matter와 시간성, 문서 분량, 워크로그(STATUS, TASK_TREE) 스키마, 폴더와 디스크립터, 폴더 색인, 링크와 섹션 참조, 참조 표지, 파일명 이식성과 날짜 프리픽스 구분자, 문장 부호, 태그 표기, 상류 묶음의 출처 태그와 동일성이다. 자손의 확장 검사도 실행한다. 점검 항목 목록의 SSOT는 audit.py 모듈 docstring의 "점검 항목"이다. 의미 판단과 git 맥락 검출은 감사자 몫이다 (see: [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md)).
+[tools/audit.py](tools/audit.py)는 형식 정합성을 결정론적으로 검사한다. 점검 범위는 front matter와 시간성, 문서 분량, 워크로그(STATUS, TASK_TREE) 스키마, 폴더와 디스크립터, 폴더 색인, 링크와 섹션 참조, 참조 표지, 파일명 이식성과 날짜 프리픽스 구분자, 문장 부호, 태그 표기, 상류 묶음의 출처 태그와 동일성이다. 자손의 확장 검사도 실행한다. 점검 항목 목록의 SSOT(single source of truth; 단일 진실 공급원)는 audit.py 모듈 docstring의 "점검 항목"이다. 의미 판단과 git 맥락 검출은 감사자 몫이다 (see: [agent-roles/epistemic-auditor.md](agent-roles/epistemic-auditor.md)).
 
-- 임계값은 공용 인프라 `tools/_audit_core.py` 상단의 상수이고 상류가 운영하며 조정한다. 상속한 저장소는 이 상수를 고치지 않는다(항목 30). 다른 값이 필요하면 경고를 의식적으로 수용하거나 상류에 변경을 제안한다.
+- 임계값은 공용 인프라 `tools/_audit_core.py` 상단의 상수이고 상류가 운영하며 조정한다. 상속한 레포(레포지토리)는 이 상수를 고치지 않는다(항목 30). 다른 값이 필요하면 경고를 의식적으로 수용하거나 상류에 변경을 제안한다.
 - `.tmp/`는 에이전트의 임시 작업 공간이다. gitignore 대상이며 감사에서 제외된다.
 - 실행: 새 세션 시작 시와 push, PR 시. 이 시점 밖에서 커밋이나 답변마다 돌리지 않는다. 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/audit.py .` (윈도우는 `python` 또는 `py`). push와 pull request 시점에는 GitHub Actions([.github/workflows/epistemic-audit.yml](../../.github/workflows/epistemic-audit.yml))가 실행한다. 새 세션 시작 시의 실행 의무는 [session-boundaries.md](session-boundaries.md) "세션 시작". 오래 걸릴 수 있는 검증은 커밋과 한 명령으로 묶지 않는다. 묶으면 검증이 끝날 때까지 커밋과 응답이 밀린다.
-- 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS(operating system)에 의존하지 않는다. git이 있으면 git이 무시하는 경로를 뺀다.
+- 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS(operating system; 운영 체제)에 의존하지 않는다. git이 있으면 git이 무시하는 경로를 뺀다.
 - 종료 코드: 위반 없음(경고만 있거나 없음) 0, 위반 있음 1, 사용법 오류(인자가 디렉토리가 아님) 2.
-- 강제력: 위반(violation)은 CI를 실패시킨다(exit 1). 경고(warning)는 통과시킨다(exit 0) - 사람/LLM 판단이 필요한 신호라 기계적으로 차단하지 않는다. 경고는 방치하면 쌓이므로 감사 시 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)한다.
+- 강제력: 위반(violation)은 CI를 실패시킨다(exit 1). 경고(warning)는 통과시킨다(exit 0) - 사람이나 LLM의 판단이 필요한 신호라 기계적으로 차단하지 않는다. 경고는 방치하면 쌓이므로 감사 시 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)한다.
 
 ## 색인 생성 스크립트
 

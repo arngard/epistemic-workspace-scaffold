@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-03
+date modified: 2026-11-07
 tags: [규칙, epistemic-rules]
 ---
 
@@ -16,7 +16,7 @@ tags: [규칙, epistemic-rules]
 
 ## 작업 수행 원칙
 
-넘겨짚지 않기, 단순함 우선, 외과적 변경, 목표 주도, 기억보다 실제 상태. 전체 SSOT는 [AGENTS/epistemic-rules/working-principles.md](working-principles.md), 코드 작업에는 [implementation/AGENTS/epistemic-rules/coding-guidelines.md](../../implementation/AGENTS/epistemic-rules/coding-guidelines.md)가 추가 적용된다.
+넘겨짚지 않기, 단순함 우선, 외과적 변경, 목표 주도, 기억보다 실제 상태. 전체 SSOT(single source of truth; 단일 진실 공급원)는 [AGENTS/epistemic-rules/working-principles.md](working-principles.md), 코드 작업에는 [implementation/AGENTS/epistemic-rules/coding-guidelines.md](../../implementation/AGENTS/epistemic-rules/coding-guidelines.md)가 추가 적용된다.
 
 ## 문서 변경
 

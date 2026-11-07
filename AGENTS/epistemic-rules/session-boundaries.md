@@ -1,12 +1,12 @@
 ---
 date created: 2026-07-26
-date modified: 2026-11-03
+date modified: 2026-11-07
 tags: [agents, 워크스페이스, 운영, epistemic-rules]
 ---
 
 # 세션 경계의 진입, 재진입과 격리
 
-새 세션을 시작할 때, 세션이 끊긴 뒤 자기 작업을 이어받을 때, 다른 세션의 산출물을 마주쳤을 때의 규약. 세션 경계에서 발견한 산출물이 내 것이면 복원하고 남의 것이면 건드리지 않는다는 한 판단의 양면이다. 단위 작업 1건의 진입-진행-종료 절차 자체는 [unit-task-workflow.md](unit-task-workflow.md).
+새 세션을 시작할 때, 세션이 끊긴 뒤 자기 작업을 이어받을 때, 다른 세션의 산출물을 마주쳤을 때의 규약. 세션 경계에서 발견한 산출물이 내 것이면 복원하고 남의 것이면 건드리지 않는다는 한 판단의 양면이다. 단위 작업 1건의 진입-진행-종료 절차는 [unit-task-workflow.md](unit-task-workflow.md)가 다룬다.
 
 ## 세션 시작
 
@@ -22,10 +22,10 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 세션이 끊긴 뒤 재진입할 때:
 
-- TASK_TREE의 진행 중(`[/]`) 노드와 브랜치 속성이 작업 컨텍스트의 1차 입구. 브랜치 속성이 어느 작업 브랜치와 워크트리로 진입할지를 가리킨다. 그 워크트리가 없으면(다른 머신에서 재진입하는 경우 등) [branch-strategy.md](branch-strategy.md) "작업 공간"대로 기존 브랜치의 워크트리를 그 경로에 다시 만든다.
-- git log + 작업 브랜치 위치로 어디까지 진행됐는지 확인. 시작점 커밋 이후 커밋들을 훑어 진행 양상 복원.
-- 작업 브랜치에 열린 PR이 있으면(`gh pr list --head <branch>`) 그 PR의 리뷰 상태가 현재 단계 - [active-review-loop.md](pr-workflow/active-review-loop.md)의 능동 리뷰 확인 흐름으로 복귀.
-- 마지막 커밋과 TASK_TREE 노드 상태가 어긋나면 그 사이에 끊김이 있던 것 - 정정 후 이어간다.
+- TASK_TREE의 진행 중(`[/]`) 노드와 브랜치 속성이 작업 컨텍스트의 1차 입구다. 브랜치 속성이 어느 작업 브랜치와 워크트리로 진입할지를 가리킨다. 그 워크트리가 없으면(다른 머신에서 재진입하는 경우 등) [branch-strategy.md](branch-strategy.md) "작업 공간"대로 기존 브랜치의 워크트리를 그 경로에 다시 만든다.
+- git log와 작업 브랜치 위치로 어디까지 진행됐는지 확인한다. 시작점 커밋 이후 커밋들을 훑어 진행 양상을 복원한다.
+- 작업 브랜치에 열린 PR이 있으면(`gh pr list --head <branch>`) 그 PR의 리뷰 상태가 현재 단계이므로 [active-review-loop.md](pr-workflow/active-review-loop.md)의 능동 리뷰 확인 흐름으로 돌아간다.
+- 마지막 커밋과 TASK_TREE 노드 상태가 어긋나면 그 사이에서 끊긴 것이다. 정정한 뒤 이어 간다.
 
 ## 다른 세션 작업과의 격리
 

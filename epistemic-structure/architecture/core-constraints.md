@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-27
+date modified: 2026-11-07
 tags: [architecture, 제약]
 description: 프로젝트 전반에 걸리는 핵심 설계 제약
 ---
@@ -15,7 +15,7 @@ description: 프로젝트 전반에 걸리는 핵심 설계 제약
 
 ## 원본 보호 원칙
 
-에이전트가 원본(데이터, 콘텐츠)을 다룰 때의 안전 기준은 [AGENTS/epistemic-rules/original-protection-principle.md](../../AGENTS/epistemic-rules/original-protection-principle.md) SSOT 참조 - 에이전트 행동 규범이므로 상류 규범 묶음에 있다.
+에이전트가 원본(데이터, 콘텐츠)을 다룰 때의 안전 기준은 [AGENTS/epistemic-rules/original-protection-principle.md](../../AGENTS/epistemic-rules/original-protection-principle.md)가 SSOT(single source of truth; 단일 진실 공급원)다. 에이전트 행동 규범이므로 상류 규범 묶음에 있다.
 
 ## 제약 목록
 

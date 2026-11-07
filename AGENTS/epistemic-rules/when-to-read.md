@@ -1,6 +1,6 @@
 ---
 date created: 2026-11-03
-date modified: 2026-11-03
+date modified: 2026-11-07
 tags: [규칙, epistemic-rules]
 description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확인). 작업을 시작할 때와 작업의 종류나 상황이 바뀔 때 연다
 ---
@@ -16,7 +16,7 @@ description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확
 - 새 사실, 의견, 예측, 결정, 자료가 들어올 때 -> [정보 유입 처리](ingest-workflow.md)
 - 브랜치와 워크트리 생성, 정리 -> [브랜치 전략](branch-strategy.md)
 - PR 생성, PR 검토 대응 -> [PR 워크플로우](pr-workflow.md)
-- 본 레포가 상위 레포의 서브모듈일 때 단위 작업 종료 -> [포인터 정합화](submodule-pointer-sync.md)
+- 본 레포(레포지토리)가 상위 레포의 서브모듈일 때 단위 작업 종료 -> [포인터 정합화](submodule-pointer-sync.md)
 - 외부 협업 시스템에 글 쓸 때 -> [외부 소통 규약](external-communication.md)
 - 폴더 배치, 구현 프로젝트 등록 -> [워크스페이스 구조](workspace-and-project-structure.md)
 - 계승된 규범, 절차의 변경이나 특수화를 도출했을 때 -> [상속 자산 특수화](instance-specialization.md)

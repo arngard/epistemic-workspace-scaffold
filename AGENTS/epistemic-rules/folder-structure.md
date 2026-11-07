@@ -1,19 +1,19 @@
 ---
 date created: 2026-07-05
-date modified: 2026-11-03
+date modified: 2026-11-07
 tags: [agents, 규칙, 구조, epistemic-rules]
 ---
 
 # 폴더 구조 규약
 
-폴더를 어떻게 조직하고, 구조 변경 시 무엇을 갱신하는가의 규약. 문서 단위와 SSOT 원칙은 [document-units.md](document-units.md) 참조.
+폴더를 어떻게 조직하고, 구조 변경 시 무엇을 갱신하는가의 규약. 문서 단위와 SSOT(single source of truth; 단일 진실 공급원) 원칙은 [document-units.md](document-units.md) 참조.
 
 ## 폴더 구조와 디스크립터
 
 문서가 늘면 폴더를 평평하게 두고 중앙 색인에 표를 쌓는 방식은 색인 비대를 부른다. 하위 폴더 분화를 기본 구조로 인정하고, 색인 기능을 폴더 단위로 분산한다.
 
-- 폴더 분화: 폴더 직속 항목이 많아지면 하위 폴더로 분류한다. 의미 단위 분류가 기본이고, 동등한 값의 대량 나열(도서 목록 성격)이면 순차 분류(알파벳, 날짜)를 쓴다. 폴더 직속 파일 수 임계는 감사 스크립트가 검출해 분화를 권고한다.
-- 폴더 디스크립터: 폴더는 `AGENTS.md`를 가진다(예외는 아래 항목들). `AGENTS.md`는 그 폴더의 정체성과 규범(운영 규범, 관리 방식, 구조적 설명)을 맡고, 폴더의 항목 나열은 생성 색인 `INDEX.md`가 맡는다 (see: [folder-index.md](folder-index.md)). 루트 `AGENTS.md`는 전역 진입점, 폴더 `AGENTS.md`는 해당 서브트리의 로컬 안내이며, 규칙이 충돌하면 하위가 자기 서브트리에 우선한다. 상류 묶음이 있는 폴더의 `AGENTS.md`는 본문 첫 줄에서 그 요지를 가져온다(`@AGENTS/epistemic-rules.md`). `AGENTS.md`가 있는 폴더마다 내용이 `@AGENTS.md` 한 줄인 `CLAUDE.md`를 둔다. 저장소가 Claude Code의 읽기 대상을 설정할 수 없고 하위 폴더 `CLAUDE.md`는 그 폴더 파일을 다룰 때 불린다는 것이 문서화된 동작이라([tool-environment.md](tool-environment.md) "도구별 자동 참조 파일"), 이 한 줄이 폴더 `AGENTS.md`의 읽기를 보장한다. 폴더를 신설하면 디스크립터와 `CLAUDE.md`를 같은 커밋에 동반한다.
+- 폴더 분화: 폴더 직속 항목이 많아지면 하위 폴더로 분류한다. 의미 단위 분류가 기본이고, 동등한 값의 대량 나열(도서 목록 성격)이면 순차 분류(알파벳, 날짜)를 쓴다. 폴더 직속 파일 수 임계값은 감사 스크립트가 검출해 분화를 권고한다.
+- 폴더 디스크립터: 폴더는 `AGENTS.md`를 가진다(예외는 아래 항목들). `AGENTS.md`는 그 폴더의 정체성과 규범(운영 규범, 관리 방식, 구조적 설명)을 맡고, 폴더의 항목 나열은 생성 색인 `INDEX.md`가 맡는다 (see: [folder-index.md](folder-index.md)). 루트 `AGENTS.md`는 전역 진입점, 폴더 `AGENTS.md`는 해당 서브트리의 로컬 안내이며, 규칙이 충돌하면 하위가 자기 서브트리에 우선한다. 상류 묶음이 있는 폴더의 `AGENTS.md`는 본문 첫 줄에서 그 요지를 가져온다(`@AGENTS/epistemic-rules.md`). `AGENTS.md`가 있는 폴더마다 내용이 `@AGENTS.md` 한 줄인 `CLAUDE.md`를 둔다. 레포(레포지토리)가 Claude Code의 읽기 대상을 설정할 수 없고 하위 폴더 `CLAUDE.md`는 그 폴더 파일을 다룰 때 불린다는 것이 문서화된 동작이라([tool-environment.md](tool-environment.md) "도구별 자동 참조 파일"), 이 한 줄이 폴더 `AGENTS.md`의 읽기를 보장한다. 폴더를 신설하면 디스크립터와 `CLAUDE.md`를 같은 커밋에 동반한다.
 - 부모 문서: 폴더 `X/`와 같은 이름의 문서 `X.md`는 그 폴더가 이 워크스페이스에서 담는 것을 소개하고, 주요 문서를 본문 글 속에서 링크할 수 있다. 항목 나열은 색인이, 규범은 디스크립터와 묶음이 맡는다. 쌍을 두는 규칙은 [workspace-and-project-structure.md](workspace-and-project-structure.md) "하위 문서 폴더 규칙".
 - 규범 폴더: 각 폴더의 `AGENTS/`가 그 폴더 작업의 규범을 담는다. 상류 규범은 고정 이름 묶음(요지 `epistemic-rules.md`와 `epistemic-rules/`)에, 자손 규범은 그 옆의 낱개 문서에 둔다. 규범 폴더와 그 아래에는 `AGENTS.md`와 `CLAUDE.md`를 두지 않는다(`AGENTS/AGENTS/` 반복 방지). 상류 규범은 요지와 읽기 목록([when-to-read.md](when-to-read.md))의 트리거와 부모 문서 링크로, 자손 규범은 그 폴더 `AGENTS.md` 링크로 찾는다. 늘 필요한 규범은 가져오기(`@` 줄)로, 상황에 따른 규범은 링크로 둔다. 요지는 늘 읽히므로 짧게 쓰고 세부는 링크한다. 가져오기는 폴더 `AGENTS.md`와 묶음 요지에만 두고 세부 문서에는 두지 않는다. 펼침은 네 단계까지이며, 가장 깊은 사슬은 `CLAUDE.md` -> `AGENTS.md` -> 요지 -> 세부의 세 단계다.
 - 존재의 SSOT: "어떤 문서가 존재하는가"의 SSOT는 중앙 색인 표가 아니라 파일시스템이다. 색인은 파일시스템에서 생성되므로 수동 동기화 부채(등재 누락)가 원리적으로 소멸한다. 처리 대기 등 행동 유발 항목은 디스크립터가 아니라 `INDEX.yaml`과 작업 트리에 둔다. `reference/` 자료의 처리 상태는 `reference/INDEX.yaml`의 `status`에 둔다.
