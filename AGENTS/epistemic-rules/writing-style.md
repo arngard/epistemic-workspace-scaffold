@@ -1,7 +1,8 @@
 ---
 date created: 2026-07-05
-date modified: 2026-11-04
+date modified: 2026-11-07
 tags: [agents, 규칙, 문서관리, epistemic-rules]
+description: 문장과 서술 수준의 작성 규약 세부(표준 표현, 개념어, 개념 정의, 출처 표기 범위, 요약의 정보 보존, 절 참조, 자체 완결성, 도구 전용 설정 파일 예외)
 ---
 
 # 일반 문서 작성 스타일
@@ -25,11 +26,11 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 정확한 개념어를 쓰라는 요구와 군더더기 없는 평서문을 쓰라는 요구는 층위가 다르다. 앞은 개념에 맞는 단어를 고르는 일(단어 선택)이고, 뒤는 그 단어를 부풀리거나 치장하지 않고 엮는 일(문장 구성)이다. 층위가 다르므로 대개 같은 방향을 가리키고 서로 충돌하지 않는다.
 
 - 겉멋 든 전문 용어나 불필요한 외래어를 정확함으로 착각해 끌어들이지 않는다. 이미 뜻이 정확한 표준어가 있으면 기술적으로 들린다는 이유로 바꾸지 않는다.
-- 진짜 전문 용어(그 개념의 표준 명칭)는 정확성을 우선해 그대로 쓰고, 첫 등장 시 풀어쓴다(약어 병기는 [communication.md](communication.md) "문서 작성 스타일" 참조).
+- 진짜 전문 용어(그 개념의 표준 명칭)는 정확성을 우선해 그대로 쓰고, 첫 등장 시 풀어쓴다. 약어 병기는 [communication.md](communication.md) "문서 작성 스타일"을 따른다.
 
 ## 통용되는 개념의 정의
 
-통용되는 개념은 정의를 새로 적지 않고 그 말을 그대로 쓴다. 통용 여부는 그 문서의 독자가 설명 없이 같은 뜻으로 읽는가로 가리며, 액면 그대로 뜻이 통하는 말도 여기에 든다. 뜻이 갈려 읽는 사람이 행동을 정할 수 없을 때만 정의한다.
+통용되는 개념은 정의를 새로 적지 않고 그 말을 그대로 쓴다. 통용 여부는 그 문서의 독자가 설명 없이 같은 뜻으로 읽는가로 판단하며, 액면 그대로 뜻이 통하는 말도 여기에 든다. 뜻이 갈려 읽는 사람이 행동을 정할 수 없을 때만 정의한다.
 
 - 통용되는 뜻과 다르게 쓰거나 좁혀 쓰면 달라지는 부분만 적는다. 도메인 용어의 정의는 [온톨로지 규범](../../epistemic-structure/ontology/AGENTS/epistemic-rules.md)을 따른다.
 - 독자에게 통용되지 않는 표준 전문 용어는 같은 문서 "정확한 개념어와 담백한 문체"에 따라 첫 등장 시 풀어쓴다.
@@ -63,7 +64,7 @@ tags: [agents, 규칙, 문서관리, epistemic-rules]
 분량이 크고 자체 완결적인 세부 규약은 `writing-style/` 아래 하위 문서로 둔다.
 
 - [attribution-scope.md](writing-style/attribution-scope.md): 출처와 주체 표기의 범위, 결정과 의견 시점의 표기, 추론의 표시. 의견, 결정, 출처, 추론을 문장이나 커밋 메시지에 적을 때 읽는다.
-- [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (링크 대상 자체를 가리킴, audit 기계 검사). 감사가 표시텍스트 위반을 낼 때 읽는다.
+- [markdown-link-display-text.md](writing-style/markdown-link-display-text.md): 마크다운 링크 표시텍스트의 정당한 형태 (링크 대상 자체를 가리킴, 감사 스크립트의 기계 검사). 감사가 표시텍스트 위반을 낼 때 읽는다.
 - [ascii-punctuation.md](writing-style/ascii-punctuation.md): 문장 부호 ASCII 우선 표기와 치환, 보존 예외. 감사가 문장 부호를 지적할 때, 부호 자체를 가리키는 글을 쓸 때 읽는다.
 - [reference-markers.md](writing-style/reference-markers.md): 참조 표지 `ref:`, `sub:`, `see:`의 판정, 형태, 자리 (본문 링크 우선). 문서 간 참조를 따로 둘 때 읽는다.
 - [conversation-reporting.md](writing-style/conversation-reporting.md): 대화 보고의 구성 (결론 선행, 질문은 마지막, 산출물만, 내부 라벨 금지). 사용자에게 보고하거나 답변할 때 읽는다.

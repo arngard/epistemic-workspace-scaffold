@@ -22,11 +22,11 @@ INDEX.yaml:
 
 색인 렌더러:
 - 색인을 두는 폴더(index_dirs)는 감사 순회 content_dirs 가운데 규범 폴더가
-  아니고 AGENTS.md가 있는 폴더다. 중첩 저장소 안, reference/ 하위 폴더,
+  아니고 AGENTS.md가 있는 폴더다. 중첩 레포 안, reference/ 하위 폴더,
   순차 분류 최상위로 선언된 폴더의 자손은 들지 않는다.
 - 항목은 폴더 직속 항목에서 점 파일, 운영 파일(AGENTS.md, CLAUDE.md,
   AGENTS/, 색인 쪽 파일, INDEX.yaml), EXEMPT_DIRS 이름, 심볼릭 링크,
-  OS와 편집기 부산물을 뺀 전부다. .git이 파일인 중첩 저장소(서브모듈, 연결된
+  OS와 편집기 부산물을 뺀 전부다. .git이 파일인 중첩 레포(서브모듈, 연결된
   worktree)는 항목 하나로만 보이고, .git이 폴더인 내장 클론은 항목에서 빠진다.
 - 이름은 NFC로 바꾸고 코드 포인트 순으로 정렬한다. 링크 대상은 공백,
   %, (, ), [, ], <, >, #, ?, 역슬래시만 퍼센트 인코딩하고 한글은 그대로 둔다.
@@ -421,7 +421,7 @@ def sequential_tops(root: Path, strict: bool = True) -> "list[Path]":
 def index_dirs(root: Path) -> "list[Path]":
     """색인을 두는 폴더. 순서는 content_dirs를 따른다(루트가 먼저).
 
-    content_dirs가 중첩 저장소 안과 implementation/ 하위 프로젝트를 이미
+    content_dirs가 중첩 레포 안과 implementation/ 하위 프로젝트를 이미
     뺀다. 순차 분류 최상위(sequential_tops)로 선언된 폴더 자신은 들고 그
     자손은 빠진다. 선언은 색인 후보 폴더의 INDEX.yaml에서만 읽는다.
     """

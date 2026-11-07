@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-10
-date modified: 2026-11-04
+date modified: 2026-11-07
 tags: [agents, 역할, 감사, epistemic-rules]
 ---
 
@@ -35,10 +35,10 @@ tags: [agents, 역할, 감사, epistemic-rules]
 4. 카테고리 배치 적절성 (의미 판단)
    - 각 `epistemic-structure/X/` 안의 문서가 그 카테고리의 정의에 부합하는가
    - 항목 4, 6, 7은 의미 판단이라 항목 1, 2, 3, 5보다 신뢰도가 낮다. 모호한 사례는 "확실하지 않음"으로 처리
-5. 메타-컨텐츠 영역 혼동 (직전 7~10개 단위 작업의 행동 패턴)
-   - 메타 영역(스캐폴드 자체 개발, 외부 컨테이너 관리, 운영 정책, 다른 인스턴스의 작업 이력)의 사실을 인스턴스 컨텐츠 영역에 기재했거나 메타 정책을 모른 채 컨텐츠 작업을 진행한 사례를 찾는다. 단위 작업은 커밋이 아니라 의미 단위로 본다 (ref: [unit-task.md](../unit-task.md)).
-   - 입력은 본 레포의 최근 머지 커밋 목록과 그 본문, TASK_TREE의 활성, 후속 항목이다. 세션 기록과 상속된 상류 이력은 입력하지 않는다.
-   - 세부 패턴: 격리 위반(메타 영역의 사실을 컨텐츠 영역에 기재), 자율 격상(메타 결정을 AI가 자율로 기재), 자율 머지(단위 작업 시작점 커밋 없이 머지된 흔적), 반복 정정(메타 변동에 따른 같은 컨텐츠의 단기 반복 수정), 분석적 쪼개기(미시 분류로 쪼갰다가 통합으로 정정), 단위 경계 오인(한 의미 단위의 자의 분할이나 무관한 단위의 병합).
+5. 메타-콘텐츠 영역 혼동 (직전 7~10개 단위 작업의 행동 패턴)
+   - 메타 영역(스캐폴드 자체 개발, 외부 컨테이너 관리, 운영 정책, 다른 인스턴스의 작업 이력)의 사실을 인스턴스 콘텐츠 영역에 기재했거나 메타 정책을 모른 채 콘텐츠 작업을 진행한 사례를 찾는다. 단위 작업은 커밋이 아니라 의미 단위로 본다 (ref: [unit-task.md](../unit-task.md)).
+   - 입력은 본 레포(레포지토리)의 최근 머지 커밋 목록과 그 본문, TASK_TREE의 활성, 후속 항목이다. 세션 기록과 상속된 상류 이력은 입력하지 않는다.
+   - 세부 패턴: 격리 위반(메타 영역의 사실을 콘텐츠 영역에 기재), 자율 격상(메타 결정을 AI가 자율로 기재), 자율 머지(단위 작업 시작점 커밋 없이 머지된 흔적), 반복 정정(메타 변동에 따른 같은 콘텐츠의 단기 반복 수정), 분석적 쪼개기(미시 분류로 쪼갰다가 통합으로 정정), 단위 경계 오인(한 의미 단위의 자의 분할이나 무관한 단위의 병합).
 6. 태그 어휘 (의미 판단)
    - 뜻이 같은 태그 묶음(한영 쌍, 동의어, 단수와 복수)의 병합안
    - 걸러도 의미 있는 묶음이 생기지 않는 태그의 삭제안
@@ -51,7 +51,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 
 ## 호출 시점
 
-- 새 세션 시작 시 트리거 조건을 충족하면 착수 전 호출 (see: [session-boundaries.md](../session-boundaries.md) "세션 시작"). 임계 조건의 SSOT는 `worklog/AGENTS/epistemic-rules/status-registry.md`의 "주기 조건" 절이다. 자손이 `worklog/AGENTS.md`에 표를 두면 그 표의 행이 같은 이름 행보다 먼저이고, 그 표에 없는 행은 상류 표를 따른다. 판정은 `check_semantic_audit.py`로 하고, 호출 뒤 trailer `Semantic-Audit: clean`을 단 커밋(머지 커밋 포함)으로 기준점을 남긴다. 판정 기준과 기준점 갱신은 [trigger-baseline.md](epistemic-auditor/trigger-baseline.md).
+- 새 세션 시작 시 트리거 조건을 충족하면 착수 전 호출 (see: [session-boundaries.md](../session-boundaries.md) "세션 시작"). 임계 조건의 SSOT(single source of truth; 단일 진실 공급원)는 `worklog/AGENTS/epistemic-rules/status-registry.md`의 "주기 조건" 절이다. 자손이 `worklog/AGENTS.md`에 표를 두면 그 표의 행이 같은 이름 행보다 먼저이고, 그 표에 없는 행은 상류 표를 따른다. 판정은 `check_semantic_audit.py`로 하고, 호출 뒤 trailer `Semantic-Audit: clean`을 단 커밋(머지 커밋 포함)으로 기준점을 남긴다. 판정 기준과 기준점 갱신은 [trigger-baseline.md](epistemic-auditor/trigger-baseline.md).
 - 긴 세션 종료 전, 큰 변경 후
 - 사용자가 정합성 의심 시
 - 주기적 점검 (별도 세션으로 사용자가 수동 호출)

@@ -657,7 +657,7 @@ class RenderTest(unittest.TestCase):
             e.name = "b"
 
     def test_nested_cache_cleared(self):
-        # 중첩 저장소 판정은 프로세스 캐시를 쓴다. 캐시를 비우면 반영된다.
+        # 중첩 레포 판정은 프로세스 캐시를 쓴다. 캐시를 비우면 반영된다.
         index_dirs(self.root)
         self.write("s/AGENTS.md", FM)
         self.write("s/.git", "gitdir: x\n")

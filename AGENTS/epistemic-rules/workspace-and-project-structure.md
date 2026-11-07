@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-03
+date modified: 2026-11-07
 tags: [agents, 워크스페이스, epistemic-rules]
 ---
 
@@ -8,7 +8,7 @@ tags: [agents, 워크스페이스, epistemic-rules]
 
 ## 목표
 
-하나의 레포를 워크스페이스로 다루면서, 그 안에 설계 문서와 프로젝트를 모두 포함한다.
+하나의 레포(레포지토리)를 워크스페이스로 다루면서, 그 안에 설계 문서와 프로젝트를 모두 포함한다.
 
 ## 네이밍 규칙: 워크스페이스 scaffolding과 콘텐츠
 
@@ -28,7 +28,7 @@ tags: [agents, 워크스페이스, epistemic-rules]
 - 동명 문서-폴더 쌍(`X.md` + `X/`)은 하위 문서 묶음 관계의 예약 신호다. 그 관계가 아닌 파일과 폴더에 같은 이름을 쓰지 않는다 - 무관한 동명 쌍은 계층 관계로 오독된다. 감사 스크립트가 하위 문서 없는 동명 쌍을 검출한다.
 - 자식이 또 자식을 가지면 같은 규칙을 재귀 적용한다 (`X.md`, `X/Y.md`, `X/Y/Z.md`).
 - 하위 문서 폴더를 신설하면 그 폴더의 디스크립터(AGENTS.md)와 `CLAUDE.md`를 같은 커밋에 동반한다 (ref: [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터"). 규범 폴더(`AGENTS/`와 그 아래)는 예외다.
-- 이동, 리네임에 따른 연쇄 갱신은 [move-cascade.md](folder-structure/move-cascade.md) 참조.
+- 이동과 이름 변경에 따른 연쇄 갱신은 [move-cascade.md](folder-structure/move-cascade.md)를 따른다.
 
 ## 최상위 구조
 
@@ -56,9 +56,9 @@ tags: [agents, 워크스페이스, epistemic-rules]
     └── <project-B>/
 ```
 
-`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙" 참조. `reference/` 운용은 [reference/AGENTS/epistemic-rules.md](../../reference/AGENTS/epistemic-rules.md)와 [`ingest-workflow.md`](ingest-workflow.md) 참조.
+`epistemic-structure/` 하위 폴더에 새 문서를 배치할 때의 분류 기준은 [epistemic-structure/AGENTS/epistemic-rules.md](../../epistemic-structure/AGENTS/epistemic-rules.md) "판별 규칙"에 있다. `reference/` 운용은 [reference/AGENTS/epistemic-rules.md](../../reference/AGENTS/epistemic-rules.md)와 [`ingest-workflow.md`](ingest-workflow.md)를 따른다.
 
-워크스페이스 안의 단위 작업(자료 N건 묶음 ingest, 메타 결정, 정책 변경, 큰 마이그레이션 등)은 진입, 진행, 종료 흐름이 정해져 있다. 단위 작업의 정의는 [unit-task.md](unit-task.md) 참조. 단위 작업 시작 시 어떤 절차를 거쳐야 하는지는 [unit-task-workflow.md](unit-task-workflow.md) 참조. 워크로그(`worklog/`)의 TASK_TREE와 STATUS 레지스트리는 그 흐름의 진입, 종료 시점에서 갱신되는 운영 메타다.
+워크스페이스 안의 단위 작업(자료 N건 묶음 ingest, 메타 결정, 정책 변경, 큰 마이그레이션 등)은 진입, 진행, 종료 흐름이 정해져 있다. 단위 작업의 정의는 [unit-task.md](unit-task.md)에, 단위 작업을 시작할 때 거칠 절차는 [unit-task-workflow.md](unit-task-workflow.md)에 있다. 워크로그(`worklog/`)의 TASK_TREE와 STATUS 레지스트리는 그 흐름의 진입, 종료 시점에서 갱신되는 운영 메타다.
 
 ## 문서와 코드의 역할 분담
 

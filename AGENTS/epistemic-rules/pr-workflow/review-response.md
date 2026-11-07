@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-10-25
+date modified: 2026-11-07
 tags: [agents, 절차, git, epistemic-rules]
 ---
 
@@ -17,7 +17,7 @@ PR에 달린 인라인 리뷰 코멘트에 응답할 때는 작성자가 누구�
 - GitHub Web UI: 해당 리뷰 코멘트의 "Reply" 입력란 사용.
 - gh CLI: `gh api repos/<owner>/<repo>/pulls/<num>/comments/<comment_id>/replies -f body="..."`
   - `<comment_id>`는 리뷰 코멘트 URL 끝 `#discussion_r<숫자>`의 숫자 부분. `gh api repos/<owner>/<repo>/pulls/<num>/comments`로도 조회 가능.
-- 금지: `gh pr comment <num> --body "..."` - 본 명령은 issue-level 코멘트를 만든다. 본 PR에 새 일반 코멘트를 의도적으로 단다는 게 명백한 경우(머지 알림, 후속 작업 안내 등)에만 사용.
+- 금지: `gh pr comment <num> --body "..."` - 본 명령은 issue-level 코멘트를 만든다. 본 PR에 새 일반 코멘트를 의도적으로 단다는 것이 명백한 경우(머지 알림, 후속 작업 안내 등)에만 사용.
 
 잘못 단 경우 정정: 잘못된 코멘트 ID 조회(`gh api repos/<owner>/<repo>/issues/<num>/comments`) 후 삭제(`gh api repos/<owner>/<repo>/issues/comments/<id> -X DELETE`), 그 뒤 스레드 reply로 재발행. 인라인 리뷰 코멘트 ID는 issue 코멘트와 엔드포인트가 다르다(조회는 위 `<comment_id>` 항목).
 
@@ -25,6 +25,6 @@ PR에 달린 인라인 리뷰 코멘트에 응답할 때는 작성자가 누구�
 
 ## 스레드 안 토론은 그 스레드가 SSOT
 
-스레드 안에서 토론, 결론, 정정이 이루어졌으면 그 내용은 그 스레드를 SSOT(single source of truth)로 본다. 같은 결론을 PR 본문, 다른 코멘트, 외부 문서에서 다시 풀어 설명하지 않는다. 외부 위치에서 짚어야 할 때는 해당 스레드(또는 결정 코멘트)의 URL을 가리키는 링크만 제시한다 - `ref: [해당 스레드](url)` 형태가 권장.
+스레드 안에서 토론, 결론, 정정이 이루어졌으면 그 내용은 그 스레드를 SSOT(single source of truth; 단일 진실 공급원)로 본다. 같은 결론을 PR 본문, 다른 코멘트, 외부 문서에서 다시 풀어 설명하지 않는다. 외부 위치에서 짚어야 할 때는 해당 스레드(또는 결정 코멘트)의 URL을 가리키는 링크만 제시한다 - `ref: [해당 스레드](url)` 형태를 권장한다.
 
-근거: 같은 내용을 두 평면에 적으면 SSOT 위배 + 한 평면이 갱신되고 다른 평면이 안 갱신될 때 결론 추적이 깨진다. 토론 흐름은 시간순으로 스레드 안에 형성되며 이걸 외부에 옮기면 그 흐름 자체가 손실된다.
+근거: 같은 내용을 두 평면에 적으면 SSOT를 위배하고, 한 평면만 갱신되면 결론 추적이 깨진다. 토론 흐름은 시간순으로 스레드 안에 형성되며 이를 외부에 옮기면 그 흐름 자체가 손실된다.

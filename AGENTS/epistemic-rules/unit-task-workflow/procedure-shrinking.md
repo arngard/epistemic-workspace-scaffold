@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-29
-date modified: 2026-10-25
+date modified: 2026-11-07
 tags: [agents, 워크스페이스, 운영, epistemic-rules]
 ---
 
@@ -10,7 +10,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 ## 조건은 결과 동등성이다
 
-ref: [unit-task.md](../unit-task.md) "프로젝션 - 표현과 절차의 평탄화". 아래를 하나라도 만족하지 못하면 축약하지 않는다.
+이 조건의 근거는 [unit-task.md](../unit-task.md) "프로젝션 - 표현과 절차의 평탄화"에 있다. 아래를 하나라도 만족하지 못하면 축약하지 않는다.
 
 - 변경이 한 커밋에 자연스럽게 담긴다.
 - 한 세션에 끝난다.

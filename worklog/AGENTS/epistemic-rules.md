@@ -1,12 +1,12 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-02
+date modified: 2026-11-07
 tags: [worklog, epistemic-rules]
 ---
 
 # 워크로그 규범
 
-워크로그는 단위 작업 흐름의 진입이자 종료 시점에 갱신되는 운영 메타 영역이다 (ref: [unit-task-workflow.md](../../AGENTS/epistemic-rules/unit-task-workflow.md)). 완료 이력의 SSOT(single source of truth)는 git 이력이며, 이 폴더에 별도 이력 파일을 두지 않는다.
+워크로그는 단위 작업 흐름의 진입이자 종료 시점에 갱신되는 운영 메타 영역이다 (ref: [unit-task-workflow.md](../../AGENTS/epistemic-rules/unit-task-workflow.md)). 완료 이력의 SSOT(single source of truth; 단일 진실 공급원)는 git 이력이며, 이 폴더에 별도 이력 파일을 두지 않는다.
 
 - [TASK_TREE.md](../TASK_TREE.md): 작업 계층 트리(현재 상태와 다음 작업 포인터). 매 세션 시작 시 가장 먼저, 작업 착수 전에 읽는다.
 - [STATUS.md](../STATUS.md): 감사, 주기 작업 상태 레지스트리. 매 세션 시작 시 읽는다.

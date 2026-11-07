@@ -41,7 +41,7 @@ def bundle_files(root: Path) -> "list[Path]":
     """상류 묶음 경로의 파일 목록(출고 목록 자신 제외).
 
     루트 상대 NFC POSIX 경로 순이다. 감사 순회와 같은 가지치기(도구 전용
-    폴더, 중첩 저장소, 심볼릭 링크)를 쓰고, reference/와 implementation/
+    폴더, 중첩 레포, 심볼릭 링크)를 쓰고, reference/와 implementation/
     아래에서는 감사 순회와 같은 술어(_audit_core.in_material_content)로
     규범 폴더(AGENTS/)만 본다.
     """

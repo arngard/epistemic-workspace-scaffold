@@ -1,12 +1,12 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-03
+date modified: 2026-11-07
 tags: [규칙, epistemic-rules]
 ---
 
 # 워크스페이스 상류 규범 요지
 
-세부 규약은 `epistemic-rules/` 아래 SSOT(single source of truth) 문서에 있다. 모든 폴더의 묶음에서, 같은 사안에 자손 규범(각 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md)이 있으면 자손 규범이 우선한다.
+세부 규약은 `epistemic-rules/` 아래 SSOT(single source of truth; 단일 진실 공급원) 문서에 있다. 모든 폴더의 묶음에서, 같은 사안에 자손 규범(각 묶음 옆의 낱개 문서와 그 폴더의 AGENTS.md)이 있으면 자손 규범이 우선한다.
 
 ## 에피스테믹 워크스페이스
 
