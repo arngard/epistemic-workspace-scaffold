@@ -2,6 +2,7 @@
 date created: 2026-07-05
 date modified: 2026-11-07
 tags: [agents, 규칙, 문서관리, epistemic-rules]
+description: 문장과 서술 수준의 작성 규약 세부(표준 표현, 개념어, 개념 정의, 출처 표기 범위, 요약의 정보 보존, 절 참조, 자체 완결성, 도구 전용 설정 파일 예외)
 ---
 
 # 일반 문서 작성 스타일

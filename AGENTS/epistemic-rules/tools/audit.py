@@ -28,7 +28,7 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      INDEX.md 누락은 경고, 낡은 내용과 남는 쪽과 색인을 두지 않는 폴더의 색인
      파일과 INDEX.yaml 형식 오류는 위반
      (생성기와 같은 _index_core.render_all 결과와 비교. 줄바꿈은 LF로 맞춘다.
-      reference/ 하위 폴더와 중첩 저장소 안은 보지 않음)
+      reference/ 하위 폴더와 중첩 레포 안은 보지 않음)
  12. TASK_TREE.md 완료 노드의 브랜치 속성 잔존 - 경고
  13. STATUS.md 레지스트리 표 스키마, 시각 형식 - 경고
  14. front matter tags의 형식과 표기 - 경고

@@ -14,6 +14,6 @@ description: 단위 작업 종료 흐름 다섯 단계의 세부(마무리 커�
 3. 사용자 검토 통과: 변경 요약(브랜치명, 변경 파일 수, 핵심 변경, 짚을 점)을 보고하고 결정 신호를 받는다. AI 자율 판단으로 머지하지 않는다.
    - 결정 갈래: OK 머지, 추가 정정(명시받아 커밋한 뒤 본 단계 반복), 롤백(브랜치 폐기).
    - 결정 신호는 명시적이어야 한다. 침묵이나 다음 작업 시작을 OK로 추론하지 않는다. 채팅 내 명시 승인("머지해")과 PR Approve가 등가다.
-   - 단발 작업, 오탈자처럼 절차를 축약해 처리하는 작은 변경은 본 단계도 면제한다 (sub: [procedure-shrinking.md](procedure-shrinking.md)).
+   - 단발 작업, 오탈자처럼 절차를 축약해 처리하는 작은 변경은 본 단계도 면제한다 (ref: [procedure-shrinking.md](procedure-shrinking.md)).
 4. main 머지 - 타입 분기: PR 타입과 브랜치 관리자 타입(직접 머지) 중 하나로 진행한다. 타입 결정 규칙, 두 타입의 절차, 환경 안전망, 잔존 점검은 [merge-types.md](merge-types.md)를 따른다.
-5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): 본 레포(레포지토리)가 다른 레포의 서브모듈이면 [submodule-pointer-sync.md](../submodule-pointer-sync.md)를 조립한다.
+5. 서브모듈 커밋 포인터 재귀 정합화 (해당 시): 본 레포(레포지토리)가 다른 레포의 서브모듈이면 [submodule-pointer-sync.md](../submodule-pointer-sync.md)를 조립한다.

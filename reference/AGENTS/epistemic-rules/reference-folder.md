@@ -8,7 +8,7 @@ tags: [agents, 절차, ingest, epistemic-rules]
 
 > [ingest-workflow.md](../../../AGENTS/epistemic-rules/ingest-workflow.md)의 하위 절차.
 
-`reference/`는 사용자가 임의로 넣어 두는 자료를 수정하지 않고 보관하는 영역이다. 형태는 가리지 않는다(PDF, 이미지, 텍스트 메모, URL 모음 등). see: [`reference/AGENTS.md`](../../AGENTS.md).
+`reference/`는 사용자가 임의로 dump하는 자료의 immutable 보관 영역이다. 형태는 가리지 않는다(PDF, 이미지, 텍스트 메모, URL 모음 등). see: [`reference/AGENTS.md`](../../AGENTS.md).
 
 ## 처리 여부 식별
 
@@ -23,19 +23,19 @@ tags: [agents, 절차, ingest, epistemic-rules]
 1. [색인](../../INDEX.md)으로 `reference/` 직속 항목과 처리 상태를 본다.
 2. 형식 감사가 `reference/INDEX.yaml`에 낸 경고를 본다.
 3. 색인에 `미등록`이거나 `처리 대기`로 보이는 자료는 미처리 자료다. 미등록이면 `INDEX.yaml`에 등록하고 처리 절차를 시작한다.
-4. 감사가 `INDEX.yaml` 항목의 대상 자료가 없다고 경고하면 원자료가 사라진 것이다. 사용자에게 짚는다.
+4. 감사가 `INDEX.yaml` 항목의 대상 자료가 없다고 경고하면 raw 자료가 사라진 것이다. 사용자에게 짚는다.
 5. 미처리로 남은 항목은 처리 절차를 진행하거나 사용자에게 우선순위를 확인한다.
 
-보조 검증으로 본문에서 `reference/<file>` 경로를 grep해 derived 노드의 존재를 교차 확인할 수 있다 (기록된 진척과 실제 교차 참조의 일치 점검).
+보조 검증으로 본문에서 `reference/<file>` 경로를 grep해 파생 노드의 존재를 교차 확인할 수 있다 (기록된 진척과 실제 교차 참조의 일치 점검).
 
 ## 미처리 항목 처리
 
 미처리 항목 발견 시:
 
 1. 자료 내용을 읽고 어떤 카테고리, 노드에 통합할지 판단.
-2. 명확하면 [ingest-workflow.md](../../../AGENTS/epistemic-rules/ingest-workflow.md) "표준 시퀀스"로 통합 후 derived 노드에 원자료 파일을 `ref:` 표지로 링크한다 (`ref: [<file>](<상대 경로>/reference/<file>)`). `INDEX.yaml`의 `status`를 `처리됨`으로 바꾸고, 자료 폴더의 내부 진척 기록이 있으면 함께 갱신한다.
+2. 명확하면 [ingest-workflow.md](../../../AGENTS/epistemic-rules/ingest-workflow.md) "표준 시퀀스"로 통합 후 파생 노드에 raw 파일을 `ref:` 표지로 링크한다 (`ref: [<file>](<상대 경로>/reference/<file>)`). `INDEX.yaml`의 `status`를 `처리됨`으로 바꾸고, 자료 폴더의 내부 진척 기록이 있으면 함께 갱신한다.
 3. 모호하거나 사용자 의도가 불분명하면 처리를 보류하고 `status`를 `사용자 의견 필요`로 바꾼 뒤 사용자에게 의견을 묻는다. 보류 항목이 기록에서 조용히 사라지지 않게 한다.
 
-## Raw 자료 자체는 immutable
+## 원래의 자료 자체는 수정하지 않는다
 
-처리 후에도 자료(운영 파일 제외, ref: [workspace-and-project-structure.md](../../../AGENTS/epistemic-rules/workspace-and-project-structure.md) "네이밍 규칙: 워크스페이스 scaffolding과 콘텐츠")는 삭제, 수정하지 않는다. 원본 보존이 SSOT(single source of truth; 단일 진실 공급원)다. derived 노드는 변경되더라도 원자료 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../../../AGENTS/epistemic-rules/agent-roles/epistemic-auditor.md) "점검 항목").
+처리 후에도 자료(운영 파일 제외, ref: [workspace-and-project-structure.md](../../../AGENTS/epistemic-rules/workspace-and-project-structure.md) "네이밍 규칙: 워크스페이스 scaffolding과 콘텐츠")는 삭제, 수정하지 않는다. 원본 보존이 SSOT(single source of truth; 단일 진실 공급원)다. 파생 노드는 변경되더라도 raw 입력으로 항상 되돌아갈 수 있어야 한다. 원본의 수정, 삭제는 의미 감사자가 git 이력으로 점검한다 (see: [agent-roles/epistemic-auditor.md](../../../AGENTS/epistemic-rules/agent-roles/epistemic-auditor.md) "점검 항목").

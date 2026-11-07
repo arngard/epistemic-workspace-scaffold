@@ -276,7 +276,7 @@ class IgnoredEntriesTest(unittest.TestCase):
         code, out, err = self.run_main()
         self.assertEqual(code, 2)
         self.assertIn("wt: ", err)
-        self.assertIn("중첩 저장소", err)
+        self.assertIn("중첩 레포", err)
         self.assertNotIn(".tmp/", err)
 
     def test_nfd_name_nfc_pattern(self):

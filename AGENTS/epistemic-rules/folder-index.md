@@ -20,7 +20,7 @@ tags: [규칙, 구조, epistemic-rules]
 
 ## 항목과 설명
 
-항목은 폴더 직속 항목에서 점으로 시작하는 것, 운영 파일(`AGENTS.md`, `CLAUDE.md`, `AGENTS/`, 색인 쪽 파일, `INDEX.yaml`), 감사 제외 폴더, 심볼릭 링크, OS(operating system)와 편집기 부산물을 뺀 전부다. 동명 문서와 폴더(`X.md`와 `X/`)는 한 줄로 합치고 `X.md`의 설명을 쓴다.
+항목은 폴더 직속 항목에서 점으로 시작하는 것, 운영 파일(`AGENTS.md`, `CLAUDE.md`, `AGENTS/`, 색인 쪽 파일, `INDEX.yaml`), 감사 제외 폴더, 심볼릭 링크, OS와 편집기 부산물을 뺀 전부다. 동명 문서와 폴더(`X.md`와 `X/`)는 한 줄로 합치고 `X.md`의 설명을 쓴다.
 
 - md 문서의 설명은 front matter의 `description` 한 줄이다. 없으면 이름만 보이고 경고하지 않는다. 새 문서에 다는 것은 작성 규칙이다 (see: [communication.md](communication.md) "문서 작성 스타일").
 - md가 아닌 항목과 폴더의 설명은 그 폴더의 `INDEX.yaml`에 둔다. `reference/`는 원본을 고치지 않으므로 md 자료의 설명도 `INDEX.yaml`에 둔다.

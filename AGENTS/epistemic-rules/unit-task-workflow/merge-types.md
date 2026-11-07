@@ -6,7 +6,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 # 머지 타입 분기
 
-단위 작업 종료 흐름 4단계(main 머지)의 세부 절차다. 이 문서가 워크플로우 조립 지점이다. 전체 흐름은 [unit-task-workflow.md](../unit-task-workflow.md).
+단위 작업 종료 흐름 4단계(main 머지)의 세부 절차다. 이 문서가 워크플로 조립 지점이다. 전체 흐름은 [unit-task-workflow.md](../unit-task-workflow.md).
 
 ## 타입 결정
 

@@ -4,9 +4,9 @@ date modified: 2026-11-07
 tags: [agents, 절차, git, epistemic-rules]
 ---
 
-# PR 워크플로우
+# PR 워크플로
 
-단위 작업의 종료(브랜치 소유 노드의 main 머지)를 PR 타입으로 진행할 때 그 자리에 조립되는 워크플로우 모듈이다. 조립 개념은 [unit-task.md](unit-task.md), 단위 작업 운영 프레임은 [unit-task-workflow.md](unit-task-workflow.md) 참조. 단위 작업 밖에서 기존 PR에 대응할 때도 본 문서와 하위 문서의 규약이 재사용된다.
+단위 작업의 종료(브랜치 소유 노드의 main 머지)를 PR 타입으로 진행할 때 그 자리에 조립되는 워크플로 모듈이다. 조립 개념은 [unit-task.md](unit-task.md), 단위 작업 운영 프레임은 [unit-task-workflow.md](unit-task-workflow.md) 참조. 단위 작업 밖에서 기존 PR에 대응할 때도 본 문서와 하위 문서의 규약이 재사용된다.
 
 본 문서는 PR 생성 자체(본문, 자기 검토, 속성)를 다루고, 생성 후 절차는 하위 문서로 둔다. 리뷰 응답 방식은 [pr-workflow/review-response.md](pr-workflow/review-response.md), 제출 후 능동 확인 루프는 [pr-workflow/active-review-loop.md](pr-workflow/active-review-loop.md). 멘션, AI 시그니처 등 PR 밖에도 적용되는 범용 소통 규약은 [external-communication.md](external-communication.md).
 

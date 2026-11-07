@@ -6,7 +6,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 # 단위 작업 운영 흐름
 
-단위 작업 하나를 진입-진행-종료로 수행하는 일반 프레임이다. 단위 작업이 무엇인가(의미적 분절, 표현과의 층위, 중첩, 프로젝션)와 워크플로우 조립은 [unit-task.md](unit-task.md)에, 토대 원칙은 [working-principles.md](working-principles.md)에 있다. 본 문서는 그 프레임의 운영 절차를 다룬다. 세션 경계의 재진입과 격리는 [session-boundaries.md](session-boundaries.md)가 다룬다.
+단위 작업 하나를 진입-진행-종료로 수행하는 일반 프레임이다. 단위 작업이 무엇인가(의미적 분절, 표현과의 층위, 중첩, 프로젝션)와 워크플로 조립은 [unit-task.md](unit-task.md)에, 토대 원칙은 [working-principles.md](working-principles.md)에 있다. 본 문서는 그 프레임의 운영 절차를 다룬다. 세션 경계의 재진입과 격리는 [session-boundaries.md](session-boundaries.md)가 다룬다.
 
 자료 N건 묶음 ingest, 메타 결정이나 정책 변경, 큰 마이그레이션이나 구조 재편, 도메인 모듈 신설, 한 세션을 넘어갈 가능성이 큰 작업은 본 흐름을 그대로 밟는다. 그보다 작은 변경도 단위 작업이지만 절차를 축약할 수 있다 (sub: [unit-task-workflow/procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md)). 모호하면 축약하지 않는 쪽이 안전하다 - 끊겼을 때 회복 비용이 작다.
 
@@ -21,7 +21,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 ## 진행 흐름
 
-중위 노드는 재귀적으로 진행한다 - 자식 단위 작업을 우선순위 순으로 수행하고(각 자식은 자기 워크플로우를 다시 밟는다), 자식 사이사이에 트리를 갱신한다(ref: [unit-task.md](unit-task.md) "워크플로우"). 리프의 구체 작업이 특정 유형이면 그 워크플로우가 조립된다 - 새 정보 유입은 [ingest-workflow.md](ingest-workflow.md).
+중위 노드는 재귀적으로 진행한다 - 자식 단위 작업을 우선순위 순으로 수행하고(각 자식은 자기 워크플로를 다시 밟는다), 자식 사이사이에 트리를 갱신한다(ref: [unit-task.md](unit-task.md) "워크플로"). 리프의 구체 작업이 특정 유형이면 그 워크플로가 조립된다 - 새 정보 유입은 [ingest-workflow.md](ingest-workflow.md).
 
 - 처리 단위(자료 1건, 하위 단계 1개) 완료마다 커밋한다 (ref: [unit-task.md](unit-task.md) "정형 대응"). 여러 건을 한 커밋에 묶으면 되돌릴 단위가 사라져 히스토리가 달라지므로 허용되지 않는다.
 - 완료한 처리 단위 노드를 `[x]`로 표시하고, 새로 드러난 항목은 즉시 추가한다.
@@ -37,7 +37,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 2. TASK_TREE 정리: 마크 커밋과 분리한 커밋으로 노드를 삭제한다.
 3. 사용자 검토 통과: 명시적인 결정 신호를 받는다. AI 자율 판단으로 머지하지 않는다.
 4. main 머지 - 타입 분기: [merge-types.md](unit-task-workflow/merge-types.md).
-5. 서브모듈 커밋 포인트 재귀 정합화 (해당 시): [submodule-pointer-sync.md](submodule-pointer-sync.md).
+5. 서브모듈 커밋 포인터 재귀 정합화 (해당 시): [submodule-pointer-sync.md](submodule-pointer-sync.md).
 
 ## 하위 문서
 

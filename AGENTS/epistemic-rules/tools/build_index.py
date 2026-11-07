@@ -232,7 +232,7 @@ def main(argv: "Optional[list[str]]" = None) -> int:
         if ignored:
             for rel in ignored:
                 if (root / rel / ".git").is_file():
-                    hint = ("git이 무시하는 중첩 저장소가 색인 항목이다. "
+                    hint = ("git이 무시하는 중첩 레포가 색인 항목이다. "
                             "무시를 풀거나 색인 폴더 밖으로 옮긴다.")
                 else:
                     hint = "git 무시 파일이 색인 항목이다. .tmp/로 옮긴다."

@@ -56,7 +56,7 @@ def check_index_files(root: Path) -> list[Finding]:
     것이라 생성기로 지우라고 알린다. 순회는 생성기의 지우기와 같은
     non_index_dirs다. reference/ 하위 폴더는 원본 자료라 보지 않는다. 다만
     규범 폴더 reference/AGENTS/와 그 아래는 본다(iter_md_files와 같은 예외).
-    중첩 저장소 안은 content_dirs가 이미 뺀다. 색인 폴더 판정이 IndexFormatError를 내면
+    중첩 레포 안은 content_dirs가 이미 뺀다. 색인 폴더 판정이 IndexFormatError를 내면
     위반 1건만 내고 끝낸다. 렌더가 IndexFormatError를 내면 위반 1건을 내고 내용
     비교만 건너뛴다.
     """
