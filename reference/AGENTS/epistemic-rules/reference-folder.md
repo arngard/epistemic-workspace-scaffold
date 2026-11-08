@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-21
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, 절차, ingest, epistemic-rules]
 ---
 
@@ -23,7 +23,7 @@ tags: [agents, 절차, ingest, epistemic-rules]
 1. [색인](../../INDEX.md)으로 `reference/` 직속 항목과 처리 상태를 본다.
 2. 형식 감사가 `reference/INDEX.yaml`에 낸 경고를 본다.
 3. 색인에 `미등록`이거나 `처리 대기`로 보이는 자료는 미처리 자료다. 미등록이면 `INDEX.yaml`에 등록하고 처리 절차를 시작한다.
-4. 감사가 `INDEX.yaml` 항목의 대상 자료가 없다고 경고하면 raw 자료가 사라진 것이다. 사용자에게 짚는다.
+4. 감사가 `INDEX.yaml` 항목의 대상 자료가 없다고 경고하면 raw 자료가 사라진 것이다. 사용자에게 알린다.
 5. 미처리로 남은 항목은 처리 절차를 진행하거나 사용자에게 우선순위를 확인한다.
 
 보조 검증으로 본문에서 `reference/<file>` 경로를 grep해 파생 노드의 존재를 교차 확인할 수 있다 (기록된 진척과 실제 교차 참조의 일치 점검).

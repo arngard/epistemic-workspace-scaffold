@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, 절차, git, epistemic-rules]
 ---
 
@@ -21,7 +21,7 @@ PR에 달린 인라인 리뷰 코멘트에 응답할 때는 작성자가 누구�
 
 잘못 단 경우 정정: 잘못된 코멘트 ID 조회(`gh api repos/<owner>/<repo>/issues/<num>/comments`) 후 삭제(`gh api repos/<owner>/<repo>/issues/comments/<id> -X DELETE`), 그 뒤 스레드 reply로 재발행. 인라인 리뷰 코멘트 ID는 issue 코멘트와 엔드포인트가 다르다(조회는 위 `<comment_id>` 항목).
 
-파괴적 원격 조작(`-X DELETE` 등)은 AI가 이번 작업에서 스스로 만든 산출물(위 삭제라면 방금 잘못 단 자기 코멘트)에만 적용하고, 사용자, 다른 개발자, 봇이 단 코멘트나 다른 원격 리소스에 정정이 필요하면 사용자에게 짚어 확인받는다 (ref: [original-protection-principle.md](../original-protection-principle.md) - 가역성 원리).
+파괴적 원격 조작(`-X DELETE` 등)은 AI가 이번 작업에서 스스로 만든 산출물(위 삭제라면 방금 잘못 단 자기 코멘트)에만 적용하고, 사용자, 다른 개발자, 봇이 단 코멘트나 다른 원격 리소스에 정정이 필요하면 사용자의 확인을 받는다 (ref: [original-protection-principle.md](../original-protection-principle.md) - 가역성 원리).
 
 ## 스레드 안 토론은 그 스레드가 SSOT
 
