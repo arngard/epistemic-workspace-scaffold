@@ -98,12 +98,15 @@ def check_empty_folders(root: Path) -> list[Finding]:
 
     삭제 대상 잔재인지, 사양만 있고 실체 0건인 동결인지, 첫 실체 대기 중인
     정상 신설인지는 감사자(LLM)가 판단한다. 생성 색인 쪽 파일과 INDEX.yaml,
-    git이 무시하는 항목은 실체로 세지 않는다.
+    git이 무시하는 항목은 실체로 세지 않는다. reference/<자료 폴더>와 그 아래는
+    원본 자료의 구조라 보지 않는다(in_material_content).
     """
     out: list[Finding] = []
     for d in content_dirs(root):
         rel = d.relative_to(root).as_posix() if d != root else "."
         if rel in SKELETON_DIRS or in_norms_dir(root, d):
+            continue
+        if in_material_content(root, d):
             continue
         try:
             entries = [
@@ -209,12 +212,15 @@ def check_claude_pointers(root: Path) -> list[Finding]:
     규범 폴더가 아닌 폴더에 AGENTS.md가 있으면 같은 폴더에 내용이 `@AGENTS.md`
     (앞뒤 공백 제외)인 CLAUDE.md가 있어야 한다. 없거나 내용이 다르면 경고한다.
     순차 분류 최상위의 자손 폴더는 건너뛴다(남은 CLAUDE.md는
-    check_descriptors가 경고한다).
+    check_descriptors가 경고한다). reference/<자료 폴더>와 그 아래는 원본 자료라
+    그 안의 AGENTS.md를 디스크립터로 보지 않는다(in_material_content).
     """
     out: list[Finding] = []
     tops = sequential_tops(root, strict=False)
     for d in content_dirs(root):
         if in_norms_dir(root, d) or not (d / DESCRIPTOR_NAME).exists():
+            continue
+        if in_material_content(root, d):
             continue
         if under_sequential(d, tops):
             continue
