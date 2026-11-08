@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, 도구, 환경, IDE, epistemic-rules]
 ---
 
@@ -17,11 +17,13 @@ tags: [agents, 도구, 환경, IDE, epistemic-rules]
 | Claude Code | 루트 [CLAUDE.md](../../CLAUDE.md)와 `AGENTS.md`가 있는 폴더의 `CLAUDE.md` | 시작 시 작업 폴더와 그 상위 폴더의 `CLAUDE.md`를 읽는다. 하위 폴더의 `CLAUDE.md`는 그 폴더의 파일을 읽거나 쓰거나 고칠 때 읽힌다. `@경로` 가져오기는 그 줄이 든 파일 기준 상대 경로로 해석하고, 네 단계까지 재귀로 펼친다. 코드 스팬과 코드 블록 안의 가져오기는 펼치지 않는다. 작업 폴더나 상위 폴더에 `CLAUDE.md`가 있으면 `AGENTS.md`를 기본으로 읽지 않으며, 이를 바꾸는 설정은 사용자 설정과 관리 설정에서만 읽고 프로젝트 설정에서는 읽지 않는다. | 2026-10-25 |
 | Codex | 레포(레포지토리) 루트부터 작업 폴더까지의 `AGENTS.md` | 레포 루트에서 작업 폴더까지 경로에 있는 `AGENTS.md`를 읽는다. `@` 줄을 가져오기로 펼치지 않는다. 별도 진입점 파일을 두지 않는다. | 2026-10-25 |
 | GitHub Copilot | [.github/copilot-instructions.md](../../.github/copilot-instructions.md) | 레포 전체 지침으로 읽는다. 레포의 `AGENTS.md`도 에이전트 지침으로 읽으며 에이전트 작업에서는 가장 가까운 `AGENTS.md`가 우선한다. `@` 가져오기 펼침과 IDE(integrated development environment; 통합 개발 환경)별 읽기 대상은 조회한 문서에 없다. | 2026-10-26 |
-| Antigravity | 없음 | `agy` CLI가 루트 [AGENTS.md](../../AGENTS.md)를 직접 자동 로드한다(미확인). 별도 진입점 파일을 두지 않는다. | 미확인 |
+| Antigravity | 없음 | `agy`를 실행한 폴더와 그 상위 폴더를 레포 루트까지 올라가며 `AGENTS.md`와 `GEMINI.md`를 읽는다. 하위 폴더의 규칙은 그 안의 파일을 다뤄도 읽지 않는다. 규칙 안의 가져오기는 `@[이름](경로)` 형식만 펼치고, 그 경로는 규칙 파일 기준 상대 경로다. 별도 진입점 파일을 두지 않는다. | 2026-11-08 |
 
-출처: [Claude Code memory](https://code.claude.com/docs/en/memory), [Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md), [Copilot repository instructions](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions). "미확인"은 공식 문서로 확인하지 못한 행이다.
+출처: [Claude Code memory](https://code.claude.com/docs/en/memory), [Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md), [Copilot repository instructions](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions), [Antigravity rules](https://antigravity.google/docs/rules/). "미확인"은 공식 문서로 확인하지 못한 행이다.
 
 Claude Code에서 실측한 동작: 깊은 하위 폴더의 파일을 다루거나 셸 `cat`으로 파일을 볼 때도 그 경로의 폴더 `CLAUDE.md`가 읽힌다. 문장 중간의 `@경로`도 가져오기로 펼친다.
+
+Antigravity에서 실측한 동작: 줄 전체가 `@경로`인 줄은 펼치지 않는다. 펼쳐 넣은 파일 안의 `@[이름](경로)`는 다시 펼치지 않는다.
 
 재확인 조건: 도구의 읽기 동작이 바뀐다는 공지를 보거나 이 표와 다른 동작을 실측하면 공식 문서를 다시 조회하고 표와 조회 일자를 고친다.
 
@@ -33,6 +35,7 @@ Claude Code에서 실측한 동작: 깊은 하위 폴더의 파일을 다루거�
 
 - `AGENTS.md`가 있는 폴더(루트 포함)마다 내용이 `@AGENTS.md` 한 줄인 `CLAUDE.md`를 둔다. 지침 자체는 적지 않는다(중복, 불일치 방지). 규범 폴더의 예외는 [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터".
 - Copilot 진입점과 루트 [AGENTS.md](../../AGENTS.md)가 `@` 표기를 설명한다. `@`로 시작하는 줄은 그 경로의 파일을 지금 읽으라는 뜻이다. 경로는 레포 루트가 아니라 그 줄이 든 파일의 위치 기준이다.
+- 루트 [AGENTS.md](../../AGENTS.md)는 요지 가져오기 줄 아래에 요지와 요지가 가져오는 문서를 `@[이름](경로)` 줄로 나란히 둔다. Antigravity가 펼치는 형식이고, Antigravity는 펼친 파일 안의 가져오기를 다시 펼치지 않기 때문이다. 요지의 가져오기 대상이 바뀌면 이 줄도 함께 고친다.
 - 가져오기를 펼치지 않는 도구에서 `@` 대상과 폴더 `AGENTS.md`를 읽는 것은 모델이 그 설명을 따르는지에 의존하며 보장되지 않는다.
 - 가져오기가 아닌 글 속의 `@경로` 언급은 인라인 코드로 쓴다. Claude Code는 문장 중간의 `@경로`도 펼친다.
 - 새로운 도구가 추가되면: 해당 도구의 자동 참조 경로에 진입점 파일을 만들고, 이 표에 등록하며 공식 문서의 조회 일자(확인하지 못했으면 "미확인")를 적는다.

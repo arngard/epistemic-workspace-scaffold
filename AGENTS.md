@@ -6,6 +6,10 @@ tags: [규칙, 문서관리]
 
 @AGENTS/epistemic-rules.md
 
+@[상류 규범 요지](AGENTS/epistemic-rules.md)
+@[소통 규약](AGENTS/epistemic-rules/communication.md)
+@[작업 흐름](AGENTS/epistemic-rules/workflow.md)
+
 > `@`로 시작하는 줄은 그 경로의 파일을 지금 읽으라는 뜻이다. 경로는 레포(레포지토리) 루트가 아니라 그 줄이 든 파일의 위치 기준이다. 가져오기를 펼치지 않는 도구는 그 파일을 직접 열어 읽는다.
 
 # AI Agent 지침
