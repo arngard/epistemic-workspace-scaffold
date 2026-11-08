@@ -46,5 +46,5 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 - [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md): 절차 축약의 조건, 착수 시점 판정, 브랜치와 등재의 형태 일관성. 작은 변경에 착수하며 절차를 줄일지 정할 때 읽는다.
 - [closing-steps.md](unit-task-workflow/closing-steps.md): 종료 흐름 다섯 단계의 세부. 단위 작업을 종료할 때 읽는다.
-- [merge-types.md](unit-task-workflow/merge-types.md): main 머지의 타입 결정, PR 타입과 브랜치 관리자 타입의 절차, 환경 안전망과 잔존 점검. 단위 작업 종료에서 main에 머지할 때 읽는다.
+- [merge-types.md](unit-task-workflow/merge-types.md): main 머지의 타입 결정, PR 타입과 브랜치 관리자 타입의 절차, main에 직접 올라간 커밋의 정정, 환경 안전망과 잔존 점검. 단위 작업 종료에서 main에 머지할 때 읽는다.
 - [stopping-points.md](unit-task-workflow/stopping-points.md): 진행 중 멈추는 자리. 여러 자식이나 여러 건을 이어 처리할 때 읽는다.
