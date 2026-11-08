@@ -45,6 +45,7 @@ tags: [agents, 절차, ingest, epistemic-rules]
    - 기존 노드 검색을 했는가? 충돌 검사를 했는가?
    - 규범 문서 링크(묶음의 트리거나 부모 문서 본문, 자손 규범은 폴더 `AGENTS.md`)와 문서의 `description`과 `reference/INDEX.yaml` 항목 갱신을 했는가?
    - 양방향 링크를 한쪽만 갱신하지 않았는가?
+   - 갱신한 기존 문서의 `date modified`를 그날로 올렸는가?
    - 새 사실이나 결정이 관련 strategy 또는 architecture 문서를 무효화하지는 않는가?
 
 ## 세부 절차

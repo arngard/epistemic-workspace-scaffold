@@ -17,7 +17,8 @@ from _audit_core import (  # noqa: E402
     Finding, VIOLATION, WARNING, content_dirs, git_ignored_paths, iter_md_files,
     registered_progress_dirs)
 from audit_frontmatter import check_front_matter  # noqa: E402
-from audit_structure import check_descriptors, check_empty_folders  # noqa: E402
+from audit_structure import (  # noqa: E402
+    check_claude_pointers, check_descriptors, check_empty_folders)
 
 HAS_GIT = shutil.which("git") is not None
 
@@ -114,6 +115,41 @@ class ProgressRegistryTest(unittest.TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.assertEqual(r.returncode, 0)
         self.assertEqual(r.stdout, b"")
+
+
+class MaterialFolderScopeTest(unittest.TestCase):
+    """reference/<자료 폴더>는 그 폴더 자신과 아래를 실체 0건 폴더 검사와 CLAUDE.md 포인터 검사에서 뺀다.
+
+    implementation/<하위 프로젝트>도 같은 판정(in_material_content)으로 빠지지만,
+    두 검사가 쓰는 content_dirs가 이미 그 안을 돌지 않으므로 여기서는 reference만 본다.
+    """
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name).resolve()
+        for rel in ("AGENTS.md", "reference/AGENTS.md"):
+            p = self.root / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(FM, encoding="utf-8")
+
+    def test_empty_folder_inside_material_skipped(self):
+        (self.root / "reference/src/empty").mkdir(parents=True)
+        (self.root / "reference/src/a.md").write_text("x", encoding="utf-8")
+        (self.root / "notes").mkdir()
+        (self.root / "notes/AGENTS.md").write_text(FM, encoding="utf-8")
+        found = {f.path for f in check_empty_folders(self.root)}
+        self.assertNotIn("reference/src/empty", found)
+        self.assertIn("notes", found)
+
+    def test_descriptor_copy_inside_material_needs_no_pointer(self):
+        (self.root / "reference/src/sub").mkdir(parents=True)
+        (self.root / "reference/src/sub/AGENTS.md").write_text("x", encoding="utf-8")
+        (self.root / "notes").mkdir()
+        (self.root / "notes/AGENTS.md").write_text(FM, encoding="utf-8")
+        found = {f.path for f in check_claude_pointers(self.root)}
+        self.assertNotIn("reference/src/sub", found)
+        self.assertIn("notes", found)
 
 
 def clean_env(home):

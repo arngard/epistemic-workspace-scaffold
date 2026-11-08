@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-28
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, 역할, 감사, epistemic-rules]
 description: 감사자가 git 이력과 상태로 보는 점검 항목의 기준과 확인 명령
 ---
@@ -15,13 +15,13 @@ description: 감사자가 git 이력과 상태로 보는 점검 항목의 기준
 - 아직 열린 작업이 의존하는 내용이나 오래 남길 결정 근거를 옮기지 않은 완료 노드 삭제
 - TASK_TREE 브랜치 속성이 가리키는 브랜치와 워크트리의 실존 대조
 - `reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반). 운영 파일([workspace-and-project-structure.md](../../workspace-and-project-structure.md) "네이밍 규칙: 워크스페이스 scaffolding과 콘텐츠")과 등재된 진척 기록 폴더의 변경은 제외한다.
-- `date closed` 히스토리 문서의 본문 변경(동결 위반 - 후속 문서 링크 추가와 정합 유지 수정은 허용, ref: [document-temporality.md](../../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
+- `date closed` 히스토리 문서의 의미 내용 변경(동결 위반. 허용되는 편집은 [document-temporality.md](../../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호"에 있다)
 - TASK_TREE `[x]`/`[-]` 노드의 과다 잔존 - [task-tree.md](../../../../worklog/AGENTS/epistemic-rules/task-tree.md) 삭제 규칙의 대상인데 보류 표시 없이 남은 노드
 - 상류 머지 밖에서 상류 묶음 목록(`tools/bundle-manifest.sha256`)을 바꾼 본 레포(레포지토리) 커밋
 
 ## 확인 방법
 
-- 브랜치 속성의 실존은 `git branch -a`와 `git worktree list`로, `date closed` 문서의 본문 변경은 `git log -p`로 본다.
+- 브랜치 속성의 실존은 `git branch -a`와 `git worktree list`로, `date closed` 문서의 의미 내용 변경은 `git log -p`로 본다.
 - `reference/` 원본의 수정, 삭제, 이동은 `git -c core.quotepath=false log --first-parent --diff-filter=MDR --name-status <범위> -- reference/ ":(exclude)reference/AGENTS.md" ":(exclude)reference/CLAUDE.md" ":(exclude)reference/AGENTS/" ":(exclude)reference/INDEX*.md" ":(exclude)reference/INDEX.yaml"`로 본다. 자손이 등재한 진척 기록 폴더도 뺀다: `python3 -B AGENTS/epistemic-rules/tools/audit.py --progress-folders .`가 내는 줄마다 `":(exclude)<줄>"`을 경로 지정에 더한다. `--first-parent`는 머지 커밋에서만 가한 수정도 잡는다.
   - 범위는 직전 클린 커밋이 있으면 `<직전 클린 커밋>..HEAD`로, 없으면 상속 이력을 빼기 위해 `<상류>/main..HEAD`로 잡는다. 상류 원격이 없으면 이력 없이 가져온 워크스페이스로 보고 범위 지정 없이 본다. 스캐폴드 이력을 받았는데 상류 원격이 없으면 시작 상태가 갖춰지지 않은 것으로 보고한다.
   - 이동(R 행)은 파생 노드의 링크를 끊으므로 위반으로 보고한다. 머지 커밋이 나오면 `git log <머지>^1..<머지>^2`로 원인 커밋을 찾는다.

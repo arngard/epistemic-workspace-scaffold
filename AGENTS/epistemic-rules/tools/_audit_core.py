@@ -363,8 +363,9 @@ def in_material_content(root: Path, path: Path) -> bool:
     루트 상대 경로의 첫 성분이 reference나 implementation이고 둘째 성분이
     AGENTS가 아니면 참이다. 자료 폴더 자신은 거짓이고, 그 직속 파일
     (디스크립터와 색인 쪽 포함)은 참이다. 그런 예외는 호출부가 정한다.
-    감사 순회(iter_md_files)와 묶음 파일 목록(_bundle_core.bundle_files)이
-    함께 쓴다. 자료로 들여온 사본이나 하위 프로젝트의 클론을 규약 문서나
+    감사 순회(iter_md_files), 묶음 파일 목록(_bundle_core.bundle_files),
+    실체 0건 폴더 검사(check_empty_folders), CLAUDE.md 포인터 검사
+    (check_claude_pointers)가 함께 쓴다. 자료로 들여온 사본이나 하위 프로젝트의 클론을 규약 문서나
     상류 묶음으로 오인하지 않으려는 것이다.
     """
     parts = path.relative_to(root).parts
