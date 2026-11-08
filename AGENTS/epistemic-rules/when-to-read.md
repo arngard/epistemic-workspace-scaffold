@@ -1,6 +1,6 @@
 ---
 date created: 2026-11-03
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [규칙, epistemic-rules]
 description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확인). 작업을 시작할 때와 작업의 종류나 상황이 바뀔 때 연다
 ---
@@ -32,6 +32,7 @@ description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확
 
 - 끊긴 뒤 재진입, 다른 세션 산출물 발견 -> [세션 경계 규약](session-boundaries.md)
 - 원본 삭제, 대폭 재편, 머지 판단 -> [원본 보호 원칙](original-protection-principle.md)
+- main에 브랜치를 거치지 않은 커밋이 올라간 것을 발견했을 때 -> [머지 타입 분기](unit-task-workflow/merge-types.md) "main에 직접 올라간 커밋의 정정"
 - 설계 판단이 갈릴 때 -> [설계 원칙](design-principles.md)
 - 단위 작업 개념 확인, 단위 크기 판단, 워크플로 조립 판단 -> [단위 작업 개념](unit-task.md)
 
