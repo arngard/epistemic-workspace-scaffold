@@ -34,7 +34,8 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
  14. front matter tags의 형식과 표기 - 경고
      (읽을 수 없는 형식, 공백 든 태그와 숫자만의 태그, NFKC와 대소문자, 공백,
       하이픈, 밑줄만 다른 표기 묶음. 뜻이 같은 다른 낱말은 감사자 몫)
- 15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더와 reference/<자료 폴더> 아래 제외) - 경고
+ 15. 실체 0건 폴더 (디스크립터 외 항목 없음, 골격 폴더 제외. reference/<자료 폴더>와
+     implementation/<하위 프로젝트>는 그 폴더 자신과 아래를 모두 제외) - 경고
      (`CLAUDE.md`와 규범 폴더, 색인 파일은 실체로 세지 않음)
      (찌꺼기인지 사양 동결인지 첫 실체 대기인지는 감사자가 판단)
  16. 디스크립터와 `CLAUDE.md` 외 항목이 없는 동명 문서-폴더 쌍 - 경고
@@ -75,8 +76,9 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      생성 색인 쪽 파일은 제외
      (ref: AGENTS/epistemic-rules/writing-style/reference-markers.md)
  25. AGENTS.md가 있는 폴더(규범 폴더 제외)의 CLAUDE.md 포인터 - 경고
-     (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님. 순차 분류 하위와
-      reference/<자료 폴더> 아래 제외)
+     (CLAUDE.md가 없거나 내용이 `@AGENTS.md`가 아님. 순차 분류 하위 제외.
+      reference/<자료 폴더>와 implementation/<하위 프로젝트>는 그 폴더 자신과
+      아래를 모두 제외)
  26. `@` 가져오기 줄(줄 전체가 @경로)의 대상 부재 - 위반
      (경로는 줄을 둔 파일 위치 기준. 묶음 세부 폴더 AGENTS/epistemic-rules/ 안의
       가져오기는 경고. front matter와 코드 펜스 안은 제외)

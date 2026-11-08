@@ -118,7 +118,11 @@ class ProgressRegistryTest(unittest.TestCase):
 
 
 class MaterialFolderScopeTest(unittest.TestCase):
-    """reference/<자료 폴더> 아래는 실체 0건 폴더 검사와 CLAUDE.md 포인터 검사에서 뺀다."""
+    """reference/<자료 폴더>는 그 폴더 자신과 아래를 실체 0건 폴더 검사와 CLAUDE.md 포인터 검사에서 뺀다.
+
+    implementation/<하위 프로젝트>도 같은 판정(in_material_content)으로 빠지지만,
+    두 검사가 쓰는 content_dirs가 이미 그 안을 돌지 않으므로 여기서는 reference만 본다.
+    """
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
