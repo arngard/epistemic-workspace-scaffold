@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-21
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, 역할, 감사, epistemic-rules]
 ---
 
@@ -18,7 +18,7 @@ tags: [agents, 역할, 감사, epistemic-rules]
 6. git 맥락 검출 항목을 [git-context.md](git-context.md) "확인 방법"대로 확인한다.
 7. 메타-콘텐츠 영역 혼동을 본 레포(레포지토리)가 만든 머지와 그 본문으로 점검한다. 상류 원격이 있으면 `git log --first-parent --merges <상류>/main..HEAD`로 상속 이력을 빼고, 없으면 `git log --first-parent --merges`로 직전 7~10개 단위 작업에 해당하는 최근 머지를 본다. 단서는 다음과 같다.
    - 커밋 메시지의 "정정", "되돌림", "revert", "롤백", "자율" 같은 키워드 빈도.
-   - 머지 커밋마다 대응하는 단위 작업 시작점 커밋(워크로그 등재)이 앞서 있는가. 검토 통과 여부는 커밋에서 판별하지 않는다.
+   - 머지 커밋마다 대응하는 단위 작업 시작점 커밋(워크로그 등재)이 앞서 있는가. 머지 메시지에 `main 직접 커밋 정정` 문구가 있는 정정 머지([merge-types.md](../../unit-task-workflow/merge-types.md) "main에 직접 올라간 커밋의 정정")는 시작점 커밋이 없어도 자율 머지로 판정하지 않고 머지 목록에만 올린다. 검토 통과 여부는 커밋에서 판별하지 않는다.
    - 머지 사이의 시간 간격과 상호 참조 - 직후 단위 작업이 직전 것을 되돌리거나 같은 파일을 반복 수정하는가.
    - STATUS, TASK_TREE 본문에 외부 컨테이너 호명, 외부 SSOT(single source of truth; 단일 진실 공급원) 링크, 자매 인스턴스 작업 이력이 들어갔는가.
 8. 규범 문장을 본다. 호출자가 대상을 지정하면 그것을 따른다. 지정이 없으면 대상은 `git log -1 --first-parent --format=%h --grep="^Semantic-Audit: clean$"`로 찾은 직전 클린 커밋 이후 바뀐 규범 문서이고, 클린 커밋이 없으면 7단계의 최근 머지가 바꾼 규범 문서다. 규범 문서는 `AGENTS.md`, `AGENTS/` 아래 문서, `.claude/skills/`와 `.claude/agents/`의 정의이며, `reference/<자료 폴더>/` 아래는 뺀다. 규범 묶음이 서브모듈 안에 있으면 클린 커밋의 포인터부터 현재 포인터까지 그 서브모듈의 규범 문서 변경도 본다. 기준은 다음처럼 적용한다.
