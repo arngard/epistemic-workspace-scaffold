@@ -56,7 +56,8 @@ def is_index_file(name: str) -> bool:
 # 폴더 CLAUDE.md의 표준 내용 - 같은 폴더의 AGENTS.md를 가져온다.
 CLAUDE_POINTER = "@AGENTS.md"
 # 가져오기 줄: 줄 전체가 공백 없는 @경로. 문장 속 @경로는 가져오기 검사 대상이 아니다.
-IMPORT_LINE_RE = re.compile(r"^@(\S+)$")
+# @[이름](경로) 줄은 다른 도구의 가져오기 형식이라 제외한다. 경로는 링크 검사가 본다.
+IMPORT_LINE_RE = re.compile(r"^@(?!\[)(\S+)$")
 
 # 에피스테믹 골격이 출고하는 표준 폴더. 실체 0건 검출에서 상시 예외.
 SKELETON_DIRS = {

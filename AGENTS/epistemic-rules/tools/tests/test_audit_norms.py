@@ -77,6 +77,10 @@ class NormsDirTest(unittest.TestCase):
         self.write("AGENTS/epistemic-rules/x.md", FM + "@../epistemic-rules.md\n")
         self.assertEqual([f.severity for f in check_imports(self.root)], [WARNING])
 
+    def test_bracket_import_line_ignored(self):
+        self.write("AGENTS.md", FM + "@[x](nope.md)\n")
+        self.assertEqual(check_imports(self.root), [])
+
     def test_import_in_code_fence_ignored(self):
         self.write("AGENTS.md", FM + "```\n@nope.md\n```\n")
         self.assertEqual(check_imports(self.root), [])
