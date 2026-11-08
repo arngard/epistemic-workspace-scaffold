@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-07
+date modified: 2026-10-26
 tags: [worklog]
 description: 감사와 주기 작업의 마지막 수행 시각
 ---
