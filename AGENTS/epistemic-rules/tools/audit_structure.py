@@ -255,7 +255,8 @@ def check_norms_dir_descriptors(root: Path) -> list[Finding]:
 
 
 EPISTEMIC_DIR = "epistemic-structure"
-# 날짜 순차 분류 폴더 이름: 연(yyyy), 연월(yyyy-MM), 연월일(yyyy-MM-dd).
+# 이름이 날짜인 폴더: 연(yyyy), 연월(yyyy-MM), 연월일(yyyy-MM-dd).
+# 순차 분류 선언이 없어도 이름이 구성을 설명하므로 부모 문서 검사에서 뺀다.
 DATE_FOLDER_RE = re.compile(r"\d{4}(-\d{2}(-\d{2})?)?")
 
 
