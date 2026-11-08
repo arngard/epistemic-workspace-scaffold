@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, git, 브랜치, epistemic-rules]
 ---
 
@@ -47,4 +47,4 @@ docs/260414-architecture-update
 
 ## 작업 브랜치 type
 
-`feature`, `fix`, `docs`, `style`, `refactor`, `test`, `chore` 중 하나를 쓴다.
+`feature`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `research`, `data` 중 하나를 쓴다. `research`는 분석과 실험, `data`는 외부 자료의 추가와 갱신이다.
