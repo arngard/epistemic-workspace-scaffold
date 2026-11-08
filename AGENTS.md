@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [규칙, 문서관리]
 ---
 
@@ -14,7 +14,7 @@ tags: [규칙, 문서관리]
 
 ## 이 워크스페이스의 정체
 
-이 파일은 스캐폴드 템플릿이다. 인스턴스(자식 워크스페이스)는 위에서 가져온 상류 규범(요지 [AGENTS/epistemic-rules.md](AGENTS/epistemic-rules.md)와 그 묶음)을 상속하고 본 절을 자기 도메인 정체성으로 특수화한다. 상속 자산의 변경과 특수화는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다 - 상속된 자산을 제자리에서 고치기 전에 상류 반영과 도메인 특수화를 분기해 사용자에게 짚는다.
+이 파일은 스캐폴드 템플릿이다. 인스턴스(자식 워크스페이스)는 위에서 가져온 상류 규범(요지 [AGENTS/epistemic-rules.md](AGENTS/epistemic-rules.md)와 그 묶음)을 상속하고 본 절을 자기 도메인 정체성으로 특수화한다. 상속 자산의 변경과 특수화는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다 - 상속된 자산을 제자리에서 고치기 전에 두 갈래(상류 반영, 도메인 특수화) 가운데 어느 쪽인지 나눠 제시하고 사용자의 확인을 받는다.
 
 ## 이 워크스페이스의 규범
 

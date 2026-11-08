@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-06
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, 절차, git, epistemic-rules]
 ---
 
@@ -33,7 +33,7 @@ PR 상태 확인 도구: `gh pr view <number> --repo <owner>/<repository> --json
 
 - 실패 원인을 로그에서 파악한다. `gh pr checks <number>`로 체크 상태 일람, `gh run view <run-id> --log-failed`로 실패 로그 확인 (GitHub MCP 환경은 `pull_request_read`의 `get_check_runs`).
 - 본 PR의 변경이 원인이면 본 PR 안에서 정정 커밋으로 체크를 성공 상태로 만든다. 실패를 방치한 채 리뷰 응답이나 머지를 진행하지 않는다.
-- 원인이 본 PR의 변경 밖이면(기존 부채, 인프라, 외부 서비스 장애 등) 사용자에게 짚고 처리 방향을 확인한다.
+- 원인이 본 PR의 변경 밖이면(기존 부채, 인프라, 외부 서비스 장애 등) 사용자에게 알리고 처리 방향을 확인한다.
 - 정정 푸시는 체크를 다시 트리거하므로, 모든 체크의 성공을 확인할 때까지 같은 대기, 확인 사이클을 반복한다.
 
 ## 머지 충돌이 생기면 즉시 처리

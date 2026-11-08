@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-11-07
+date modified: 2026-11-08
 tags: [agents, 워크스페이스, 운영, epistemic-rules]
 ---
 
@@ -27,6 +27,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 - 완료한 처리 단위 노드를 `[x]`로 표시하고, 새로 드러난 항목은 즉시 추가한다.
 - 상위 지시 아래 자식 단위의 경계와 반복 작업에서 멈추는 자리는 [stopping-points.md](unit-task-workflow/stopping-points.md)가 정한다.
 - 컨텍스트 압축이 임박하면 진행 중 노드와 상태 속성을 다음 세션이 이어받을 형태로 다듬는다.
+- 압축 임박이 아니어도 큰 단계를 넘기 전과 사용자에게 보고하기 전에 기록을 스스로 점검한다. 세션 임시 공간(레포 밖 임시 폴더 등)에만 있는 원장, 판정, 넘길 일은 작업 트리의 진행 중 노드와 상태 속성으로 옮겨 커밋한다. 계획을 따로 문서로 둔 작업이면 그 문서로 옮긴다. 세션 임시 공간은 세션이 끝나거나 머신이 재시작하면 사라질 수 있다. 원격에 없는 커밋을 가리키는 서브모듈 포인터 변경은 이 기록 커밋에 넣지 않는다. 원장의 내용은 이렇게 커밋하고, 원장 파일 자체의 사본은 git이 무시하는 레포의 `.tmp/`에 둔다([tools.md](tools.md) "기계 감사 스크립트").
 - 작업 브랜치는 자유롭게 푸시해도 되고 안 해도 된다. 세션이 끊길 가능성이 있으면 푸시하는 편이 안전하다.
 
 ## 종료 흐름
@@ -45,5 +46,5 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 - [procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md): 절차 축약의 조건, 착수 시점 판정, 브랜치와 등재의 형태 일관성. 작은 변경에 착수하며 절차를 줄일지 정할 때 읽는다.
 - [closing-steps.md](unit-task-workflow/closing-steps.md): 종료 흐름 다섯 단계의 세부. 단위 작업을 종료할 때 읽는다.
-- [merge-types.md](unit-task-workflow/merge-types.md): main 머지의 타입 결정, PR 타입과 브랜치 관리자 타입의 절차, 환경 안전망과 잔존 점검. 단위 작업 종료에서 main에 머지할 때 읽는다.
+- [merge-types.md](unit-task-workflow/merge-types.md): main 머지의 타입 결정, PR 타입과 브랜치 관리자 타입의 절차, main에 직접 올라간 커밋의 정정, 환경 안전망과 잔존 점검. 단위 작업 종료에서 main에 머지할 때 읽는다.
 - [stopping-points.md](unit-task-workflow/stopping-points.md): 진행 중 멈추는 자리. 여러 자식이나 여러 건을 이어 처리할 때 읽는다.
