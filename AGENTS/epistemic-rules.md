@@ -29,8 +29,8 @@ tags: [규칙, epistemic-rules]
 
 ## 이럴 때 읽는다
 
-작업을 시작할 때와 작업의 종류나 상황이 바뀔 때 읽기 목록 [AGENTS/epistemic-rules/when-to-read.md](epistemic-rules/when-to-read.md)를 열고, 폴더의 AGENTS.md와 위 작업 흐름이 짚는 문서에 더해 거기서 해당하는 문서를 읽는다. 아래 셋은 작업 도중에 생기고 놓치면 되돌리기 어려워 여기에도 둔다.
+작업을 시작할 때와 작업의 종류나 상황이 바뀔 때 읽기 목록 [AGENTS/epistemic-rules/when-to-read.md](epistemic-rules/when-to-read.md)를 열고, 폴더의 AGENTS.md와 위 작업 흐름이 가리키는 문서에 더해 거기서 해당하는 문서를 읽는다. 아래 셋은 작업 도중에 생기고 놓치면 되돌리기 어려워 여기에도 둔다.
 
 - 새 사실, 의견, 예측, 결정, 자료가 들어올 때 -> [정보 유입 처리](epistemic-rules/ingest-workflow.md)
 - 끊긴 뒤 재진입, 다른 세션 산출물 발견 -> [세션 경계 규약](epistemic-rules/session-boundaries.md)
-- main에 브랜치를 거치지 않은 커밋이 올라간 것을 발견했을 때 -> [머지 타입 분기](epistemic-rules/unit-task-workflow/merge-types.md) "main에 직접 올라간 커밋의 정정"
+- 브랜치를 거치지 않은 main 커밋 발견 -> [머지 타입 분기](epistemic-rules/unit-task-workflow/merge-types.md) "main에 직접 올라간 커밋의 정정"

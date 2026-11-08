@@ -15,7 +15,7 @@ description: 감사자가 git 이력과 상태로 보는 점검 항목의 기준
 - 아직 열린 작업이 의존하는 내용이나 오래 남길 결정 근거를 옮기지 않은 완료 노드 삭제
 - TASK_TREE 브랜치 속성이 가리키는 브랜치와 워크트리의 실존 대조
 - `reference/` 원본 파일의 수정, 삭제, 이동(불변 원칙 위반). 운영 파일([workspace-and-project-structure.md](../../workspace-and-project-structure.md) "네이밍 규칙: 워크스페이스 scaffolding과 콘텐츠")과 등재된 진척 기록 폴더의 변경은 제외한다.
-- `date closed` 히스토리 문서의 의미 내용 변경(동결 위반. 허용되는 편집은 [document-temporality.md](../../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호")
+- `date closed` 히스토리 문서의 의미 내용 변경(동결 위반. 허용되는 편집은 [document-temporality.md](../../document-temporality.md) "날짜 프리픽스의 의미와 종결 신호"에 있다)
 - TASK_TREE `[x]`/`[-]` 노드의 과다 잔존 - [task-tree.md](../../../../worklog/AGENTS/epistemic-rules/task-tree.md) 삭제 규칙의 대상인데 보류 표시 없이 남은 노드
 - 상류 머지 밖에서 상류 묶음 목록(`tools/bundle-manifest.sha256`)을 바꾼 본 레포(레포지토리) 커밋
 
