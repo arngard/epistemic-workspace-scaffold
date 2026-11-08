@@ -358,22 +358,38 @@ def iter_md_files(root: Path):
         yield path
 
 
-def in_material_content(root: Path, path: Path) -> bool:
-    """path가 자료 폴더(reference/, implementation/)에서 규범 폴더 밖인지 판정한다.
+def in_reference_material(root: Path, path: Path) -> bool:
+    """path가 reference/<자료 폴더>와 그 아래(규범 폴더 reference/AGENTS/ 밖)인지 판정한다.
 
-    루트 상대 경로의 첫 성분이 reference나 implementation이고 둘째 성분이
-    AGENTS가 아니면 참이다. 자료 폴더 자신은 거짓이고, 그 직속 파일
-    (디스크립터와 색인 쪽 포함)은 참이다. 그런 예외는 호출부가 정한다.
-    감사 순회(iter_md_files), 묶음 파일 목록(_bundle_core.bundle_files),
-    실체 0건 폴더 검사(check_empty_folders), CLAUDE.md 포인터 검사
-    (check_claude_pointers)가 함께 쓴다. 자료로 들여온 사본이나 하위 프로젝트의 클론을 규약 문서나
-    상류 묶음으로 오인하지 않으려는 것이다.
+    들여온 원본 자료의 구조라 규약 검사 대상이 아니다. reference/ 자신은
+    거짓이고, 그 직속 파일(디스크립터와 색인 쪽 포함)은 참이다. 그런 예외는
+    호출부가 정한다.
     """
     parts = path.relative_to(root).parts
-    return (
-        len(parts) >= 2 and parts[0] in (REFERENCE_DIR, IMPLEMENTATION_DIR)
-        and parts[1] != NORMS_DIR_NAME
-    )
+    return len(parts) >= 2 and parts[0] == REFERENCE_DIR and parts[1] != NORMS_DIR_NAME
+
+
+def in_implementation_project(root: Path, path: Path) -> bool:
+    """path가 implementation/<하위 프로젝트>와 그 아래(규범 폴더 implementation/AGENTS/ 밖)인지 판정한다.
+
+    하위 프로젝트의 소스 트리는 코드 생태계 관례가 지배한다 (ref:
+    folder-structure.md "폴더 구조와 디스크립터" implementation 예외).
+    implementation/ 자신은 거짓이고, 그 직속 파일은 참이다.
+    """
+    parts = path.relative_to(root).parts
+    return len(parts) >= 2 and parts[0] == IMPLEMENTATION_DIR and parts[1] != NORMS_DIR_NAME
+
+
+def in_material_content(root: Path, path: Path) -> bool:
+    """path가 reference 자료나 구현 하위 프로젝트 안인지 판정한다.
+
+    감사 순회(iter_md_files)와 묶음 파일 목록(_bundle_core.bundle_files)이
+    쓴다. 자료로 들여온 사본이나 하위 프로젝트의 문서를 규약 문서나 상류
+    묶음으로 오인하지 않으려는 것이다. 실체 0건 폴더 검사와 CLAUDE.md 포인터
+    검사는 reference 쪽만 이 판정으로 빼고(in_reference_material), 구현 쪽은
+    순회 대상(content_dirs)에서 따로 빠진다.
+    """
+    return in_reference_material(root, path) or in_implementation_project(root, path)
 
 
 def in_norms_dir(root: Path, d: Path) -> bool:

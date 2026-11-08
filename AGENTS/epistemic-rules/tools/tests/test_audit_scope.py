@@ -14,7 +14,8 @@ TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, TOOLS)
 
 from _audit_core import (  # noqa: E402
-    Finding, VIOLATION, WARNING, content_dirs, git_ignored_paths, iter_md_files,
+    Finding, VIOLATION, WARNING, content_dirs, git_ignored_paths,
+    in_implementation_project, in_reference_material, iter_md_files,
     registered_progress_dirs)
 from audit_frontmatter import check_front_matter  # noqa: E402
 from audit_structure import (  # noqa: E402
@@ -141,6 +142,11 @@ class MaterialFolderScopeTest(unittest.TestCase):
         found = {f.path for f in check_empty_folders(self.root)}
         self.assertNotIn("reference/src/empty", found)
         self.assertIn("notes", found)
+
+    def test_reference_predicate_excludes_implementation(self):
+        self.assertTrue(in_reference_material(self.root, self.root / "reference/src"))
+        self.assertFalse(in_reference_material(self.root, self.root / "implementation/proj"))
+        self.assertTrue(in_implementation_project(self.root, self.root / "implementation/proj"))
 
     def test_descriptor_copy_inside_material_needs_no_pointer(self):
         (self.root / "reference/src/sub").mkdir(parents=True)
