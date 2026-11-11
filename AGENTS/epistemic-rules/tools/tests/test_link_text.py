@@ -125,6 +125,29 @@ class LinkTextTest(unittest.TestCase):
         self.write("a/x y.md")
         self.assertEqual(self.link("b/z.md", "a/x%20y.md", "../a/x%20y.md"), 0)
 
+    def test_inline_code_display(self):
+        # 표시텍스트 전체를 인라인 코드로 감싸도 안쪽 파일명을 검사한다.
+        self.assertEqual(self.link("b/z.md", "`x.md`", "../a/x.md"), 0)
+        self.assertEqual(self.link("b/z.md", "`a/x.md`", "../a/x.md"), 0)
+        self.assertEqual(self.link("b/z.md", "`old.md`", "../a/x.md"), 1)
+        self.assertEqual(self.link("b/z.md", "`old/x.md`", "../a/x.md"), 1)
+
+    def test_quoted_section_display(self):
+        # 파일명 뒤에 인용 섹션을 붙여도 앞의 파일명 부분을 검사한다.
+        self.assertEqual(self.link("b/z.md", 'x.md "절 이름"', "../a/x.md"), 0)
+        self.assertEqual(self.link("b/z.md", 'old.md "절 이름"', "../a/x.md"), 1)
+        self.assertEqual(self.link("b/z.md", '`old.md` "절"', "../a/x.md"), 1)
+
+    def test_inline_code_phrase_skipped(self):
+        # 인라인 코드 뒤에 말이 이어지는 자연어 문구는 검사하지 않는다.
+        self.assertEqual(self.link("b/z.md", "`old.md`의 설명", "../a/x.md"), 0)
+        self.assertEqual(self.link("b/z.md", "`abc` 영상", "../a/x.md"), 0)
+
+    def test_link_inside_inline_code_skipped(self):
+        # 문장 속 인라인 코드와 이중 백틱 코드에 든 예시 링크는 검사하지 않는다.
+        self.write("b/z.md", "예: `[old.md](../a/x.md)` 와 ``[`old.md`](../a/x.md)``\n")
+        self.assertEqual(len(check_link_text(self.root)), 0)
+
     def test_missing_target(self):
         # 대상 실존은 링크 검사 몫이다. 표시텍스트는 대상과만 맞춘다.
         self.assertEqual(self.link("b/z.md", "a/no.md", "../a/no.md"), 0)
