@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-08
+date modified: 2026-11-11
 tags: [agents, git, 브랜치, epistemic-rules]
 ---
 
@@ -47,4 +47,4 @@ docs/260414-architecture-update
 
 ## 작업 브랜치 type
 
-`feature`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `research`, `data` 중 하나를 쓴다. `research`는 분석과 실험, `data`는 외부 자료의 추가와 갱신이다.
+`feature`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`, `research`, `data` 중 하나를 쓴다. `perf`는 동작을 바꾸지 않는 성능 개선, `build`는 빌드 체계와 외부 의존성, `ci`는 CI(continuous integration; 지속적 통합) 설정과 워크플로, `revert`는 앞선 변경의 되돌림, `research`는 분석과 실험, `data`는 외부 자료의 추가와 갱신이다.

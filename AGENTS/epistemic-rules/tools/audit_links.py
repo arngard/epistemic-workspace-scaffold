@@ -8,6 +8,9 @@ from pathlib import Path
 
 from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
 
+# 파일명 뒤에 큰따옴표로 인용 섹션을 붙인 표시텍스트: x.md "섹션"
+LINK_TEXT_SECTION_RE = re.compile(r'^(\S+)\s+"[^"]*"$')
+
 
 def check_links(root: Path) -> list[Finding]:
     out: list[Finding] = []
@@ -77,8 +80,9 @@ def check_link_text(root: Path) -> list[Finding]:
     정한다. 파일명 형태의 표시텍스트만 본다 - 공백 없이 (.md로 끝나거나
     / 를 포함한 것), 그리고 경로 성분 중 하나가 날짜 프리픽스로 시작하면서 .md나
     / 로 끝나는 것(날짜 문서와 폴더는 이름에 공백이 든다). 그 밖에 공백이 든
-    자연어 문구와 타이틀은 제외된다. 표시텍스트와 대상 모두 %20 등을 디코딩해
-    비교한다.
+    자연어 문구와 타이틀은 제외된다. 표시텍스트 전체를 인라인 코드로 감싼 것은
+    감싼 안쪽을, 파일명 뒤에 큰따옴표로 인용 섹션을 붙인 것은 앞의 파일명 부분을
+    같은 기준으로 본다. 표시텍스트와 대상 모두 %20 등을 디코딩해 비교한다.
     """
     out: list[Finding] = []
     for path in iter_md_files(root):
@@ -86,9 +90,25 @@ def check_link_text(root: Path) -> list[Finding]:
         text = FRONT_MATTER_RE.sub("", read(path))
         text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
         text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
-        text = re.sub(r"`[^`\n]*`", "", text)  # 인라인 코드 - 규약 설명의 예시 링크 오탐 방지
+        # 인라인 코드 - 규약 설명의 예시 링크 오탐 방지. 링크 표시텍스트 맨 앞의
+        # 인라인 코드([`x.md`](...))는 표시텍스트의 일부라 남긴다.
+        text = re.sub(r"``[^\n]*?``", "", text)
+        text = re.sub(
+            r"`[^`\n]*`",
+            lambda m: m.group(0) if m.string[m.start() - 1:m.start()] == "[" else "",
+            text,
+        )
         for disp, target in LINK_TEXT_RE.findall(text):
-            disp_clean = urllib.parse.unquote(disp.strip())
+            disp_clean = disp.strip()
+            m = LINK_TEXT_SECTION_RE.match(disp_clean)
+            if m:
+                disp_clean = m.group(1)  # 파일명 + 인용 섹션
+            if (len(disp_clean) > 2 and disp_clean.startswith("`")
+                    and disp_clean.endswith("`") and disp_clean.count("`") == 2):
+                disp_clean = disp_clean[1:-1]  # 표시텍스트 전체를 감싼 인라인 코드
+            elif "`" in disp_clean:
+                continue  # 인라인 코드에 말이 붙은 문구 (`x.md`의 "절")
+            disp_clean = urllib.parse.unquote(disp_clean)
             if not disp_clean:
                 continue
             if " " in disp_clean and not (
