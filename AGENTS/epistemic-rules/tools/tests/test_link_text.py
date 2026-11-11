@@ -142,6 +142,14 @@ class LinkTextTest(unittest.TestCase):
         # 인라인 코드 뒤에 말이 이어지는 자연어 문구는 검사하지 않는다.
         self.assertEqual(self.link("b/z.md", "`old.md`의 설명", "../a/x.md"), 0)
         self.assertEqual(self.link("b/z.md", "`abc` 영상", "../a/x.md"), 0)
+        self.assertEqual(self.link("b/z.md", '`old/x.md`의 "절"', "../a/x.md"), 0)
+
+    def test_adjacent_inline_code_links(self):
+        # 한 줄에 인라인 코드 표시텍스트 링크가 여럿이어도 각각 따로 본다.
+        self.write("b/z.md", "[`x.md`](../a/x.md), [`y.md`](../a/y.md) 참고 `z` 끝\n")
+        self.assertEqual(len(check_link_text(self.root)), 0)
+        self.write("b/z.md", "[`x.md`](../a/x.md), [`old.md`](../a/y.md)\n")
+        self.assertEqual(len(check_link_text(self.root)), 1)
 
     def test_link_inside_inline_code_skipped(self):
         # 문장 속 인라인 코드와 이중 백틱 코드에 든 예시 링크는 검사하지 않는다.

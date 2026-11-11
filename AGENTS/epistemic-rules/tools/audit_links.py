@@ -93,7 +93,11 @@ def check_link_text(root: Path) -> list[Finding]:
         # 인라인 코드 - 규약 설명의 예시 링크 오탐 방지. 링크 표시텍스트 맨 앞의
         # 인라인 코드([`x.md`](...))는 표시텍스트의 일부라 남긴다.
         text = re.sub(r"``[^\n]*?``", "", text)
-        text = re.sub(r"(?<!\[)`[^`\n]*`", "", text)
+        text = re.sub(
+            r"`[^`\n]*`",
+            lambda m: m.group(0) if m.string[m.start() - 1:m.start()] == "[" else "",
+            text,
+        )
         for disp, target in LINK_TEXT_RE.findall(text):
             disp_clean = disp.strip()
             m = LINK_TEXT_SECTION_RE.match(disp_clean)
@@ -102,6 +106,8 @@ def check_link_text(root: Path) -> list[Finding]:
             if (len(disp_clean) > 2 and disp_clean.startswith("`")
                     and disp_clean.endswith("`") and disp_clean.count("`") == 2):
                 disp_clean = disp_clean[1:-1]  # 표시텍스트 전체를 감싼 인라인 코드
+            elif "`" in disp_clean:
+                continue  # 인라인 코드에 말이 붙은 문구 (`x.md`의 "절")
             disp_clean = urllib.parse.unquote(disp_clean)
             if not disp_clean:
                 continue
