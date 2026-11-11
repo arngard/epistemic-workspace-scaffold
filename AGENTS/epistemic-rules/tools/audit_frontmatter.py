@@ -47,8 +47,12 @@ def check_front_matter(root: Path) -> list[Finding]:
                 f'date created({dates["date created"]})가 date modified({dates["date modified"]})보다 늦음 - 오기 확인',
             ))
         # date closed는 선택 필드이며 히스토리 문서(날짜 프리픽스) 전용이다.
-        # 프리픽스 없는 현재적 문서에 달리면 시간성 혼합 신호.
-        if re.search(r"^date closed\s*:", body, re.MULTILINE) and not has_date_prefix(path):
+        # 프리픽스 없는 현재적 문서에 달리면 시간성 혼합 신호. 날짜 프리픽스
+        # 문서를 나눈 하위 문서는 날짜 프리픽스 폴더 아래 두므로 인정한다.
+        dated = has_date_prefix(path) or any(
+            DATE_PREFIX_RE.match(part) for part in path.relative_to(root).parts[:-1]
+        )
+        if re.search(r"^date closed\s*:", body, re.MULTILINE) and not dated:
             out.append(Finding(
                 VIOLATION, "temporality", rel,
                 "날짜 프리픽스 없는 문서에 date closed - 현재적 문서에는 종결 개념이 없다 (시간성 혼합)",
