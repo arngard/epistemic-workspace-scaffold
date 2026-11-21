@@ -6,7 +6,12 @@ session-boundaries.md "세션 시작" 1-4단계 가운데 판단이 필요 없�
 이 요약만 읽게 하려는 것이다. 무엇을 모으는지는 그 절이 정하고, 이 스크립트는
 그 수집을 구현한다. 머리말은 그 절의 경로를 가리킨다.
 
-절의 순서: 짧고 판정이 걸린 절(형식 감사, 의미 감사 판정, reference 미처리,
+인스턴스 확장: 레포 루트의 AGENTS/session-brief/ 바로 아래 *.py를 이름 순으로
+`python -B <확장> <루트>`로 실행하고(작업 폴더는 루트, 표준 입력 없음, 환경 변수
+EPISTEMIC_AUDIT_TOOLS에 이 도구 폴더), 표준 출력의 텍스트를 "확장: <파일 이름 줄기>"
+절로 붙인다. 계약은 tools.md "세션 시작 요약 스크립트"에 있다.
+
+절의 순서: 인스턴스 확장 절을 맨 앞에 두고, 이어서 짧고 판정이 걸린 절(형식 감사, 의미 감사 판정, reference 미처리,
 워크트리, 머지 전 브랜치)을 앞에, 길어질 수 있는 최근 머지 문서 목록을 끝에
 둔다. 출력이 MAX_CHARS를 넘어 끝에서 자를 때 판정이 먼저 빠지지 않게 하려는
 것이다. 최근 머지 한 건의 문서는 MAX_DOCS_PER_MERGE개까지만 적고 남은 개수와
@@ -71,6 +76,10 @@ PENDING_STATES = ("미등록", "처리 대기")
 STATE_RE = re.compile(r"`([^`]+)`")
 INDEX_PAGE_RE = re.compile(r"^INDEX\d*\.md$")
 IN_PROGRESS_PREFIX = "- [/]"
+EXTENSION_DIR_REL = Path("AGENTS/session-brief")
+EXTENSION_TIMEOUT = 30
+EXTENSION_MAX_CHARS = 2000
+STDERR_LIMIT = 200
 
 GIT_ENV = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never")
 
@@ -259,19 +268,80 @@ def parse_semantic(code: int, out: str) -> "list[str]":
     return lines[-1:] if lines else [f"check_semantic_audit.py 종료 코드 {code}, 출력 없음. 직접 실행해 본다."]
 
 
+def extension_sections(root: Path) -> "list[tuple[str, list[str]]]":
+    """AGENTS/session-brief/ 바로 아래 *.py 확장을 이름 순으로 실행해 절마다 하나씩 낸다.
+
+    이름이 _나 .으로 시작하는 항목, .py가 아닌 파일, 하위 폴더, 심볼릭 링크는
+    실행하지 않는다. 실패한 확장은 출력을 버리고 수집 실패 한 줄을 낸다.
+    """
+    folder = root / EXTENSION_DIR_REL
+    try:
+        if folder.is_symlink() or not folder.is_dir():
+            return []
+        entries = sorted(folder.iterdir(), key=lambda p: p.name)
+    except OSError:
+        return []
+    env = dict(
+        os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1",
+        EPISTEMIC_AUDIT_TOOLS=str(TOOLS_DIR),
+    )
+    sections = []
+    for path in entries:
+        if path.name.startswith(("_", ".")) or path.suffix != ".py" or path.is_symlink() or not path.is_file():
+            continue
+        title = f"확장: {path.stem}"
+        try:
+            proc = subprocess.run(
+                [sys.executable, "-B", str(path), str(root)], cwd=root,
+                capture_output=True, encoding="utf-8", errors="replace", env=env,
+                stdin=subprocess.DEVNULL, timeout=EXTENSION_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired:
+            sections.append((title, [f"수집 실패: 확장 {path.name}가 {EXTENSION_TIMEOUT}초 안에 끝나지 않았다."]))
+            continue
+        except OSError as exc:
+            sections.append((title, [f"수집 실패: 확장 {path.name} 실행 실패: {exc}"]))
+            continue
+        if proc.returncode != 0:
+            last = (proc.stderr.strip().splitlines() or [""])[-1][:STDERR_LIMIT]
+            sections.append((title, [f"수집 실패: 확장 {path.name} 종료 코드 {proc.returncode}: {last}"]))
+            continue
+        text = proc.stdout.rstrip()
+        if len(text) > EXTENSION_MAX_CHARS:
+            cut = text.rfind("\n", 0, EXTENSION_MAX_CHARS)
+            text = text[:max(cut, 0)] + "\n... 확장 출력이 길어 잘랐다. 확장을 직접 실행해 본다."
+        sections.append((title, text.splitlines()))
+    return sections
+
+
+def repo_name(root: Path) -> str:
+    """주 레포 폴더 이름. 워크트리에서도 주 레포 이름을 낸다."""
+    code, out = git(root, "rev-parse", "--git-common-dir")
+    if code == 0 and out.strip():
+        common = Path(out.strip())
+        if not common.is_absolute():
+            common = root / common
+        common = common.resolve()
+        if common.name == ".git":
+            return common.parent.name
+    return root.name
+
+
 def failed(what: str) -> "list[str]":
     return [f"수집 실패: {what}. 직접 확인한다."]
 
 
 def render(sections: "list[tuple[str, list[str]]]", root: "Path | None" = None) -> str:
     rule = RULE_DOC
+    title = f"{MARKER} 세션 시작 요약"
     if root is not None:
+        title += f": {repo_name(root)}"
         try:
             rule = Path(os.path.relpath(RULE_DOC, root))
         except ValueError:
             pass
     out = [
-        f"{MARKER} 세션 시작 요약",
+        title,
         f"{rule.as_posix()} \"세션 시작\" 1-4단계의 기계 부분을 모은 결과다. "
         "이 요약이 컨텍스트에 있으면 다시 실행하지 않는다. 결과의 처리와 남은 단계는 그 절을 따른다.",
     ]
@@ -318,7 +388,7 @@ def main(argv: "list[str] | None" = None) -> int:
         print(f"Root is not a directory. 루트가 디렉토리가 아니다: {root}", file=sys.stderr)
         return 2
 
-    sections = []
+    sections = extension_sections(root)
     if not args.no_audit:
         sections.append(("형식 감사", parse_audit(*run_tool("audit.py", root, AUDIT_TIMEOUT))))
     sections.append(("의미 감사 트리거", parse_semantic(*run_tool("check_semantic_audit.py", root, SEMANTIC_TIMEOUT))))
