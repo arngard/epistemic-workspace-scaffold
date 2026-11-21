@@ -1,8 +1,8 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-07
+date modified: 2026-11-21
 tags: [소개]
-description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
+description: 스캐폴드의 취지, 구조, 사용법 소개
 ---
 
 한국어 | [English](README.en.md)
@@ -18,29 +18,21 @@ description: 스캐폴드의 취지, 디렉토리 구조, 사용법 소개
 
 왜 이렇게 하는가는 [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md), 운영 지침과 원칙은 단일 진입점 [AGENTS.md](AGENTS.md)를 본다.
 
-## 디렉토리 구조
+## 구조
 
 ```
-(workspace-root)/
-├── AGENTS/               <- 에이전트 운영 규범 (진입점은 AGENTS.md)
-├── worklog.md            <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
-├── worklog/              <- 작업 상태
-├── reference.md
-├── reference/            <- 사용자가 dump한 raw 자료의 immutable 보관 영역
-├── epistemic-structure.md
-├── epistemic-structure/  <- 코드로 표현할 수 없는 지식
-│   ├── ontology.md           <- 부모 문서: X.md는 같은 이름 폴더 X/를 소개한다 (이하 같음)
-│   ├── ontology/             <- 도메인 개념
-│   ├── knowledge.md
-│   ├── knowledge/            <- 외부 사실
-│   ├── strategy.md
-│   ├── strategy/             <- 결정과 근거
-│   ├── architecture.md
-│   └── architecture/         <- 설계 명세
-├── implementation.md
-└── implementation/       <- 구현 프로젝트들 (프로젝트마다 하위 폴더)
-    ├── <project-A>/
-    └── <project-B>/
+(workspace-root)
+├── AGENTS               <- 에이전트 운영 규범 (진입점은 AGENTS.md)
+├── worklog              <- 작업 상태
+├── reference            <- 사용자가 dump한 raw 자료의 immutable 보관 영역
+├── epistemic-structure  <- 코드로 표현할 수 없는 지식
+│   ├── ontology         <- 도메인 개념
+│   ├── knowledge        <- 외부 사실
+│   ├── strategy         <- 결정과 근거
+│   └── architecture     <- 설계 명세
+└── implementation       <- 구현 프로젝트들 (프로젝트마다 하나)
+    ├── <project-A>
+    └── <project-B>
 ```
 
 ## 사용법

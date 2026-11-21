@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-10-27
+date modified: 2026-11-21
 tags: [소개]
 description: 스캐폴드 소개의 영어판
 ---
@@ -18,29 +18,21 @@ A workspace scaffold that partitions documentation by epistemic category. Keeps 
 
 For the rationale, see [AGENTS/epistemic-rules/why-epistemic-workspace.md](AGENTS/epistemic-rules/why-epistemic-workspace.md) (Korean); for operating guidance and principles, the single entry point [AGENTS.md](AGENTS.md).
 
-## Directory structure
+## Structure
 
 ```
-(workspace-root)/
-├── AGENTS/               <- Agent operating norms (entry point: AGENTS.md)
-├── worklog.md            <- Parent document: X.md introduces the same-name folder X/ (likewise below)
-├── worklog/              <- Work status
-├── reference.md
-├── reference/            <- Immutable raw materials dumped by the user
-├── epistemic-structure.md
-├── epistemic-structure/  <- Knowledge not expressible in code
-│   ├── ontology.md           <- Parent document: X.md introduces the same-name folder X/ (likewise below)
-│   ├── ontology/             <- Domain concepts
-│   ├── knowledge.md
-│   ├── knowledge/            <- External facts
-│   ├── strategy.md
-│   ├── strategy/             <- Decisions and rationale
-│   ├── architecture.md
-│   └── architecture/         <- Design specifications
-├── implementation.md
-└── implementation/       <- Implementation projects (one subfolder per project)
-    ├── <project-A>/
-    └── <project-B>/
+(workspace-root)
+├── AGENTS               <- Agent operating norms (entry point: AGENTS.md)
+├── worklog              <- Work status
+├── reference            <- Immutable raw materials dumped by the user
+├── epistemic-structure  <- Knowledge not expressible in code
+│   ├── ontology         <- Domain concepts
+│   ├── knowledge        <- External facts
+│   ├── strategy         <- Decisions and rationale
+│   └── architecture     <- Design specifications
+└── implementation       <- Implementation projects (one per project)
+    ├── <project-A>
+    └── <project-B>
 ```
 
 ## How to use
