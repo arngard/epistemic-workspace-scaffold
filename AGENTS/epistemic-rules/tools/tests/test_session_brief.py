@@ -2,6 +2,7 @@
 
 import contextlib
 import io
+import json
 import os
 import subprocess
 import sys
@@ -138,6 +139,18 @@ class RenderTest(TempRepo):
         text = out.getvalue()
         self.assertTrue(text.startswith(MARKER))
         self.assertIn("fetch", text)
+
+
+    def test_hook_json_wraps_brief_in_ascii(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = main([str(self.root), "--no-audit", "--no-fetch", "--hook-json"])
+        self.assertEqual(code, 0)
+        raw = out.getvalue()
+        self.assertTrue(raw.isascii())
+        data = json.loads(raw)
+        self.assertEqual(data["hookSpecificOutput"]["hookEventName"], "SessionStart")
+        self.assertTrue(data["hookSpecificOutput"]["additionalContext"].startswith(MARKER))
 
 
 if __name__ == "__main__":

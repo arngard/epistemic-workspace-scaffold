@@ -19,12 +19,16 @@ session-boundaries.md "세션 시작" 1-4단계 가운데 판단이 필요 없�
 `git fetch --prune origin`은 머지 전 브랜치 목록을 원격과 맞추려고 먼저 한 번
 시도한다. origin이 없거나 제한 시간 안에 끝나지 않으면 건너뛰고 그 사실을 적는다.
 
+--hook-json을 주면 같은 요약을 Claude Code SessionStart 훅의 JSON 출력
+(hookSpecificOutput.additionalContext)으로 감싸 ASCII 이스케이프로 낸다. 평문 stdout보다
+주입 경로가 문서에 분명하고, 셸과 콘솔의 인코딩에 영향받지 않는다.
+
 출력은 MAX_CHARS 안으로 자른다. Claude Code 훅이 주입하는 텍스트의 상한
 (10,000자)을 넘으면 요약이 파일로 빠져 모델이 보지 못하기 때문이다.
 
 사용법:
     python3 AGENTS/epistemic-rules/tools/session_brief.py [워크스페이스 루트]
-        [--merges N] [--no-fetch] [--no-audit]
+        [--merges N] [--no-fetch] [--no-audit] [--hook-json]
     (윈도우에서는 python 또는 py 런처로 동일하게 실행)
 
 종료 코드:
@@ -34,6 +38,7 @@ session-boundaries.md "세션 시작" 1-4단계 가운데 판단이 필요 없�
 """
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -231,6 +236,7 @@ def main(argv: "list[str] | None" = None) -> int:
     parser.add_argument("--merges", type=int, default=5)
     parser.add_argument("--no-fetch", action="store_true")
     parser.add_argument("--no-audit", action="store_true")
+    parser.add_argument("--hook-json", action="store_true")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     if not root.is_dir():
@@ -261,7 +267,12 @@ def main(argv: "list[str] | None" = None) -> int:
         sections.append(("형식 감사", audit_lines(root)))
     sections.append(("의미 감사 트리거", semantic_lines(root)))
     sections.append(("reference 미처리 항목", pending_references(root)))
-    sys.stdout.write(render(sections, root))
+    text = render(sections, root)
+    if args.hook_json:
+        text = json.dumps({"hookSpecificOutput": {
+            "hookEventName": "SessionStart", "additionalContext": text,
+        }}) + "\n"
+    sys.stdout.write(text)
     return 0
 
 
