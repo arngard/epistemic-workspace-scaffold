@@ -1,6 +1,6 @@
 ---
 date created: 2026-07-26
-date modified: 2026-11-11
+date modified: 2026-11-21
 tags: [agents, 워크스페이스, 운영, epistemic-rules]
 ---
 
@@ -12,10 +12,13 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 새 세션은 아래를 순서대로 밟는다. 인스턴스 고유 절차는 이 표준 절차를 완주한 뒤 이어 따른다 (ref: [instance-specialization.md](instance-specialization.md) "특수화 방식").
 
-1. [worklog/TASK_TREE.md](../../worklog/TASK_TREE.md)(진행 중, 다음 할 일)와 [worklog/STATUS.md](../../worklog/STATUS.md)(감사 시각)를 읽고, main의 최근 머지 5건이 바꾼 문서와 그 문서들이 링크하는 문서(1단계 이웃)를 훑어 직전 작업을 상기한다. 변경 문서 목록은 `git -c core.quotePath=false log --first-parent -m -n 5 --name-only --format="%h %s" main -- '*.md'`로 본다. 기간이 아니라 머지 건수로 잡아 쉬었다가 돌아온 세션에서도 직전 작업이 나온다. 머지 건수는 인스턴스가 작업 빈도에 맞게 고유 절차에서 조정할 수 있다. 이어서 `git worktree list`로 열린 작업 워크트리를 보고, `git fetch --prune origin` 뒤 `git for-each-ref --no-merged main --format='%(refname:short)' refs/heads refs/remotes/origin`으로 main에 머지되지 않은 로컬과 `origin`의 작업 브랜치를 본다. 상류 원격(`upstream`)의 브랜치는 이 워크스페이스의 작업이 아니어서 보지 않는다. 다른 머신에서 만든 브랜치는 이 머신에 워크트리가 없어 `git for-each-ref`로만 보인다. 머지 전 브랜치의 착수 등재는 주 워크트리의 작업 트리에 보이지 않는다. 그래서 그런 브랜치마다 `git diff main...<브랜치> -- worklog/TASK_TREE.md`로 진행 중인 노드를 파악해 중복 착수하지 않는다. 그 노드의 작업을 이 세션이 이어받으면 아래 "끊김, 재진입"을, 아니면 "다른 세션 작업과의 격리"를 따른다.
-2. 형식 감사 `python3 AGENTS/epistemic-rules/tools/audit.py .`를 실행하고, 보고된 위반은 [working-principles.md](working-principles.md) "1. 넘겨짚지 않는다"의 감사 결과 처리대로 정리한다 (윈도우는 `python` 또는 `py`. see: [tools.md](tools.md) "기계 감사 스크립트").
-3. 의미 감사 트리거를 `python3 AGENTS/epistemic-rules/tools/check_semantic_audit.py .`(윈도우는 위와 같다)로 판정하고, 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [trigger-baseline.md](agent-roles/epistemic-auditor/trigger-baseline.md)).
-4. [reference/INDEX.md](../../reference/INDEX.md)에서 `미등록`과 `처리 대기` 항목을 보고, 2번 감사가 `reference/INDEX.yaml`에 낸 경고를 확인한다. 미처리 자료는 [ingest-workflow.md](ingest-workflow.md)로 진행한다.
+1. 워크스페이스 루트에서 세션 시작 요약 `python3 AGENTS/epistemic-rules/tools/session_brief.py .`를 실행한다(윈도우는 `python` 또는 `py`. see: [tools.md](tools.md) "세션 시작 요약 스크립트"). 첫 줄이 `[session-brief]`인 요약이 이미 컨텍스트에 있으면 다시 실행하지 않는다. 훅을 지원하는 도구는 세션 시작 때 이 스크립트를 자동으로 실행한다 (see: [tool-environment.md](tool-environment.md) "세션 시작 훅"). 요약은 열린 작업 워크트리, `git fetch --prune origin` 뒤 main에 머지되지 않은 로컬과 `origin`의 작업 브랜치와 각 브랜치가 TASK_TREE에 더한 진행 노드, main의 최근 머지 5건이 바꾼 문서와 문서마다 `description`(없으면 제목) 한 줄, 아래 2-4단계의 기계 결과를 담는다. 머지 건수는 기간이 아니라 건수로 잡아 쉬었다가 돌아온 세션에서도 직전 작업이 나오며, 인스턴스가 작업 빈도에 맞게 고유 절차에서 `--merges`로 조정할 수 있다.
+   - 이어서 [worklog/TASK_TREE.md](../../worklog/TASK_TREE.md)(진행 중, 다음 할 일)와 [worklog/STATUS.md](../../worklog/STATUS.md)(감사 시각)를 읽는다.
+   - 최근 머지가 바꾼 문서는 요약의 한 줄을 보고 지금 작업과 겹치는 문서만 연다.
+   - 머지 전 브랜치의 착수 등재는 주 워크트리의 작업 트리에 보이지 않으므로 요약의 진행 노드로 파악해 중복 착수하지 않는다. 그 노드의 작업을 이 세션이 이어받으면 아래 "끊김, 재진입"을, 아니면 "다른 세션 작업과의 격리"를 따른다.
+2. 요약의 형식 감사 결과에 위반이 있으면 [working-principles.md](working-principles.md) "1. 넘겨짚지 않는다"의 감사 결과 처리대로 정리한다. 요약에 다 담기지 않은 위반과 경고는 `python3 AGENTS/epistemic-rules/tools/audit.py .`로 직접 본다 (see: [tools.md](tools.md) "기계 감사 스크립트").
+3. 요약의 의미 감사 트리거 판정이 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [trigger-baseline.md](agent-roles/epistemic-auditor/trigger-baseline.md)).
+4. 요약의 `reference/` 미처리 항목(`미등록`, `처리 대기`)과 형식 감사가 `reference/INDEX.yaml`에 낸 경고를 확인한다. 미처리 자료는 [ingest-workflow.md](ingest-workflow.md)로 진행한다.
 5. 읽기 목록 [when-to-read.md](when-to-read.md)를 열어 작업 범위의 규범과 `epistemic-structure/` 문서를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [ingest-workflow.md](ingest-workflow.md)를 따른다.
 
 ## 끊김, 재진입
