@@ -1,4 +1,4 @@
-"""세션 시작 요약 시험 (문서 요약 추출, 최근 머지, 머지 전 브랜치, reference 미처리, 출력 상한)."""
+"""세션 시작 요약 시험 (문서 요약, 최근 머지, 머지 전 브랜치, reference 미처리, 감사 출력 파싱, 출력 상한, 수집 실패 표시)."""
 
 import contextlib
 import io
@@ -13,8 +13,8 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from session_brief import (  # noqa: E402
-    MARKER, MAX_CHARS, doc_summary, main, pending_references, recent_merges,
-    render, unmerged_branches,
+    MARKER, MAX_CHARS, MAX_DOCS_PER_MERGE, doc_summary, main, merge_lines,
+    parse_audit, pending_references, recent_merges, render, unmerged_branches,
 )
 
 
@@ -25,24 +25,36 @@ def git(root, *args):
     )
 
 
-class TempRepo(unittest.TestCase):
-    """main 브랜치 하나를 가진 임시 git 레포."""
+def run_main(*argv):
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        code = main(list(argv))
+    return code, out.getvalue()
 
+
+class TempDir(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name).resolve()
+
+    def write(self, rel, text):
+        p = self.root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text, encoding="utf-8", newline="\n")
+
+
+class TempRepo(TempDir):
+    """main 브랜치 하나를 가진 임시 git 레포."""
+
+    def setUp(self):
+        super().setUp()
         git(self.root, "init", "-q", "-b", "main")
         git(self.root, "config", "user.email", "t@example.com")
         git(self.root, "config", "user.name", "t")
         self.write("worklog/TASK_TREE.md", "# 작업 트리\n")
         git(self.root, "add", "-A")
         git(self.root, "commit", "-q", "-m", "init")
-
-    def write(self, rel, text):
-        p = self.root / rel
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(text, encoding="utf-8", newline="\n")
 
     def merge_branch(self, branch, files, subject):
         git(self.root, "checkout", "-q", "-b", branch)
@@ -54,7 +66,7 @@ class TempRepo(unittest.TestCase):
         git(self.root, "merge", "-q", "--no-ff", "-m", subject, branch)
 
 
-class DocSummaryTest(TempRepo):
+class DocSummaryTest(TempDir):
     def test_description_preferred(self):
         self.write("a.md", "---\ndescription: 요약 한 줄\n---\n\n# 제목\n")
         self.assertEqual(doc_summary(self.root / "a.md"), "요약 한 줄")
@@ -84,9 +96,8 @@ class RecentMergesTest(TempRepo):
         )
         merges = recent_merges(self.root, 1)
         self.assertEqual(len(merges), 1)
-        subject, docs = merges[0][1], merges[0][2]
-        self.assertIn("문서를 더한다", subject)
-        self.assertEqual(docs, [("문서 폴더/새 문서.md", "공백 든 경로")])
+        self.assertIn("문서를 더한다", merges[0][1])
+        self.assertEqual(merges[0][2], [("문서 폴더/새 문서.md", "공백 든 경로")])
 
     def test_deleted_doc_marked(self):
         self.merge_branch("docs/a", {"gone.md": "# 곧 지운다\n"}, "Merge a")
@@ -95,8 +106,20 @@ class RecentMergesTest(TempRepo):
         git(self.root, "commit", "-q", "-m", "rm")
         git(self.root, "checkout", "-q", "main")
         git(self.root, "merge", "-q", "--no-ff", "-m", "Merge b", "docs/b")
-        docs = recent_merges(self.root, 1)[0][2]
-        self.assertEqual(docs, [("gone.md", None)])
+        self.assertEqual(recent_merges(self.root, 1)[0][2], [("gone.md", None)])
+
+    def test_summary_read_from_main_not_worktree(self):
+        self.merge_branch("docs/m", {"m.md": "---\ndescription: main의 요약\n---\n"}, "Merge m")
+        git(self.root, "checkout", "-q", "-b", "feature/w")
+        self.write("m.md", "---\ndescription: 작업 브랜치의 요약\n---\n")
+        self.assertEqual(recent_merges(self.root, 1)[0][2], [("m.md", "main의 요약")])
+
+    def test_docs_per_merge_capped(self):
+        docs = [(f"d{i}.md", "s") for i in range(MAX_DOCS_PER_MERGE + 3)]
+        lines = merge_lines([("abc1234", "Merge big", docs)])
+        self.assertEqual(len(lines), 1 + MAX_DOCS_PER_MERGE + 1)
+        self.assertIn("문서 3개 더", lines[-1])
+        self.assertIn("git show --stat abc1234", lines[-1])
 
 
 class UnmergedBranchesTest(TempRepo):
@@ -105,11 +128,10 @@ class UnmergedBranchesTest(TempRepo):
         self.write("worklog/TASK_TREE.md", "# 작업 트리\n\n- [/] 진행 중인 일\n  - 설명: x\n")
         git(self.root, "commit", "-q", "-am", "start")
         git(self.root, "checkout", "-q", "main")
-        branches = unmerged_branches(self.root)
-        self.assertEqual(branches, [("feature/y", ["- [/] 진행 중인 일"])])
+        self.assertEqual(unmerged_branches(self.root), [("feature/y", ["- [/] 진행 중인 일"])])
 
 
-class PendingReferencesTest(TempRepo):
+class PendingReferencesTest(TempDir):
     def test_pending_states_only(self):
         self.write("reference/INDEX.md", (
             "# reference 색인\n\n"
@@ -120,37 +142,75 @@ class PendingReferencesTest(TempRepo):
         items = pending_references(self.root)
         self.assertEqual([i.split(" ")[0] for i in items], ["[a/](a/)", "[c.md](c.md)"])
 
+    def test_all_index_pages_in_order(self):
+        self.write("reference/INDEX.md", "- [a.md](a.md) - `미등록`\n")
+        self.write("reference/INDEX2.md", "- [b.md](b.md) - `처리 대기`\n")
+        self.write("reference/INDEX10.md", "- [c.md](c.md) - `미등록`\n")
+        self.write("reference/INDEX.yaml", "- [z.md](z.md) - `미등록`\n")
+        items = pending_references(self.root)
+        self.assertEqual([i.split(" ")[0] for i in items], ["[a.md](a.md)", "[b.md](b.md)", "[c.md](c.md)"])
+
     def test_no_reference_folder(self):
         self.assertEqual(pending_references(self.root), [])
 
 
-class RenderTest(TempRepo):
-    def test_marker_first_and_limit(self):
-        sections = [("긴 절", ["x" * 300] * 100)]
-        text = render(sections)
+class ParseAuditTest(unittest.TestCase):
+    def test_summary_violations_and_reference_warnings(self):
+        out = (
+            "VIOLATION [link] a.md: 깨진 링크\n"
+            "WARNING   [size] b.md: 분량\n"
+            "WARNING   [index] reference/INDEX.yaml: 대상 자료가 없다\n"
+            "\n감사 완료: 위반 1건, 경고 2건 (/x)\n"
+        )
+        self.assertEqual(parse_audit(1, out), [
+            "감사 완료: 위반 1건, 경고 2건 (/x)",
+            "VIOLATION [link] a.md: 깨진 링크",
+            "WARNING   [index] reference/INDEX.yaml: 대상 자료가 없다",
+        ])
+
+    def test_missing_summary_reported(self):
+        self.assertIn("요약 줄을 찾지 못했다", parse_audit(1, "Traceback ...\n")[0])
+
+
+class RenderTest(unittest.TestCase):
+    def test_marker_first_and_limit_cut_on_line(self):
+        text = render([("짧은 절", ["판정"]), ("긴 절", ["x" * 300] * 100)])
         self.assertTrue(text.startswith(MARKER))
         self.assertLessEqual(len(text), MAX_CHARS)
+        self.assertIn("## 짧은 절\n판정", text)
+        self.assertNotIn("x" * 300 + "...", text)
+        self.assertTrue(text.rstrip().endswith("로 본다."))
 
-    def test_main_exits_zero_without_remote(self):
-        out = io.StringIO()
-        with contextlib.redirect_stdout(out):
-            code = main([str(self.root), "--no-audit"])
+
+class MainTest(TempRepo):
+    def test_no_remote_reported_and_exit_zero(self):
+        code, text = run_main(str(self.root), "--no-audit")
         self.assertEqual(code, 0)
-        text = out.getvalue()
         self.assertTrue(text.startswith(MARKER))
-        self.assertIn("fetch", text)
+        self.assertIn("origin 원격이 없다", text)
 
+    def test_judgement_sections_precede_merge_list(self):
+        self.merge_branch("docs/x", {"x.md": "# x\n"}, "Merge x")
+        _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertLess(text.index("## 의미 감사 트리거"), text.index("## main의 최근 머지"))
+
+    def test_missing_main_reported_not_empty(self):
+        git(self.root, "branch", "-m", "main", "trunk")
+        _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertIn("로컬 main 브랜치가 없어", text)
+        self.assertIn("수집 실패: main의 최근 머지 조회", text)
 
     def test_hook_json_wraps_brief_in_ascii(self):
-        out = io.StringIO()
-        with contextlib.redirect_stdout(out):
-            code = main([str(self.root), "--no-audit", "--no-fetch", "--hook-json"])
+        code, raw = run_main(str(self.root), "--no-audit", "--no-fetch", "--hook-json")
         self.assertEqual(code, 0)
-        raw = out.getvalue()
         self.assertTrue(raw.isascii())
         data = json.loads(raw)
         self.assertEqual(data["hookSpecificOutput"]["hookEventName"], "SessionStart")
         self.assertTrue(data["hookSpecificOutput"]["additionalContext"].startswith(MARKER))
+
+    def test_usage_error(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(main([str(self.root / "없는 폴더")]), 2)
 
 
 if __name__ == "__main__":

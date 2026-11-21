@@ -48,7 +48,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 ## 세션 시작 요약 스크립트
 
-[tools/session_brief.py](tools/session_brief.py)는 [session-boundaries.md](session-boundaries.md) "세션 시작" 1-4단계에서 판단이 필요 없는 부분(워크트리와 머지 전 브랜치 조회, 최근 머지가 바꾼 문서의 요약, 형식 감사, 의미 감사 판정, `reference/` 미처리 항목)을 모아 요약 하나로 낸다. 명령을 하나씩 돌려 출력을 컨텍스트에 쌓는 대신 요약만 읽게 해 세션 시작의 읽기 분량을 줄인다. 수집 항목의 SSOT는 스크립트 docstring이다.
+[tools/session_brief.py](tools/session_brief.py)는 [session-boundaries.md](session-boundaries.md) "세션 시작" 1-4단계에서 판단이 필요 없는 부분을 모아 요약 하나로 낸다. 명령을 하나씩 돌려 출력을 컨텍스트에 쌓는 대신 요약만 읽게 해 세션 시작의 읽기 분량을 줄인다. 무엇을 모으는지는 그 절이 정하고, 절의 순서, 자르는 방식, 제한 시간 같은 구현은 스크립트 docstring에 있다.
 
 - 실행: 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/session_brief.py .` (윈도우는 `python` 또는 `py`). `--merges N`은 최근 머지 건수(기본 5), `--no-fetch`는 원격 조회 생략, `--no-audit`는 형식 감사 생략이다.
 - 출력: 첫 줄이 `[session-brief]`이고 9,000자 안으로 자른다. 세션 시작 훅이 주입할 수 있는 길이 안에 들게 하려는 것이다 (see: [tool-environment.md](tool-environment.md) "세션 시작 훅"). `--hook-json`은 같은 요약을 세션 시작 훅의 JSON 출력으로 감싼다.
