@@ -361,6 +361,22 @@ class StatusTest(SetupTestBase):
         lines = core.status_lines(self.root)
         self.assertTrue(lines[0].startswith("수집 실패:"))
 
+    def test_failure_message_names_cause(self):
+        plain = self.tmp / "레포 아님"
+        plain.mkdir()
+        with mock.patch.dict(os.environ, {"GIT_CEILING_DIRECTORIES": str(self.tmp)}):
+            not_repo = core.status_lines(plain)[0]
+        with mock.patch.object(core, "git", lambda *a, **k: (-1, "")):
+            no_git = core.status_lines(self.root)[0]
+        git(self.root, "branch", "-m", "main", "trunk")
+        no_main = core.status_lines(self.root)[0]
+        self.assertIn("git 레포가 아니", not_repo)
+        self.assertIn("git을 실행하지 못해", no_git)
+        self.assertIn("로컬 main 브랜치가 없어", no_main)
+        for line in (not_repo, no_git):
+            self.assertTrue(line.startswith("수집 실패:"))
+            self.assertNotIn("main 브랜치가 없어", line)
+
     def test_not_applicable_items_leave_alerts(self):
         self.add_instance([{"id": "agy", "title": "에이지와이", "kind": "require-command",
                             "when": {"command": "없는명령-xyz"}, "params": {"candidates": ["없는명령-xyz"]}}])

@@ -180,6 +180,11 @@ def instance_spec_paths(root: Path, ref: str = "main") -> "list[Path] | None":
 def load_items(root: Path, ref: str = "main") -> "tuple[list[Item], list[str]]":
     """스캐폴드 항목과 자손 항목을 ref 판에서 읽어 합친다. 두 번째 값은 실패 줄 목록."""
     root = root.resolve()
+    code, _ = git(root, "rev-parse", "--git-dir")
+    if code == -1:
+        return [], ["git을 실행하지 못해(설치되지 않았거나 시간 초과) 설치 명세를 읽지 못했다"]
+    if code != 0:
+        return [], [f"{root}가 git 레포가 아니어서 설치 명세를 읽지 못했다"]
     instance = instance_spec_paths(root, ref)
     if instance is None:
         return [], [f"로컬 {ref} 브랜치가 없어 설치 명세를 읽지 못했다"]
