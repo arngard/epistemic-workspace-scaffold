@@ -36,7 +36,7 @@ description: 워크스페이스가 기대는 환경(클론 설정, 실행 환경
 새 클론이나 새 머신에서는 사용자가 AI에게 환경 설치를 요청한다. AI는 레포 루트에서 `setup.py check`와 `setup.py plan`을 돌려 동의를 받고 `setup.py apply`로 적용한다.
 
 - Python은 실행할 때 `python3`, `python`, `py -3` 순으로 찾는다. 세션 시작 훅, 커밋 전 훅, 설치기의 Python 항목이 같은 순서를 쓰며, 찾은 명령을 적어 두지 않는다. 셋 다 3.9 이상의 Python을 실행하지 못하면 그 머신의 PATH에 Python 3.9 이상을 올린다. 설치 방식은 상관없다.
-- AI를 쓸 수 없으면 사람이 같은 명령을 레포 루트에서 직접 돌린다: `python3 AGENTS/epistemic-rules/tools/setup.py check .`, `plan .`, `apply . <id ...>`(윈도우는 `python` 또는 `py -3`).
+- AI를 쓸 수 없으면 사람이 같은 명령을 레포 루트에서 직접 돌린다: `python3 -B AGENTS/epistemic-rules/tools/setup.py check .`, `plan .`, `apply . <id ...>`(윈도우는 `python` 또는 `py -3`).
 
 ## 주의
 

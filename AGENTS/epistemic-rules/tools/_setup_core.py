@@ -284,7 +284,7 @@ def check_item(root: Path, item: Item) -> CheckResult:
         found.append(f"{command} {version or '버전 미상'}")
     need = f" {minimum} 이상" if minimum else ""
     seen = f" 찾은 것: {', '.join(found)}." if found else ""
-    return CheckResult(False, f"실행할 수 있는{need} 명령을 찾지 못했다.{seen} 그 머신의 환경 문서와 workspace-setup.md \"처음 설치\"를 본다")
+    return CheckResult(False, f"실행할 수 있는{need} 명령을 찾지 못했다.{seen} workspace-setup.md \"처음 설치\"를 본다")
 
 
 def apply_item(root: Path, item: Item) -> CheckResult:

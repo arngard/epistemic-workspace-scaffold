@@ -57,7 +57,8 @@ def local_config(repo: Path) -> str:
 class SetupTestBase(unittest.TestCase):
     """임시 폴더, 임시 홈, 스캐폴드 명세를 둔 임시 레포를 준다.
 
-    홈(HOME, USERPROFILE)을 임시 폴더로 바꿔 실제 사용자 홈과 전역 git 설정에 흔들리지 않게 한다.
+    홈(HOME, USERPROFILE)과 전역 git 설정(GIT_CONFIG_GLOBAL)을 임시 폴더로 돌리고 시스템 git 설정을
+    끄고(GIT_CONFIG_NOSYSTEM) 실제 사용자 환경에 흔들리지 않게 한다.
     """
 
     def setUp(self):
@@ -66,7 +67,9 @@ class SetupTestBase(unittest.TestCase):
         self.tmp = Path(self._tmp.name).resolve()
         home = self.tmp / "홈 폴더"
         home.mkdir()
-        patcher = mock.patch.dict(os.environ, {"HOME": str(home), "USERPROFILE": str(home)})
+        patcher = mock.patch.dict(os.environ, {"HOME": str(home), "USERPROFILE": str(home),
+                                               "GIT_CONFIG_GLOBAL": str(home / ".gitconfig"),
+                                               "GIT_CONFIG_NOSYSTEM": "1"})
         patcher.start()
         self.addCleanup(patcher.stop)
         self.home = home
@@ -238,6 +241,16 @@ class KindTest(SetupTestBase):
         if min_version:
             params["min_version"] = min_version
         return core.Item("python", "파이썬", "require-command", (), {}, params, "s")
+
+    def test_require_command_failure_points_to_first_install(self):
+        result = core.check_item(self.root, self.cmd_item(["no-such-command-for-setup-test"]))
+        self.assertFalse(result.ok)
+        self.assertIn("workspace-setup.md \"처음 설치\"", result.detail)
+        self.assertNotIn("머신", result.detail)
+
+    def test_isolated_from_global_and_system_git_config(self):
+        self.assertEqual(os.environ.get("GIT_CONFIG_NOSYSTEM"), "1")
+        self.assertTrue(Path(os.environ["GIT_CONFIG_GLOBAL"]).resolve().is_relative_to(self.tmp))
 
     def test_git_config_check_and_apply(self):
         item = self.hooks_item()

@@ -34,11 +34,14 @@ _HOME_PATCH = None
 
 
 def setUpModule():
-    """모든 시험이 임시 홈(HOME, USERPROFILE)을 쓴다. 요약이 부르는 git과 환경 갱신 판정이
-    실제 사용자 홈과 전역 git 설정에 흔들리지 않게 하려는 것이다."""
+    """모든 시험이 임시 홈(HOME, USERPROFILE)과 그 안의 전역 git 설정(GIT_CONFIG_GLOBAL)을 쓰고
+    시스템 git 설정을 끈다(GIT_CONFIG_NOSYSTEM). 요약이 부르는 git과 환경 갱신 판정이
+    실제 사용자 환경에 흔들리지 않게 하려는 것이다."""
     global _HOME, _HOME_PATCH
     _HOME = tempfile.TemporaryDirectory()
-    _HOME_PATCH = mock.patch.dict(os.environ, {"HOME": _HOME.name, "USERPROFILE": _HOME.name})
+    _HOME_PATCH = mock.patch.dict(os.environ, {"HOME": _HOME.name, "USERPROFILE": _HOME.name,
+                                               "GIT_CONFIG_GLOBAL": os.path.join(_HOME.name, ".gitconfig"),
+                                               "GIT_CONFIG_NOSYSTEM": "1"})
     _HOME_PATCH.start()
 
 
@@ -385,6 +388,12 @@ def git_bash():
     return path
 
 
+class IsolationTest(unittest.TestCase):
+    def test_module_isolated_from_global_and_system_git_config(self):
+        self.assertEqual(os.environ.get("GIT_CONFIG_NOSYSTEM"), "1")
+        self.assertTrue(os.environ["GIT_CONFIG_GLOBAL"].startswith(_HOME.name))
+
+
 class HookCommandTest(TempRepo):
     """출고 .claude/settings.json의 SessionStart 명령(startup|clear, compact)을 임시 홈으로 돌린다."""
 
@@ -426,6 +435,10 @@ class HookCommandTest(TempRepo):
         self.assertEqual(list(self.home.iterdir()), [])
 
     def test_first_install_guidance_without_python(self):
+        import shutil
+        bare = os.pathsep.join(self.tool_dirs)
+        if any(shutil.which(n, path=bare) for n in ("python3", "python", "py")):
+            self.skipTest("bash와 git이 든 폴더에 Python도 있어 Python 없는 PATH를 만들 수 없다")
         for command in self.commands:
             out = self.run_hook(command, self.tool_dirs).decode("ascii")
             self.assertIn("AGENTS/epistemic-rules/workspace-setup.md (first install)", out)

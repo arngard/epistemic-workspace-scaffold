@@ -6,16 +6,16 @@
 내용과 영향 범위를 보고 동의만 하고, 명령은 AI가 실행한다.
 
 사용법:
-    python3 AGENTS/epistemic-rules/tools/setup.py status <루트> [--json]
+    python3 -B AGENTS/epistemic-rules/tools/setup.py status <루트> [--json]
         항목마다 실제 점검을 돌려 미적용 항목만 짧게 낸다(세션 시작 요약의 환경 갱신 절).
-    python3 AGENTS/epistemic-rules/tools/setup.py check <루트> [--json]
+    python3 -B AGENTS/epistemic-rules/tools/setup.py check <루트> [--json]
         모든 항목의 점검 결과를 항목별로 낸다.
-    python3 AGENTS/epistemic-rules/tools/setup.py plan <루트> [id ...] [--json]
+    python3 -B AGENTS/epistemic-rules/tools/setup.py plan <루트> [id ...] [--json]
         적용할 항목과 바뀔 대상(지금 값과 새 값)을 동의 요청의 재료로 낸다. id가 없으면
         미적용 항목 전부.
-    python3 AGENTS/epistemic-rules/tools/setup.py apply <루트> id ...
+    python3 -B AGENTS/epistemic-rules/tools/setup.py apply <루트> id ...
         지정한 항목만 적용한다.
-    (윈도우에서는 python 또는 py 런처로 동일하게 실행)
+    (윈도우에서는 python 또는 py -3 런처로 동일하게 실행)
 
 status, check, plan은 아무것도 쓰지 않는다. apply는 적용하는 항목의 값만 쓴다.
 
