@@ -184,7 +184,7 @@ class LoadItemsTest(SetupTestBase):
 
     def test_scope_key_ignored(self):
         items, errors = core.parse_spec(json.dumps([
-            {"id": "m", "title": "머신 값이 남은 항목", "scope": "machine", "kind": "require-command",
+            {"id": "m", "title": "scope 키가 있는 항목", "scope": "machine", "kind": "require-command",
              "params": {"candidates": ["git"]}},
             {"id": "u", "title": "모르는 값", "scope": "elsewhere", "kind": "git-config",
              "params": {"key": "a.b", "value": "1"}},
@@ -265,7 +265,7 @@ class KindTest(SetupTestBase):
 
     def test_unrunnable_candidate_skipped(self):
         # 실행되지 않는 후보(모르는 자리 표시가 남은 것 포함)는 건너뛰고 다음 후보를 본다.
-        result = core.check_item(self.root, self.cmd_item(["{python" + "_file}", sys.executable]))
+        result = core.check_item(self.root, self.cmd_item(["{unknown}", sys.executable]))
         self.assertTrue(result.ok)
         self.assertIn(sys.executable, result.detail)
 
@@ -301,10 +301,11 @@ class StatusTest(SetupTestBase):
         before_config, before_tree = local_config(self.root), git(self.root, "status", "--porcelain", "--ignored")
         env = dict(os.environ, HOME=str(self.home), USERPROFILE=str(self.home), PYTHONDONTWRITEBYTECODE="1")
         script = self.root / "AGENTS/epistemic-rules/tools/setup.py"
-        for command in (["status"], ["status", "--json"], ["check"], ["plan"]):
+        for command, expected in ((["status"], 0), (["status", "--json"], 0), (["check"], 1), (["plan"], 0)):
             proc = subprocess.run([sys.executable, "-B", str(script), command[0], str(self.root), *command[1:]],
                                   capture_output=True, env=env, timeout=120)
-            self.assertIn(proc.returncode, (0, 1), proc.stderr.decode("utf-8", "replace"))
+            self.assertEqual(proc.returncode, expected, proc.stderr.decode("utf-8", "replace"))
+            self.assertIn(b"hooks-path" if command[0] != "plan" else "커밋 전 훅".encode("utf-8"), proc.stdout)
         self.assertEqual(list(self.home.iterdir()), [])
         self.assertEqual(local_config(self.root), before_config)
         self.assertEqual(git(self.root, "status", "--porcelain", "--ignored"), before_tree)
