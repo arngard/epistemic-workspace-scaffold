@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-21
+date modified: 2026-11-22
 tags: [규칙, 도구, epistemic-rules]
 ---
 
@@ -12,7 +12,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 검사 진입점은 [audit.py](tools/audit.py) 하나, 파일을 쓰는 생성 진입점은 [build_index.py](tools/build_index.py) 하나다. 검사 로직은 공용 인프라([_audit_core.py](tools/_audit_core.py) 등)와 의미별 검사 모듈로 나뉘며 audit.py가 import해 조합한다. 모듈 구성은 audit.py 모듈 docstring의 "구조"에 있다.
 
-그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. 설치기 [setup.py](tools/setup.py)는 사용자 동의 뒤 클론 설정을 바꾸는 도구로, 규범은 [workspace-setup.md](workspace-setup.md)에 있다. [session_brief.py](tools/session_brief.py)는 파일을 고치지 않지만 `git fetch`로 원격 참조를 갱신하고, 레포의 확장 코드를 실행하며, 해시가 다른 설치 항목의 점검 명령을 실행해 기록만 항목의 적용 상태를 쓴다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
+그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. 설치기 [setup.py](tools/setup.py)는 사용자 동의 뒤 클론 설정을 바꾸는 도구로, 규범은 [workspace-setup.md](workspace-setup.md)에 있다. [session_brief.py](tools/session_brief.py)는 파일을 고치지 않지만 `git fetch`로 원격 참조를 갱신하고, 레포의 확장 코드를 실행하며, 설치 항목마다 점검 명령을 실행한다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
 
 ## 시험
 
@@ -64,4 +64,4 @@ tags: [규칙, 도구, epistemic-rules]
 
 - 실행: AI가 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/setup.py <status|check|plan|apply> .`로 부른다(윈도우는 `python` 또는 `py`). 하위 명령과 인자, `--json` 출력은 setup.py docstring에 있다.
 - 종료 코드: 성공 0, `check`에 미적용 항목이 있으면 1, 사용법 오류와 거부와 적용 실패 2.
-- 상태의 자리: 클론 범위는 그 클론의 git 설정(`epistemic.setup.<id>`), 머신 범위는 홈의 `.epistemic/setup-state.json`이다. 시험은 환경 변수 `EPISTEMIC_HOME`으로 임시 홈을 쓴다.
+- 쓰는 것: `status`, `check`, `plan`은 항목마다 실제 점검을 돌리고 아무것도 쓰지 않는다. `apply`는 적용하는 항목의 값만 그 클론의 git 설정에 쓴다. 시험은 홈(`HOME`, `USERPROFILE`)을 임시 폴더로 바꿔 이를 확인한다.
