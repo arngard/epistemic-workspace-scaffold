@@ -231,6 +231,56 @@ class StateTest(SetupTestBase):
         self.assertTrue(any("bad.id" in e for e in errors))
 
 
+class KindTest(SetupTestBase):
+    def hooks_item(self):
+        return core.Item("hooks-path", "훅", "clone", "git-config", (), {}, {"key": "core.hooksPath", "value": "{tools}/hooks"}, "s")
+
+    def cmd_item(self, candidates, min_version="3.9"):
+        params = {"candidates": candidates, "args": ["--version"]}
+        if min_version:
+            params["min_version"] = min_version
+        return core.Item("python", "파이썬", "machine", "require-command", (), {}, params, "s")
+
+    def test_git_config_check_and_apply(self):
+        item = self.hooks_item()
+        self.assertFalse(core.check_item(self.root, item).ok)
+        result = core.apply_item(self.root, item)
+        self.assertTrue(result.ok)
+        self.assertEqual(git(self.root, "config", "--local", "--get", "core.hooksPath").strip(), "AGENTS/epistemic-rules/tools/hooks")
+        self.assertTrue(core.check_item(self.root, item).ok)
+
+    def test_hooks_path_resolves_to_tools_dir_in_submodule(self):
+        self.use_tools(self.root / "implementation/x/AGENTS/epistemic-rules/tools")
+        self.assertEqual(core.resolve("{tools}/hooks", self.root), "implementation/x/AGENTS/epistemic-rules/tools/hooks")
+
+    def test_require_command_picks_first_runnable_meeting_version(self):
+        result = core.check_item(self.root, self.cmd_item(["없는명령-xyz", sys.executable]))
+        self.assertTrue(result.ok)
+        self.assertIn(sys.executable, result.detail)
+
+    def test_require_command_version_too_low(self):
+        fake = self.tmp / "fake_python.py"
+        write(fake, "print('Python 3.8.10')\n")
+        result = core.check_item(self.root, self.cmd_item([f"{sys.executable} {fake}"]))
+        self.assertFalse(result.ok)
+        self.assertIn("3.8.10", result.detail)
+
+    def test_python_file_candidate_used_first(self):
+        write(self.home / ".epistemic" / "python", sys.executable + "\n")
+        result = core.check_item(self.root, self.cmd_item(["{python_file}", "없는명령-xyz"]))
+        self.assertTrue(result.ok)
+        self.assertIn(sys.executable, result.detail)
+
+    def test_python_file_candidate_dropped_when_missing(self):
+        self.assertEqual(core.candidate_commands(self.cmd_item(["{python_file}", "git"]), self.root), ["git"])
+
+    def test_unknown_kind_check_reports_tool_too_old(self):
+        item = core.Item("c", "복사", "machine", "copy-file", (), {}, {}, "s")
+        result = core.check_item(self.root, item)
+        self.assertFalse(result.ok)
+        self.assertTrue(result.detail.startswith("도구가 명세보다 낡았다"))
+
+
 class HashTest(unittest.TestCase):
     def item(self, **params):
         return core.Item("a", "에이", "clone", "git-config", (), {}, params, "s")

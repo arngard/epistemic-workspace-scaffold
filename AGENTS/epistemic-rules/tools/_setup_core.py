@@ -278,6 +278,98 @@ def record_applied(root: Path, item: Item, spec_hash: str) -> bool:
     return _write_state(state)
 
 
+@dataclass
+class CheckResult:
+    ok: bool
+    detail: str
+
+
+TOOL_TOO_OLD = "도구가 명세보다 낡았다"
+VERSION_RE = re.compile(r"\d+\.\d+(?:\.\d+)?")
+COMMAND_TIMEOUT = 10
+
+
+def resolve(value: str, root: Path) -> "str | None":
+    """자리 표시를 푼다. {tools}는 도구 폴더의 루트 상대 POSIX 경로(루트 밖이면 절대 경로),
+    {python_file}은 머신별 Python 실행 명령. 풀 수 없는 자리 표시가 있으면 None."""
+    if "{tools}" in value:
+        try:
+            tools = TOOLS_DIR.resolve().relative_to(root.resolve()).as_posix()
+        except ValueError:
+            tools = TOOLS_DIR.resolve().as_posix()
+        value = value.replace("{tools}", tools)
+    if "{python_file}" in value:
+        command = read_python_command()
+        if command is None:
+            return None
+        value = value.replace("{python_file}", command)
+    return value
+
+
+def candidate_commands(item: Item, root: Path) -> "list[str]":
+    """require-command 항목의 후보 명령(자리 표시를 푼 것, 풀 수 없는 후보는 뺀다)."""
+    resolved = (resolve(c, root) for c in item.params.get("candidates", []))
+    return [c for c in resolved if c]
+
+
+def _version_tuple(text: str) -> "tuple[int, ...]":
+    return tuple(int(p) for p in text.split("."))
+
+
+def _run_version(command: str, args: "list[str]") -> "str | None":
+    """명령을 실행해 출력에서 처음 나오는 버전 문자열. 실행할 수 없으면 None.
+
+    명령은 공백으로만 나눈다(백슬래시와 따옴표를 해석하지 않는다).
+    """
+    try:
+        proc = subprocess.run(
+            [*command.split(), *args], capture_output=True, encoding="utf-8",
+            errors="replace", stdin=subprocess.DEVNULL, timeout=COMMAND_TIMEOUT,
+        )
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
+    if proc.returncode != 0:
+        return None
+    match = VERSION_RE.search(proc.stdout + proc.stderr)
+    return match.group(0) if match else ""
+
+
+def check_item(root: Path, item: Item) -> CheckResult:
+    """항목의 실제 상태가 명세와 맞는가."""
+    if item.kind not in KINDS:
+        return CheckResult(False, f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}")
+    if item.kind == "git-config":
+        key, value = item.params.get("key", ""), resolve(str(item.params.get("value", "")), root)
+        code, out = git(root, "config", "--local", "--get", key)
+        current = out.strip() if code == 0 else None
+        if current == value:
+            return CheckResult(True, f"{key} = {value}")
+        return CheckResult(False, f"{key}: 지금 {current if current is not None else '(없음)'}, 명세 {value}")
+    found = []
+    minimum = item.params.get("min_version")
+    for command in candidate_commands(item, root):
+        version = _run_version(command, list(item.params.get("args", [])))
+        if version is None:
+            continue
+        if not minimum or (version and _version_tuple(version) >= _version_tuple(minimum)):
+            return CheckResult(True, f"{command} ({version or '버전 미상'})")
+        found.append(f"{command} {version or '버전 미상'}")
+    need = f" {minimum} 이상" if minimum else ""
+    seen = f" 찾은 것: {', '.join(found)}." if found else ""
+    return CheckResult(False, f"실행할 수 있는{need} 명령을 찾지 못했다.{seen} 그 머신의 환경 문서와 workspace-setup.md \"처음 설치\"를 본다")
+
+
+def apply_item(root: Path, item: Item) -> CheckResult:
+    """항목을 적용한다. require-command는 바꾸지 않고 점검 결과만 낸다."""
+    if item.kind not in KINDS:
+        return CheckResult(False, f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}")
+    if item.kind == "git-config":
+        key, value = item.params.get("key", ""), resolve(str(item.params.get("value", "")), root)
+        code, _ = git(root, "config", "--local", key, value)
+        return CheckResult(code == 0, f"{key} = {value}" if code == 0 else f"{key} 설정 실패")
+    return check_item(root, item)
+
+
 def current_os() -> str:
     if sys.platform.startswith("win"):
         return "windows"
