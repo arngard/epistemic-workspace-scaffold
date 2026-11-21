@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-07
+date modified: 2026-11-21
 tags: [규칙, 도구, epistemic-rules]
 ---
 
@@ -12,7 +12,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 검사 진입점은 [audit.py](tools/audit.py) 하나, 파일을 쓰는 생성 진입점은 [build_index.py](tools/build_index.py) 하나다. 검사 로직은 공용 인프라([_audit_core.py](tools/_audit_core.py) 등)와 의미별 검사 모듈로 나뉘며 audit.py가 import해 조합한다. 모듈 구성은 audit.py 모듈 docstring의 "구조"에 있다.
 
-그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
+그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다), [session_brief.py](tools/session_brief.py), [tag_inventory.py](tools/tag_inventory.py)다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
 
 ## 시험
 
@@ -24,7 +24,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 - 임계값은 공용 인프라 `tools/_audit_core.py` 상단의 상수이고 상류가 운영하며 조정한다. 상속한 레포(레포지토리)는 이 상수를 고치지 않는다(항목 30). 다른 값이 필요하면 경고를 의식적으로 수용하거나 상류에 변경을 제안한다.
 - `.tmp/`는 에이전트의 임시 작업 공간이다. gitignore 대상이며 감사에서 제외된다.
-- 실행: 새 세션 시작 시와 push, PR 시. 이 시점 밖에서 커밋이나 답변마다 돌리지 않는다. 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/audit.py .` (윈도우는 `python` 또는 `py`). push와 pull request 시점에는 GitHub Actions([.github/workflows/epistemic-audit.yml](../../.github/workflows/epistemic-audit.yml))가 실행한다. 새 세션 시작 시의 실행 의무는 [session-boundaries.md](session-boundaries.md) "세션 시작". 오래 걸릴 수 있는 검증은 커밋과 한 명령으로 묶지 않는다. 묶으면 검증이 끝날 때까지 커밋과 응답이 밀린다.
+- 실행: 새 세션 시작 시와 push, PR 시. 이 시점 밖에서 커밋이나 답변마다 돌리지 않는다. 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/audit.py .` (윈도우는 `python` 또는 `py`). push와 pull request 시점에는 GitHub Actions([.github/workflows/epistemic-audit.yml](../../.github/workflows/epistemic-audit.yml))가 실행한다. 새 세션 시작 시에는 아래 "세션 시작 요약 스크립트"가 실행한다 (see: [session-boundaries.md](session-boundaries.md) "세션 시작"). 오래 걸릴 수 있는 검증은 커밋과 한 명령으로 묶지 않는다. 묶으면 검증이 끝날 때까지 커밋과 응답이 밀린다.
 - 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS에 의존하지 않는다. git이 있으면 git이 무시하는 경로를 뺀다.
 - 종료 코드: 위반 없음(경고만 있거나 없음) 0, 위반 있음 1, 사용법 오류(인자가 디렉토리가 아님) 2.
 - 강제력: 위반(violation)은 CI를 실패시킨다(exit 1). 경고(warning)는 통과시킨다(exit 0) - 사람이나 LLM의 판단이 필요한 신호라 기계적으로 차단하지 않는다. 경고는 방치하면 쌓이므로 감사 시 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)한다.
@@ -45,3 +45,11 @@ tags: [규칙, 도구, epistemic-rules]
 - 종료 코드: 미충족 0, 충족 1, 판정 불가 2(수동 판정으로 넘긴다).
 - 임계 시간과 trailer 문구는 자손 덮어쓰기 표나 상류 규칙의 "주기 조건" 표 등에서 읽는다(출처와 순서는 check_semantic_audit.py docstring). 읽은 곳은 판정 문장 끝의 `(조건 출처: ...)`로 밝힌다. 인스턴스가 주기를 조정하면 스크립트가 따라간다.
 - 시각 비교는 KST 고정이라 실행 머신의 시간대에 의존하지 않는다.
+
+## 세션 시작 요약 스크립트
+
+[tools/session_brief.py](tools/session_brief.py)는 [session-boundaries.md](session-boundaries.md) "세션 시작" 1-4단계에서 판단이 필요 없는 부분을 모아 요약 하나로 낸다. 명령을 하나씩 돌려 출력을 컨텍스트에 쌓는 대신 요약만 읽게 해 세션 시작의 읽기 분량을 줄인다. 무엇을 모으는지는 그 절이 정하고, 절의 순서, 자르는 방식, 제한 시간 같은 구현은 스크립트 docstring에 있다.
+
+- 실행: 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/session_brief.py .` (윈도우는 `python` 또는 `py`). `--merges N`은 최근 머지 건수(기본 5), `--no-fetch`는 원격 조회 생략, `--no-audit`는 형식 감사 생략이다.
+- 출력: 첫 줄이 `[session-brief]`이고 9,000자 안으로 자른다. 세션 시작 훅이 주입할 수 있는 길이 안에 들게 하려는 것이다 (see: [tool-environment.md](tool-environment.md) "세션 시작 훅"). `--hook-json`은 같은 요약을 세션 시작 훅의 JSON 출력으로 감싼다.
+- 종료 코드: 요약을 냈으면 0(감사 위반, 의미 감사 충족, 원격 조회 실패도 요약에 적는다), 사용법 오류 2. 훅이 세션을 막지 않게 하려고 수집 결과로 종료 코드를 바꾸지 않는다.

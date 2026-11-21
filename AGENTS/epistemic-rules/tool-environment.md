@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-08
+date modified: 2026-11-21
 tags: [agents, 도구, 환경, IDE, epistemic-rules]
 ---
 
@@ -45,3 +45,14 @@ Antigravity에서 실측한 동작: 줄 전체가 `@경로`인 줄은 펼치지 
 `.claude/skills/` 하위의 각 SKILL.md(ingest, unit-task-start, unit-task-finish, pr-create, pr-respond, document-authoring, norm-authoring)는 절차 문서를 해당 시점에 로드하는 얇은 래퍼(thin wrapper)다. 절차 내용을 복사하지 않고 트리거 조건과 SSOT(single source of truth; 단일 진실 공급원) 링크만 담는다. 복사하면 SSOT를 위배하고 사본이 원본과 어긋난다. 다른 도구 사용자는 SSOT 절차 문서를 직접 읽으면 같은 효과를 얻는다.
 
 `.claude/agents/` 하위의 서브에이전트 정의도 같은 원칙을 따른다. 역할 정의 원본(상류 역할은 [agent-roles.md](agent-roles.md)가 링크하는 역할별 문서, 인스턴스 역할은 루트 `AGENTS.md`가 링크하는 낱개 문서)을 읽고 따르라는 지시, 도구별 제한, 호출 판단용 역할 요약(description)만 담고, 점검 항목이나 절차를 옮겨 적지 않는다 - 옮겨 적은 사본은 원본이 바뀔 때 어긋나며, 실제로 실행되는 것은 사본이다.
+
+## 세션 시작 훅
+
+세션 시작 요약([tools.md](tools.md) "세션 시작 요약 스크립트")은 도구의 세션 시작 훅이 실행하게 한다. 규범이 실행을 요구하는 문장보다 훅이 확실하게 지켜진다. 훅 설정에는 스크립트를 부르는 명령만 두고 절차 내용은 적지 않는다 - 절차의 SSOT는 [session-boundaries.md](session-boundaries.md) "세션 시작"이고, 요약 머리말이 그 절을 가리킨다. 훅이 없는 도구에서는 그 절의 문장대로 모델이 스크립트를 직접 실행한다.
+
+| 도구 | 설정 | 비고 | 조회 일자 |
+|------|------|------|-----------|
+| Claude Code | 루트 `.claude/settings.json`의 `SessionStart` 훅 | 새 세션(`startup`)과 `/clear`에는 전체 요약을, 압축(`compact`) 뒤에는 원격 조회와 형식 감사를 뺀 요약을 다시 낸다. 이어 받는 세션(`resume`, `fork`)은 대화에 요약이 남아 있어 걸지 않는다. 요약은 `--hook-json`으로 `hookSpecificOutput.additionalContext` JSON에 담아 낸다. 주입 텍스트가 10,000자를 넘으면 파일로 빠진다. 프로젝트 설정은 세션을 시작한 폴더의 것만 읽어, 레포의 하위 폴더에서 시작한 세션에서는 훅이 돌지 않는다. 이때는 "세션 시작"의 문장대로 스크립트를 직접 실행한다. 명령은 bash로 돌며, 윈도우에서는 Git for Windows의 Git Bash가 있어야 한다. PowerShell로 돌면 명령이 파싱되지 않아 요약 없이 끝난다. 훅의 timeout은 스크립트 내부 제한 시간의 합보다 길게 둔다. 인스턴스는 이 파일의 훅 인자(머지 건수 등)를 고유 절차에 맞게 고칠 수 있다. 훅이 끝날 때까지 세션 시작이 기다리므로, 형식 감사가 오래 걸리는 레포는 `--no-audit`를 주고 감사를 백그라운드로 돌린다. | 2026-11-21 |
+| Codex, GitHub Copilot, Antigravity | 미확인 | 세션 시작 훅의 지원 여부를 확인하지 않았다. | 미확인 |
+
+출처: [Claude Code hooks](https://code.claude.com/docs/en/hooks), [Claude Code settings](https://code.claude.com/docs/en/settings).

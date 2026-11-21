@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; d=\"$(git -C \"$d\" rev-parse --show-toplevel 2>/dev/null || printf '%s' \"$d\")\"; s=\"$d/AGENTS/epistemic-rules/tools/session_brief.py\"; [ -f \"$s\" ] || { echo \"Session brief hook: script not found ($s). Follow AGENTS/epistemic-rules/session-boundaries.md (session start) manually.\"; exit 0; }; for c in python3 python 'py -3'; do if $c -c 'import sys; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then exec $c -B \"$s\" \"$d\" --hook-json; fi; done; echo 'Session brief hook: Python 3.9+ not found. Follow AGENTS/epistemic-rules/session-boundaries.md (session start) manually.'",
+            "timeout": 300
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; d=\"$(git -C \"$d\" rev-parse --show-toplevel 2>/dev/null || printf '%s' \"$d\")\"; s=\"$d/AGENTS/epistemic-rules/tools/session_brief.py\"; [ -f \"$s\" ] || { echo \"Session brief hook: script not found ($s). Run it manually after compaction if needed.\"; exit 0; }; for c in python3 python 'py -3'; do if $c -c 'import sys; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then exec $c -B \"$s\" \"$d\" --no-fetch --no-audit --hook-json; fi; done; echo 'Session brief hook: Python 3.9+ not found. Run AGENTS/epistemic-rules/tools/session_brief.py manually after compaction if needed.'",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
