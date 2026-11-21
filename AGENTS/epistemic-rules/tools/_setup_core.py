@@ -23,6 +23,7 @@
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -35,6 +36,11 @@ INSTANCE_SPEC_DIR_REL = Path("AGENTS/setup")
 KINDS = frozenset({"git-config", "require-command"})
 SCOPES = ("clone", "machine")
 REQUIRED_KEYS = ("id", "title", "scope", "kind")
+ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*$")
+STATE_DIR_NAME = ".epistemic"
+STATE_FILE = "setup-state.json"
+PYTHON_FILE = "python"
+CLONE_KEY_PREFIX = "epistemic.setup."
 GIT_TIMEOUT = 20
 GIT_ENV = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never")
 
@@ -119,6 +125,9 @@ def parse_spec(text: str, source: str) -> "tuple[list[Item], list[str]]":
         if not isinstance(raw, dict) or not all(isinstance(raw.get(k), str) and raw.get(k) for k in REQUIRED_KEYS):
             errors.append(f"{source}: {n}번째 항목에 {', '.join(REQUIRED_KEYS)} 가운데 빠진 것이 있다")
             continue
+        if not ID_RE.match(raw["id"]):
+            errors.append(f"{source}: 항목 id {raw['id']}는 영문자로 시작하고 영숫자와 하이픈만 쓴다(git 설정 키로 쓰기 때문이다)")
+            continue
         if raw["scope"] not in SCOPES:
             errors.append(f"{source}: 항목 {raw['id']}의 scope는 clone 또는 machine이어야 한다")
             continue
@@ -172,6 +181,101 @@ def item_hash(item: Item) -> str:
     }
     data = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
+
+
+def home_dir() -> Path:
+    """설치 상태의 홈. 환경 변수 EPISTEMIC_HOME이 있으면 그 값, 없으면 Path.home().
+
+    세션 시작 훅도 같은 규칙(EPISTEMIC_HOME, 없으면 USERPROFILE, 없으면 HOME)을 쓴다.
+    """
+    value = os.environ.get("EPISTEMIC_HOME")
+    return Path(value) if value else Path.home()
+
+
+def state_dir() -> Path:
+    return home_dir() / STATE_DIR_NAME
+
+
+def read_python_command() -> "str | None":
+    """머신별 Python 실행 명령 파일의 첫 줄. 공백으로만 나눠 쓰며 백슬래시를 해석하지 않는다."""
+    try:
+        lines = (state_dir() / PYTHON_FILE).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    first = lines[0].strip() if lines else ""
+    return first or None
+
+
+def repo_identifier(root: Path) -> str:
+    """머신 상태 파일에서 레포를 가르는 이름. origin URL을 정규화하고, 없으면 주 레포 폴더 이름."""
+    code, out = git(root, "remote", "get-url", "origin")
+    url = out.strip()
+    if code == 0 and url:
+        url = re.sub(r"^[a-z+]+://", "", url)
+        url = re.sub(r"^[^@/]+@", "", url)
+        url = re.sub(r"^([^/:]+):(?!\d+/)", r"\1/", url)
+        url = re.sub(r"\.git/?$", "", url.rstrip("/"))
+        return url.lower()
+    code, out = git(root, "rev-parse", "--git-common-dir")
+    if code == 0 and out.strip():
+        common = Path(out.strip())
+        common = (common if common.is_absolute() else root / common).resolve()
+        if common.name == ".git":
+            return common.parent.name
+    return root.resolve().name
+
+
+def _read_state() -> "dict | None":
+    """머신 상태 파일. 없으면 빈 dict, 깨졌으면 None."""
+    path = state_dir() / STATE_FILE
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _write_state(data: dict) -> bool:
+    folder = state_dir()
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        tmp = folder / (STATE_FILE + ".tmp")
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(tmp, folder / STATE_FILE)
+    except OSError:
+        return False
+    return True
+
+
+def applied_hash(root: Path, item: Item) -> "str | None":
+    """마지막으로 적용하거나 기록한 명세 해시. 없거나 읽지 못하면 None."""
+    if item.scope == "clone":
+        code, out = git(root, "config", "--local", "--get", CLONE_KEY_PREFIX + item.id)
+        return out.strip() or None if code == 0 else None
+    state = _read_state() or {}
+    entry = state.get(repo_identifier(root), {}).get(item.id)
+    return entry.get("spec") if isinstance(entry, dict) else None
+
+
+def record_applied(root: Path, item: Item, spec_hash: str) -> bool:
+    """적용 해시를 범위의 자리에 기록한다. 기록하지 못하면 False(호출자는 미적용으로 둔다)."""
+    if item.scope == "clone":
+        code, _ = git(root, "config", "--local", CLONE_KEY_PREFIX + item.id, spec_hash)
+        return code == 0
+    state = _read_state()
+    if state is None:
+        broken = state_dir() / STATE_FILE
+        try:
+            os.replace(broken, broken.with_name(STATE_FILE + ".broken"))
+        except OSError:
+            return False
+        state = {}
+    state.setdefault(repo_identifier(root), {})[item.id] = {"spec": spec_hash}
+    return _write_state(state)
 
 
 def current_os() -> str:

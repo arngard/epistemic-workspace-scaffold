@@ -153,6 +153,84 @@ class LoadItemsTest(SetupTestBase):
         self.assertTrue(all(i.kind in core.KINDS for i in items))
 
 
+class StateTest(SetupTestBase):
+    def clone_item(self):
+        return core.Item("hooks-path", "훅", "clone", "git-config", (), {}, {"key": "core.hooksPath", "value": "x"}, "s")
+
+    def machine_item(self):
+        return core.Item("python", "파이썬", "machine", "require-command", (), {}, {"candidates": ["python"]}, "s")
+
+    def test_clone_scope_in_git_config(self):
+        self.assertTrue(core.record_applied(self.root, self.clone_item(), "abc123"))
+        self.assertEqual(git(self.root, "config", "--local", "--get", "epistemic.setup.hooks-path").strip(), "abc123")
+        self.assertEqual(core.applied_hash(self.root, self.clone_item()), "abc123")
+
+    def test_worktree_shares_clone_state(self):
+        core.record_applied(self.root, self.clone_item(), "abc123")
+        wt = self.tmp / "ws-wt"
+        git(self.root, "worktree", "add", "-q", "--detach", str(wt))
+        self.addCleanup(lambda: git(self.root, "worktree", "remove", "--force", str(wt)))
+        self.assertEqual(core.applied_hash(wt, self.clone_item()), "abc123")
+
+    def test_machine_scope_in_home_state_file(self):
+        self.assertTrue(core.record_applied(self.root, self.machine_item(), "h1"))
+        state = json.loads((self.home / ".epistemic" / "setup-state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state[core.repo_identifier(self.root)]["python"]["spec"], "h1")
+        self.assertEqual(core.applied_hash(self.root, self.machine_item()), "h1")
+
+    def test_repo_identifier_normalizes_origin(self):
+        git(self.root, "remote", "add", "origin", "https://github.com/Owner/Repo.git")
+        a = core.repo_identifier(self.root)
+        git(self.root, "remote", "set-url", "origin", "git@github.com:Owner/Repo")
+        b = core.repo_identifier(self.root)
+        self.assertEqual(a, "github.com/owner/repo")
+        self.assertEqual(a, b)
+
+    def test_repo_identifier_without_origin_is_main_repo_name(self):
+        wt = self.tmp / "ws-wt2"
+        git(self.root, "worktree", "add", "-q", "--detach", str(wt))
+        self.addCleanup(lambda: git(self.root, "worktree", "remove", "--force", str(wt)))
+        self.assertEqual(core.repo_identifier(wt), "ws")
+
+    def test_corrupt_machine_state_treated_as_empty(self):
+        state = self.home / ".epistemic" / "setup-state.json"
+        write(state, "{not json")
+        self.assertIsNone(core.applied_hash(self.root, self.machine_item()))
+        self.assertTrue(core.record_applied(self.root, self.machine_item(), "h2"))
+        self.assertTrue((state.parent / "setup-state.json.broken").exists())
+        self.assertEqual(core.applied_hash(self.root, self.machine_item()), "h2")
+
+    def test_state_file_under_home_with_spaces(self):
+        self.assertIn(" ", str(self.home))
+        core.record_applied(self.root, self.machine_item(), "h3")
+        self.assertEqual(core.applied_hash(self.root, self.machine_item()), "h3")
+
+    def test_read_python_command(self):
+        self.assertIsNone(core.read_python_command())
+        write(self.home / ".epistemic" / "python", "uv run --no-project python\n")
+        self.assertEqual(core.read_python_command(), "uv run --no-project python")
+        write(self.home / ".epistemic" / "python", "C:\\Tools\\py\\python.exe\n")
+        self.assertEqual(core.read_python_command(), "C:\\Tools\\py\\python.exe")
+
+    def test_record_failure_is_not_fatal(self):
+        real = core.git
+
+        def failing(cwd, *args, **kw):
+            if args[:2] == ("config", "--local") and len(args) == 4:
+                return 255, ""
+            return real(cwd, *args, **kw)
+
+        with mock.patch.object(core, "git", failing):
+            self.assertFalse(core.record_applied(self.root, self.clone_item(), "zz"))
+
+    def test_invalid_id_rejected(self):
+        items, errors = core.parse_spec(json.dumps([
+            {"id": "bad.id", "title": "t", "scope": "clone", "kind": "git-config", "params": {}},
+        ]), "s.json")
+        self.assertEqual(items, [])
+        self.assertTrue(any("bad.id" in e for e in errors))
+
+
 class HashTest(unittest.TestCase):
     def item(self, **params):
         return core.Item("a", "에이", "clone", "git-config", (), {}, params, "s")
