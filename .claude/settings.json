@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; d=\"$(git -C \"$d\" rev-parse --show-toplevel 2>/dev/null || printf '%s' \"$d\")\"; s=\"$d/AGENTS/epistemic-rules/tools/session_brief.py\"; [ -f \"$s\" ] || { echo \"Session brief hook: script not found ($s). Follow AGENTS/epistemic-rules/session-boundaries.md (session start) manually.\"; exit 0; }; for c in python3 python 'py -3'; do if $c -c 'import sys; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then exec $c -B \"$s\" \"$d\" --hook-json; fi; done; echo 'Session brief hook: Python 3.9+ not found. Follow AGENTS/epistemic-rules/session-boundaries.md (session start) manually.'",
+            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; d=\"$(git -C \"$d\" rev-parse --show-toplevel 2>/dev/null || printf '%s' \"$d\")\"; s=\"$d/AGENTS/epistemic-rules/tools/session_brief.py\"; [ -f \"$s\" ] || { echo \"Session brief hook: script not found ($s). Follow AGENTS/epistemic-rules/session-boundaries.md (session start) manually.\"; exit 0; }; h=\"${EPISTEMIC_HOME:-${USERPROFILE:-$HOME}}\"; p=\"$h/.epistemic/python\"; c0=\"\"; [ -f \"$p\" ] && c0=\"$(head -n 1 \"$p\" | tr -d '\\r')\"; for c in \"$c0\" python3 python 'py -3'; do [ -n \"$c\" ] || continue; if $c -c 'import sys; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then exec $c -B \"$s\" \"$d\" --hook-json; fi; done; echo 'Session brief hook: Python 3.9+ not found. Write the Python command to ~/.epistemic/python or follow AGENTS/epistemic-rules/workspace-setup.md (first install).'",
             "timeout": 300
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; d=\"$(git -C \"$d\" rev-parse --show-toplevel 2>/dev/null || printf '%s' \"$d\")\"; s=\"$d/AGENTS/epistemic-rules/tools/session_brief.py\"; [ -f \"$s\" ] || { echo \"Session brief hook: script not found ($s). Run it manually after compaction if needed.\"; exit 0; }; for c in python3 python 'py -3'; do if $c -c 'import sys; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then exec $c -B \"$s\" \"$d\" --no-fetch --no-audit --hook-json; fi; done; echo 'Session brief hook: Python 3.9+ not found. Run AGENTS/epistemic-rules/tools/session_brief.py manually after compaction if needed.'",
+            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; d=\"$(git -C \"$d\" rev-parse --show-toplevel 2>/dev/null || printf '%s' \"$d\")\"; s=\"$d/AGENTS/epistemic-rules/tools/session_brief.py\"; [ -f \"$s\" ] || { echo \"Session brief hook: script not found ($s). Run it manually after compaction if needed.\"; exit 0; }; h=\"${EPISTEMIC_HOME:-${USERPROFILE:-$HOME}}\"; p=\"$h/.epistemic/python\"; c0=\"\"; [ -f \"$p\" ] && c0=\"$(head -n 1 \"$p\" | tr -d '\\r')\"; for c in \"$c0\" python3 python 'py -3'; do [ -n \"$c\" ] || continue; if $c -c 'import sys; sys.exit(sys.version_info < (3, 9))' >/dev/null 2>&1; then exec $c -B \"$s\" \"$d\" --no-fetch --no-audit --hook-json; fi; done; echo 'Session brief hook: Python 3.9+ not found. Write the Python command to ~/.epistemic/python or follow AGENTS/epistemic-rules/workspace-setup.md (first install).'",
             "timeout": 120
           }
         ]

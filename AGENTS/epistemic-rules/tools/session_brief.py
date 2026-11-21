@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""세션 시작 요약 (git 의존, 읽기 전용).
+"""세션 시작 요약 (git 의존).
 
-session-boundaries.md "세션 시작" 1-4단계 가운데 판단이 필요 없는 부분을 모아
+session-boundaries.md "세션 시작" 1-5단계 가운데 판단이 필요 없는 부분을 모아
 짧은 요약 하나로 낸다. 모델이 명령을 하나씩 돌려 출력을 컨텍스트에 쌓는 대신
 이 요약만 읽게 하려는 것이다. 무엇을 모으는지는 그 절이 정하고, 이 스크립트는
 그 수집을 구현한다. 머리말은 그 절의 경로를 가리킨다.
+
+파일을 고치지 않지만 부작용이 셋 있다. git fetch로 원격 참조를 갱신하고, 레포의 확장
+스크립트를 실행하며, 환경 갱신 판정(_setup_core.status)이 해시가 다른 설치 항목의 점검
+명령을 실행해 통과한 항목의 적용 해시를 동의 없이 기록한다(기록만).
 
 인스턴스 확장: 레포 루트의 AGENTS/session-brief/ 바로 아래 *.py를 이름 순으로
 `python -B <확장> <루트>`로 실행하고(작업 폴더는 루트, 표준 입력 없음, 환경 변수
@@ -55,6 +59,9 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _setup_core  # noqa: E402
 
 MARKER = "[session-brief]"
 MAX_CHARS = 9000
@@ -373,6 +380,14 @@ def repo_name(root: Path) -> str:
     return root.name
 
 
+def setup_lines(root: Path) -> "list[str]":
+    """설치 체계의 환경 갱신 판정(_setup_core.status_lines). 어떤 실패도 한 줄로 바꾼다."""
+    try:
+        return _setup_core.status_lines(root)
+    except Exception as exc:  # noqa: BLE001 - 요약이 세션 시작을 막지 않게 한다
+        return [f"수집 실패: 환경 갱신 판정 중 오류({type(exc).__name__}). setup.py check로 직접 본다."]
+
+
 def failed(what: str) -> "list[str]":
     return [f"수집 실패: {what}. 직접 확인한다."]
 
@@ -388,7 +403,7 @@ def render(sections: "list[tuple[str, list[str]]]", root: "Path | None" = None) 
             pass
     out = [
         title,
-        f"{rule.as_posix()} \"세션 시작\" 1-4단계의 기계 부분을 모은 결과다. "
+        f"{rule.as_posix()} \"세션 시작\" 1-5단계의 기계 부분을 모은 결과다. "
         "이 요약이 컨텍스트에 있으면 다시 실행하지 않는다. 결과의 처리와 남은 단계는 그 절을 따른다.",
     ]
     for title, lines in sections:
@@ -443,6 +458,7 @@ def main(argv: "list[str] | None" = None) -> int:
     if not args.no_audit:
         sections.append(("형식 감사", parse_audit(*run_tool("audit.py", root, AUDIT_TIMEOUT))))
     sections.append(("의미 감사 트리거", parse_semantic(*run_tool("check_semantic_audit.py", root, SEMANTIC_TIMEOUT))))
+    sections.append(("환경 갱신", setup_lines(root)))
     sections.append(("reference 미처리 항목", pending_references(root)))
 
     trees = worktrees(root)
