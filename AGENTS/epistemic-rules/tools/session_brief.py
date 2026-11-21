@@ -56,6 +56,9 @@ import tempfile
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _setup_core  # noqa: E402
+
 MARKER = "[session-brief]"
 MAX_CHARS = 9000
 SUMMARY_MAX = 160
@@ -373,6 +376,14 @@ def repo_name(root: Path) -> str:
     return root.name
 
 
+def setup_lines(root: Path) -> "list[str]":
+    """설치 체계의 환경 갱신 판정(_setup_core.status_lines). 어떤 실패도 한 줄로 바꾼다."""
+    try:
+        return _setup_core.status_lines(root)
+    except Exception as exc:  # noqa: BLE001 - 요약이 세션 시작을 막지 않게 한다
+        return [f"수집 실패: 환경 갱신 판정 중 오류({type(exc).__name__}). setup.py check로 직접 본다."]
+
+
 def failed(what: str) -> "list[str]":
     return [f"수집 실패: {what}. 직접 확인한다."]
 
@@ -443,6 +454,7 @@ def main(argv: "list[str] | None" = None) -> int:
     if not args.no_audit:
         sections.append(("형식 감사", parse_audit(*run_tool("audit.py", root, AUDIT_TIMEOUT))))
     sections.append(("의미 감사 트리거", parse_semantic(*run_tool("check_semantic_audit.py", root, SEMANTIC_TIMEOUT))))
+    sections.append(("환경 갱신", setup_lines(root)))
     sections.append(("reference 미처리 항목", pending_references(root)))
 
     trees = worktrees(root)
