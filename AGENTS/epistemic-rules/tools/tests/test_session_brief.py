@@ -9,8 +9,11 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import session_brief  # noqa: E402
 
 from session_brief import (  # noqa: E402
     MARKER, MAX_CHARS, MAX_DOCS_PER_MERGE, doc_summary, main, merge_lines,
@@ -113,6 +116,21 @@ class RecentMergesTest(TempRepo):
         git(self.root, "checkout", "-q", "-b", "feature/w")
         self.write("m.md", "---\ndescription: 작업 브랜치의 요약\n---\n")
         self.assertEqual(recent_merges(self.root, 1)[0][2], [("m.md", "main의 요약")])
+
+    def test_summaries_read_only_within_display_cap(self):
+        files = {f"many/d{i}.md": f"# 문서 {i}\n" for i in range(MAX_DOCS_PER_MERGE + 5)}
+        self.merge_branch("docs/many", files, "Merge many")
+        calls = []
+        original = session_brief.main_doc_summary
+
+        def counting(root, rel):
+            calls.append(rel)
+            return original(root, rel)
+
+        with mock.patch.object(session_brief, "main_doc_summary", counting):
+            docs = recent_merges(self.root, 1)[0][2]
+        self.assertEqual(len(docs), MAX_DOCS_PER_MERGE + 5)
+        self.assertEqual(len(calls), MAX_DOCS_PER_MERGE)
 
     def test_docs_per_merge_capped(self):
         docs = [(f"d{i}.md", "s") for i in range(MAX_DOCS_PER_MERGE + 3)]

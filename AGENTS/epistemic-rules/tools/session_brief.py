@@ -59,7 +59,8 @@ SEMANTIC_TIMEOUT = 30
 # 실행 시작부터 이 초를 넘기면 남은 문서는 요약 없이 경로만 적는다. 문서마다 git을
 # 부르므로 문서 수에 따라 늘어나는 시간을 훅 timeout 안에 묶어 두려는 것이다.
 DOC_SUMMARY_BUDGET = 200
-STARTED = time.monotonic()
+# main()이 실행을 시작할 때 잡는다. 모듈을 import만 한 쪽(시험 등)에는 예산을 걸지 않는다.
+_started: "float | None" = None
 
 TOOLS_DIR = Path(__file__).resolve().parent
 RULE_DOC = TOOLS_DIR.parent / "session-boundaries.md"
@@ -119,7 +120,7 @@ def doc_summary(path: Path) -> "str | None":
 
 def main_doc_summary(root: Path, rel: str) -> "str | None":
     """main 브랜치에 있는 문서의 요약 한 줄. main에 없으면 None, 시간 예산을 넘겼으면 ""."""
-    if time.monotonic() - STARTED > DOC_SUMMARY_BUDGET:
+    if _started is not None and time.monotonic() - _started > DOC_SUMMARY_BUDGET:
         return ""
     code, text = git(root, "show", f"main:{rel}")
     return summarize(text) if code == 0 else None
@@ -144,7 +145,11 @@ def recent_merges(root: Path, count: int) -> "list[tuple[str, str, list[tuple[st
         if not lines:
             continue
         head, _, subject = lines[0].partition(" ")
-        docs = [(rel, main_doc_summary(root, rel)) for rel in lines[1:]]
+        # 표시 상한 밖의 문서는 merge_lines가 개수만 적으므로 요약을 읽지 않는다.
+        docs = [
+            (rel, main_doc_summary(root, rel) if i < MAX_DOCS_PER_MERGE else "")
+            for i, rel in enumerate(lines[1:])
+        ]
         merges.append((head, subject, docs))
     return merges
 
@@ -226,7 +231,8 @@ def run_tool(script: str, root: Path, timeout: float) -> "tuple[int, str]":
             stdin=subprocess.DEVNULL, timeout=timeout,
         )
     except subprocess.TimeoutExpired:
-        return -1, f"{script}가 {timeout}초 안에 끝나지 않았다. 직접 실행해 본다."
+        return -1, (f"{script}가 {timeout}초 안에 끝나지 않았다. 백그라운드로 직접 실행해 결과를 본다. "
+                    "늘 넘기는 레포는 세션 시작 훅 인자에 --no-audit를 준다.")
     except OSError as exc:
         return -1, f"{script} 실행 실패: {exc}"
     return proc.returncode, proc.stdout + proc.stderr
@@ -298,6 +304,8 @@ def merge_lines(merges: "list[tuple[str, str, list[tuple[str, str | None]]]]") -
 
 
 def main(argv: "list[str] | None" = None) -> int:
+    global _started
+    _started = time.monotonic()
     parser = argparse.ArgumentParser(description="세션 시작 요약")
     parser.add_argument("root", nargs="?", default=".")
     parser.add_argument("--merges", type=int, default=5)
