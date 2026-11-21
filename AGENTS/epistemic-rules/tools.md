@@ -12,7 +12,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 검사 진입점은 [audit.py](tools/audit.py) 하나, 파일을 쓰는 생성 진입점은 [build_index.py](tools/build_index.py) 하나다. 검사 로직은 공용 인프라([_audit_core.py](tools/_audit_core.py) 등)와 의미별 검사 모듈로 나뉘며 audit.py가 import해 조합한다. 모듈 구성은 audit.py 모듈 docstring의 "구조"에 있다.
 
-그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다), [session_brief.py](tools/session_brief.py), [tag_inventory.py](tools/tag_inventory.py)다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
+그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. [session_brief.py](tools/session_brief.py)는 파일을 고치지 않지만 `git fetch`로 원격 참조를 갱신하고 레포의 확장 코드를 실행한다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
 
 ## 시험
 
@@ -51,5 +51,9 @@ tags: [규칙, 도구, epistemic-rules]
 [tools/session_brief.py](tools/session_brief.py)는 [session-boundaries.md](session-boundaries.md) "세션 시작" 1-4단계에서 판단이 필요 없는 부분을 모아 요약 하나로 낸다. 명령을 하나씩 돌려 출력을 컨텍스트에 쌓는 대신 요약만 읽게 해 세션 시작의 읽기 분량을 줄인다. 무엇을 모으는지는 그 절이 정하고, 절의 순서, 자르는 방식, 제한 시간 같은 구현은 스크립트 docstring에 있다.
 
 - 실행: 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/session_brief.py .` (윈도우는 `python` 또는 `py`). `--merges N`은 최근 머지 건수(기본 5), `--no-fetch`는 원격 조회 생략, `--no-audit`는 형식 감사 생략이다.
-- 출력: 첫 줄이 `[session-brief]`이고 9,000자 안으로 자른다. 세션 시작 훅이 주입할 수 있는 길이 안에 들게 하려는 것이다 (see: [tool-environment.md](tool-environment.md) "세션 시작 훅"). `--hook-json`은 같은 요약을 세션 시작 훅의 JSON 출력으로 감싼다.
+- 출력: 첫 줄이 `[session-brief]`와 레포 이름이고 9,000자 안으로 자른다. 세션 시작 훅이 주입할 수 있는 길이 안에 들게 하려는 것이다 (see: [tool-environment.md](tool-environment.md) "세션 시작 훅"). `--hook-json`은 같은 요약을 세션 시작 훅의 JSON 출력으로 감싼다.
+- 인스턴스 확장: 자손은 상류 도구를 고치지 않고 레포 루트의 `AGENTS/session-brief/` 바로 아래 `*.py`로 요약에 고유 항목(머신 환경 같은 세션 내내 걸리는 사실)을 더한다. 상류는 이 폴더를 출고하지 않는다. 요약은 확장을 이름 순으로 `python -B <확장> <루트>`로 실행하고(작업 폴더는 루트, 표준 입력 없음, 환경 변수 `EPISTEMIC_AUDIT_TOOLS`에 상류 도구 폴더, `PYTHONIOENCODING=utf-8`, `PYTHONDONTWRITEBYTECODE=1`), UTF-8로 읽은 표준 출력의 텍스트를 "확장: <파일 이름 줄기>" 절로 판정 절보다 앞에 붙인다. 이름이 `_`나 `.`으로 시작하는 항목, `.py`가 아닌 파일, 하위 폴더, 심볼릭 링크는 실행하지 않는다.
+  - 상한: 확장 하나의 출력은 2,000자, 확장 절 합계는 3,000자 안이고, 실행 시간은 확장 하나 30초, 전체 60초 안이다. 합계나 전체 시간을 넘으면 남은 확장은 실행하지 않고 생략 사실만 적는다. 확장이 늘어도 판정 절이 요약 상한 밖으로 밀려나지 않게 하려는 것이다.
+  - 실패: 종료 코드가 0이 아니거나 제한 시간 안에 끝나지 않으면 출력을 버리고 수집 실패 한 줄을 적는다. 시간 초과 때 확장이 띄운 다른 프로세스는 정리하지 않는다.
+  - 주의: 확장은 읽기만 하고 `session_brief.py`를 다시 부르지 않는다(재귀를 막는 장치가 없다). 세션 시작 훅이 있으면 세션마다 레포의 확장 코드가 자동으로 실행되므로, 신뢰하지 않는 레포에서는 세션을 열거나 요약을 실행하지 않는다.
 - 종료 코드: 요약을 냈으면 0(감사 위반, 의미 감사 충족, 원격 조회 실패도 요약에 적는다), 사용법 오류 2. 훅이 세션을 막지 않게 하려고 수집 결과로 종료 코드를 바꾸지 않는다.

@@ -6,7 +6,15 @@ session-boundaries.md "세션 시작" 1-4단계 가운데 판단이 필요 없�
 이 요약만 읽게 하려는 것이다. 무엇을 모으는지는 그 절이 정하고, 이 스크립트는
 그 수집을 구현한다. 머리말은 그 절의 경로를 가리킨다.
 
-절의 순서: 짧고 판정이 걸린 절(형식 감사, 의미 감사 판정, reference 미처리,
+인스턴스 확장: 레포 루트의 AGENTS/session-brief/ 바로 아래 *.py를 이름 순으로
+`python -B <확장> <루트>`로 실행하고(작업 폴더는 루트, 표준 입력 없음, 환경 변수
+EPISTEMIC_AUDIT_TOOLS에 이 도구 폴더), 표준 출력의 텍스트를 "확장: <파일 이름 줄기>"
+절로 붙인다. 확장 하나는 EXTENSION_MAX_CHARS, 확장 절 합계는 EXTENSION_TOTAL_MAX_CHARS,
+실행 시간은 확장 하나 EXTENSION_TIMEOUT, 전체 EXTENSION_TOTAL_BUDGET 안으로 묶어, 확장이
+늘어도 판정 절이 요약 상한 밖으로 밀려나지 않게 한다. 계약은 tools.md "세션 시작 요약
+스크립트"에 있다.
+
+절의 순서: 인스턴스 확장 절을 맨 앞에 두고, 이어서 짧고 판정이 걸린 절(형식 감사, 의미 감사 판정, reference 미처리,
 워크트리, 머지 전 브랜치)을 앞에, 길어질 수 있는 최근 머지 문서 목록을 끝에
 둔다. 출력이 MAX_CHARS를 넘어 끝에서 자를 때 판정이 먼저 빠지지 않게 하려는
 것이다. 최근 머지 한 건의 문서는 MAX_DOCS_PER_MERGE개까지만 적고 남은 개수와
@@ -20,7 +28,7 @@ main의 파일에서 읽는다. 작업 브랜치의 워크트리에서 세션을
 git은 터미널 자격 증명 입력을 끄고 표준 입력을 닫은 채, 호출마다 제한 시간을
 두고 돌린다. 내부 제한 시간의 합은 출고 훅의 timeout보다 짧게 유지한다
 (fetch FETCH_TIMEOUT + 형식 감사 AUDIT_TIMEOUT + 의미 감사 판정 SEMANTIC_TIMEOUT +
-git 호출들, 문서 요약 예산 DOC_SUMMARY_BUDGET). origin이 없거나 fetch가 제한 시간 안에 끝나지 않으면 건너뛰고 그
+git 호출들, 문서 요약 예산 DOC_SUMMARY_BUDGET, 확장 전체 예산 EXTENSION_TOTAL_BUDGET). origin이 없거나 fetch가 제한 시간 안에 끝나지 않으면 건너뛰고 그
 사실을 적는다.
 
 --hook-json을 주면 같은 요약을 Claude Code SessionStart 훅의 JSON 출력
@@ -44,6 +52,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -71,6 +80,13 @@ PENDING_STATES = ("미등록", "처리 대기")
 STATE_RE = re.compile(r"`([^`]+)`")
 INDEX_PAGE_RE = re.compile(r"^INDEX\d*\.md$")
 IN_PROGRESS_PREFIX = "- [/]"
+EXTENSION_DIR_REL = Path("AGENTS/session-brief")
+EXTENSION_TIMEOUT = 30
+EXTENSION_TOTAL_BUDGET = 60
+EXTENSION_MAX_CHARS = 2000
+# 확장 절 합계의 상한. 요약 상한(MAX_CHARS)에서 판정 절이 들어갈 자리를 남긴다.
+EXTENSION_TOTAL_MAX_CHARS = 3000
+STDERR_LIMIT = 200
 
 GIT_ENV = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never")
 
@@ -259,19 +275,119 @@ def parse_semantic(code: int, out: str) -> "list[str]":
     return lines[-1:] if lines else [f"check_semantic_audit.py 종료 코드 {code}, 출력 없음. 직접 실행해 본다."]
 
 
+def extension_sections(root: Path) -> "list[tuple[str, list[str]]]":
+    """AGENTS/session-brief/ 바로 아래 *.py 확장을 이름 순으로 실행해 절마다 하나씩 낸다.
+
+    이름이 _나 .으로 시작하는 항목, .py가 아닌 파일, 하위 폴더, 심볼릭 링크는
+    실행하지 않는다. 실패한 확장은 출력을 버리고 수집 실패 한 줄을 낸다.
+    """
+    folder = root / EXTENSION_DIR_REL
+    try:
+        if folder.is_symlink() or not folder.is_dir():
+            return []
+        entries = sorted(folder.iterdir(), key=lambda p: p.name)
+    except OSError:
+        return []
+    env = dict(
+        os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1",
+        EPISTEMIC_AUDIT_TOOLS=str(TOOLS_DIR),
+    )
+    sections = []
+    started = time.monotonic()
+    total = 0
+    for path in entries:
+        if path.name.startswith(("_", ".")) or path.suffix != ".py" or path.is_symlink() or not path.is_file():
+            continue
+        title = f"확장: {path.stem}"
+        remaining = EXTENSION_TOTAL_BUDGET - (time.monotonic() - started)
+        if remaining <= 0:
+            sections.append((title, [f"실행 생략: 확장 전체 시간 예산 {EXTENSION_TOTAL_BUDGET}초를 넘겼다. 직접 실행해 본다."]))
+            continue
+        if total >= EXTENSION_TOTAL_MAX_CHARS:
+            sections.append((title, [f"실행 생략: 확장 출력 합계 상한 {EXTENSION_TOTAL_MAX_CHARS}자에 닿았다. 직접 실행해 본다."]))
+            continue
+        lines = run_extension(path, root, env, min(EXTENSION_TIMEOUT, remaining))
+        total += sum(len(l) + 1 for l in lines)
+        sections.append((title, lines))
+    return sections
+
+
+def run_extension(path: Path, root: Path, env: "dict[str, str]", timeout: float) -> "list[str]":
+    """확장 하나를 실행해 절의 줄을 낸다. 실패하면 수집 실패 한 줄.
+
+    출력은 파이프가 아니라 임시 파일로 받는다. 확장이 띄운 자식 프로세스가 파이프를
+    쥐고 있으면 시간 초과 뒤에도 파이프가 닫힐 때까지 기다리게 되어(윈도우에서 실측)
+    제한 시간이 지켜지지 않기 때문이다. 확장이 띄운 다른 프로세스는 정리하지 않는다.
+    """
+    with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
+        try:
+            proc = subprocess.run(
+                [sys.executable, "-B", str(path), str(root)], cwd=root, env=env,
+                stdin=subprocess.DEVNULL, stdout=out, stderr=err, timeout=timeout,
+            )
+        except subprocess.TimeoutExpired:
+            return [f"수집 실패: 확장 {path.name}가 {max(1, round(timeout))}초 안에 끝나지 않았다."]
+        except OSError as exc:
+            return [f"수집 실패: 확장 {path.name} 실행 실패: {exc}"]
+        out.seek(0)
+        err.seek(0)
+        stdout = out.read().decode("utf-8", errors="replace")
+        stderr = err.read().decode("utf-8", errors="replace")
+    if proc.returncode != 0:
+        last = (stderr.strip().splitlines() or [""])[-1][:STDERR_LIMIT]
+        return [f"수집 실패: 확장 {path.name} 종료 코드 {proc.returncode}: {last}"]
+    text = stdout.rstrip()
+    if len(text) > EXTENSION_MAX_CHARS:
+        note = "\n... 확장 출력이 길어 잘랐다. 확장을 직접 실행해 본다."
+        limit = EXTENSION_MAX_CHARS - len(note)
+        cut = text.rfind("\n", 0, limit)
+        text = text[:cut if cut > 0 else limit] + note
+    return text.splitlines()
+
+
+def name_from_common_dir(common: Path, root: Path) -> str:
+    """git 공용 폴더의 모양으로 주 레포 이름을 정한다.
+
+    - <레포>/.git: 일반 레포와 그 워크트리
+    - .../modules/<이름>: 서브모듈과 그 워크트리
+    - <이름>.git: bare 레포와 그 워크트리
+    셋 다 아니면 루트 폴더 이름을 쓴다.
+    """
+    if common.name == ".git":
+        return common.parent.name
+    if common.parent.name == "modules":
+        return common.name
+    if common.name.endswith(".git") and len(common.name) > 4:
+        return common.name[:-4]
+    return root.name
+
+
+def repo_name(root: Path) -> str:
+    """주 레포 이름. 워크트리에서도 주 레포 이름을 낸다."""
+    code, out = git(root, "rev-parse", "--git-common-dir")
+    if code == 0 and out.strip():
+        common = Path(out.strip())
+        if not common.is_absolute():
+            common = root / common
+        return name_from_common_dir(common.resolve(), root)
+    return root.name
+
+
 def failed(what: str) -> "list[str]":
     return [f"수집 실패: {what}. 직접 확인한다."]
 
 
 def render(sections: "list[tuple[str, list[str]]]", root: "Path | None" = None) -> str:
     rule = RULE_DOC
+    title = f"{MARKER} 세션 시작 요약"
     if root is not None:
+        title += f": {repo_name(root)}"
         try:
             rule = Path(os.path.relpath(RULE_DOC, root))
         except ValueError:
             pass
     out = [
-        f"{MARKER} 세션 시작 요약",
+        title,
         f"{rule.as_posix()} \"세션 시작\" 1-4단계의 기계 부분을 모은 결과다. "
         "이 요약이 컨텍스트에 있으면 다시 실행하지 않는다. 결과의 처리와 남은 단계는 그 절을 따른다.",
     ]
@@ -281,10 +397,15 @@ def render(sections: "list[tuple[str, list[str]]]", root: "Path | None" = None) 
         out.extend(lines if lines else ["(없음)"])
     text = "\n".join(out) + "\n"
     if len(text) > MAX_CHARS:
-        note = ("\n... 요약이 길어 끝에서 잘랐다. 최근 머지가 바꾼 문서의 전체 목록은 "
-                "`git log --first-parent -m --name-only main -- '*.md'`로 본다.\n")
-        cut = text.rfind("\n", 0, MAX_CHARS - len(note))
-        text = text[:max(cut, 0)] + note
+        # 잘린 절 이름을 안내에 넣으려고 안내 길이의 상한을 먼저 잡아 둔다.
+        reserve = 400
+        cut = text.rfind("\n", 0, MAX_CHARS - reserve)
+        kept = text[:max(cut, 0)]
+        dropped = [t for t, _ in sections if f"\n## {t}\n" not in kept + "\n"]
+        names = ", ".join(dropped)[:200] or "마지막 절의 일부"
+        note = (f"\n... 요약이 길어 끝에서 잘랐다. 잘린 절: {names}. 스크립트를 직접 실행해 본다. "
+                "최근 머지가 바꾼 문서의 전체 목록은 `git log --first-parent -m --name-only main -- '*.md'`로 본다.\n")
+        text = kept + note
     return text
 
 
@@ -318,7 +439,7 @@ def main(argv: "list[str] | None" = None) -> int:
         print(f"Root is not a directory. 루트가 디렉토리가 아니다: {root}", file=sys.stderr)
         return 2
 
-    sections = []
+    sections = extension_sections(root)
     if not args.no_audit:
         sections.append(("형식 감사", parse_audit(*run_tool("audit.py", root, AUDIT_TIMEOUT))))
     sections.append(("의미 감사 트리거", parse_semantic(*run_tool("check_semantic_audit.py", root, SEMANTIC_TIMEOUT))))
