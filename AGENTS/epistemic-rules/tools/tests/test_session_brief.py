@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -274,12 +275,72 @@ class ExtensionTest(TempRepo):
             _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
         self.assertIn("수집 실패: 확장 slow.py가 1초 안에 끝나지 않았다", text)
 
+    def section(self, text, name):
+        return text.split(f"## 확장: {name}\n", 1)[1].split("\n\n## ", 1)[0]
+
     def test_extension_output_capped(self):
         self.ext("big.py", "for i in range(500):\n    print('x' * 40)\n")
         _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
-        section = text.split("## 확장: big\n", 1)[1].split("\n## ", 1)[0]
-        self.assertLessEqual(len(section), session_brief.EXTENSION_MAX_CHARS + 80)
+        section = self.section(text, "big")
+        self.assertLessEqual(len(section), session_brief.EXTENSION_MAX_CHARS)
         self.assertIn("확장 출력이 길어 잘랐다", section)
+
+    def test_single_long_line_kept_up_to_cap(self):
+        self.ext("line.py", "print('y' * 5000)\n")
+        _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        section = self.section(text, "line")
+        self.assertIn("y" * 100, section)
+        self.assertLessEqual(len(section), session_brief.EXTENSION_MAX_CHARS)
+
+    def test_total_cap_keeps_judgement_sections(self):
+        for name in "abcdef":
+            self.ext(f"{name}.py", "for i in range(60):\n    print('z' * 39)\n")
+        _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertIn("확장 출력 합계 상한", text)
+        self.assertIn("## 의미 감사 트리거", text)
+        self.assertIn("## main에 머지되지 않은 브랜치와 그 진행 노드", text)
+        self.assertLessEqual(len(text), MAX_CHARS)
+
+    def test_total_time_budget_skips_rest(self):
+        self.ext("a.py", "import time\ntime.sleep(2)\n")
+        self.ext("b.py", "print('b')\n")
+        with mock.patch.object(session_brief, "EXTENSION_TOTAL_BUDGET", 1):
+            _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertIn("수집 실패: 확장 a.py가 1초 안에 끝나지 않았다", text)
+        self.assertIn("실행 생략: 확장 전체 시간 예산", self.section(text, "b"))
+
+    def test_timeout_holds_when_grandchild_keeps_running(self):
+        self.ext("spawn.py", (
+            "import subprocess, sys, tempfile, time\n"
+            "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(8)'], cwd=tempfile.gettempdir())\n"
+            "time.sleep(30)\n"
+        ))
+        started = time.monotonic()
+        with mock.patch.object(session_brief, "EXTENSION_TIMEOUT", 1):
+            _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertLess(time.monotonic() - started, 6)
+        self.assertIn("수집 실패: 확장 spawn.py가 1초 안에 끝나지 않았다", text)
+
+
+class RepoNameTest(unittest.TestCase):
+    def test_common_dir_shapes(self):
+        root = Path("/x/wt")
+        cases = {
+            "/w/proj/.git": "proj",
+            "/w/super/.git/modules/libsub": "libsub",
+            "/w/super/.git/worktrees/t/modules/scaffold": "scaffold",
+            "/w/myproj.git": "myproj",
+            "/w/odd": "wt",
+        }
+        for common, expected in cases.items():
+            self.assertEqual(session_brief.name_from_common_dir(Path(common), root), expected, common)
+
+
+class TruncationNoteTest(unittest.TestCase):
+    def test_dropped_sections_named(self):
+        text = render([("앞 절", ["x" * 100] * 120), ("뒤 판정", ["충족"])])
+        self.assertLessEqual(len(text), MAX_CHARS)
+        self.assertIn("잘린 절: 뒤 판정", text)
 
 
 if __name__ == "__main__":
