@@ -281,6 +281,117 @@ class KindTest(SetupTestBase):
         self.assertTrue(result.detail.startswith("도구가 명세보다 낡았다"))
 
 
+def run_cli(*argv):
+    import contextlib
+    import io
+    import setup as cli
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        code = cli.main(list(argv))
+    return code, out.getvalue(), err.getvalue()
+
+
+class StatusTest(SetupTestBase):
+    def add_instance(self, items):
+        write(self.root / "AGENTS/setup/i.json", json.dumps(items, ensure_ascii=False))
+        commit_all(self.root)
+
+    def states(self):
+        entries, _ = core.status(self.root)
+        return {e.item.id: e.state for e in entries}
+
+    def test_status_records_passing_items_without_consent(self):
+        self.add_instance([{"id": "git", "title": "git", "scope": "machine", "kind": "require-command",
+                            "params": {"candidates": ["git"], "args": ["--version"]}}])
+        self.assertEqual(self.states()["git"], "recorded")
+        self.assertEqual(self.states()["git"], "ok")
+
+    def test_status_pending_until_applied(self):
+        self.assertEqual(self.states()["hooks-path"], "pending")
+        code, _, _ = run_cli("apply", str(self.root), "hooks-path")
+        self.assertEqual(code, 0)
+        self.assertEqual(self.states()["hooks-path"], "ok")
+
+    def test_spec_change_makes_item_pending_again(self):
+        item = {"id": "ab", "title": "에이비", "scope": "clone", "kind": "git-config", "params": {"key": "a.b", "value": "1"}}
+        self.add_instance([item])
+        run_cli("apply", str(self.root), "ab")
+        self.assertEqual(self.states()["ab"], "ok")
+        self.add_instance([dict(item, params={"key": "a.b", "value": "2"})])
+        self.assertEqual(self.states()["ab"], "pending")
+
+    def test_status_lines_format(self):
+        self.add_instance([
+            {"id": "x", "title": "엑스", "scope": "machine", "kind": "require-command", "params": {"candidates": ["없는명령-xyz"]}},
+            {"id": "git", "title": "git", "scope": "machine", "kind": "require-command", "params": {"candidates": ["git"]}},
+        ])
+        lines = core.status_lines(self.root)
+        self.assertEqual(lines[0], '미적용 갱신 2건: hooks-path(클론), x(머신). workspace-setup.md "갱신 흐름"대로 사용자에게 알리고 동의를 받는다.')
+        self.assertIn("기록만 한 항목: git", lines)
+
+    def test_status_lines_nothing_pending(self):
+        run_cli("apply", str(self.root), "hooks-path")
+        self.assertEqual(core.status_lines(self.root), ["환경 갱신 없음"])
+
+    def test_status_without_main_reports_failure(self):
+        git(self.root, "branch", "-m", "main", "trunk")
+        lines = core.status_lines(self.root)
+        self.assertTrue(lines[0].startswith("수집 실패:"))
+
+    def test_not_applicable_items_leave_alerts(self):
+        self.add_instance([{"id": "agy", "title": "에이지와이", "scope": "machine", "kind": "require-command",
+                            "when": {"command": "없는명령-xyz"}, "params": {"candidates": ["없는명령-xyz"]}}])
+        self.assertEqual(self.states()["agy"], "not-applicable")
+        self.assertNotIn("agy", core.status_lines(self.root)[0])
+
+
+class CliTest(SetupTestBase):
+    def test_apply_refuses_unknown_id_and_tool_too_old(self):
+        write(self.root / "AGENTS/setup/i.json", json.dumps([
+            {"id": "cp", "title": "복사", "scope": "machine", "kind": "copy-file", "params": {}},
+        ]))
+        commit_all(self.root)
+        self.assertEqual(run_cli("apply", str(self.root), "없는-id")[0], 2)
+        self.assertEqual(run_cli("apply", str(self.root), "cp")[0], 2)
+
+    def test_apply_machine_change_requires_confirm_paused(self):
+        with mock.patch.dict(core.KIND_CHANGES, {"git-config": "machine"}):
+            code, _, err = run_cli("apply", str(self.root), "hooks-path")
+            self.assertEqual(code, 2)
+            self.assertIn("--confirm-paused", err)
+            self.assertEqual(run_cli("apply", str(self.root), "hooks-path", "--confirm-paused")[0], 0)
+
+    def test_plan_shows_targets(self):
+        code, out, _ = run_cli("plan", str(self.root), "hooks-path")
+        self.assertEqual(code, 0)
+        self.assertIn("core.hooksPath -> AGENTS/epistemic-rules/tools/hooks", out)
+        self.assertNotIn("다른 작업 중단 필요", out)
+
+    def test_plan_requests_pause_for_machine_changes(self):
+        with mock.patch.dict(core.KIND_CHANGES, {"git-config": "machine"}):
+            _, out, _ = run_cli("plan", str(self.root))
+        self.assertIn("다른 작업 중단 필요", out)
+
+    def test_json_output_shape(self):
+        write(self.root / "AGENTS/setup/i.json", json.dumps([
+            {"id": "git", "title": "git", "scope": "machine", "kind": "require-command", "params": {"candidates": ["git"]}},
+        ]))
+        commit_all(self.root)
+        code, out, _ = run_cli("status", str(self.root), "--json")
+        self.assertEqual(code, 0)
+        data = json.loads(out)
+        for entry in data:
+            self.assertEqual(set(entry), {"id", "title", "scope", "state", "changes", "targets", "detail"})
+        self.assertEqual({e["id"]: e["changes"] for e in data}["git"], "none")
+
+    def test_check_runs_all_items_ignoring_hash(self):
+        run_cli("apply", str(self.root), "hooks-path")
+        git(self.root, "config", "--local", "--unset", "core.hooksPath")
+        code, out, _ = run_cli("check", str(self.root), "--json")
+        self.assertEqual(code, 1)
+        self.assertEqual({e["id"]: e["state"] for e in json.loads(out)}["hooks-path"], "pending")
+
+
 class HashTest(unittest.TestCase):
     def item(self, **params):
         return core.Item("a", "에이", "clone", "git-config", (), {}, params, "s")

@@ -24,6 +24,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -348,7 +349,7 @@ def check_item(root: Path, item: Item) -> CheckResult:
     found = []
     minimum = item.params.get("min_version")
     for command in candidate_commands(item, root):
-        version = _run_version(command, list(item.params.get("args", [])))
+        version = _run_version(command, list(item.params.get("args", ["--version"])))
         if version is None:
             continue
         if not minimum or (version and _version_tuple(version) >= _version_tuple(minimum)):
@@ -368,6 +369,83 @@ def apply_item(root: Path, item: Item) -> CheckResult:
         code, _ = git(root, "config", "--local", key, value)
         return CheckResult(code == 0, f"{key} = {value}" if code == 0 else f"{key} 설정 실패")
     return check_item(root, item)
+
+
+# 유형별로 적용이 무엇을 바꾸는가. machine이면 적용 전에 다른 작업 중단을 확인받는다.
+KIND_CHANGES = {"git-config": "clone", "require-command": "none"}
+SCOPE_LABEL = {"clone": "클론", "machine": "머신"}
+
+
+@dataclass
+class Entry:
+    item: Item
+    state: str  # ok, pending, recorded, tool-too-old, not-applicable
+    detail: str
+
+
+def changes(item: Item) -> str:
+    return KIND_CHANGES.get(item.kind, "none")
+
+
+def targets(item: Item, root: Path) -> "list[str]":
+    """적용이 바꾸거나 확인하는 대상. 동의 요청에 그대로 보인다."""
+    if item.kind == "git-config":
+        return [f"{item.params.get('key', '')} -> {resolve(str(item.params.get('value', '')), root)}"]
+    if item.kind == "require-command":
+        return candidate_commands(item, root)
+    return []
+
+
+def status(root: Path, record_passing: bool = True, use_hash: bool = True) -> "tuple[list[Entry], list[str]]":
+    """항목마다 상태를 정한다. 해시가 같으면 ok. 다르거나 없으면 점검해, 통과하면 동의 없이
+    기록하고 recorded(기록만), 아니면 pending. use_hash=False면 해시와 무관하게 점검한다."""
+    items, errors = load_items(root)
+    entries = []
+    os_name = current_os()
+    for item in items:
+        if not applicable(item, os_name, lambda c: shutil.which(c) is not None):
+            entries.append(Entry(item, "not-applicable", "이 머신에 해당하지 않는다"))
+            continue
+        if item.kind not in KINDS:
+            entries.append(Entry(item, "tool-too-old", f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}"))
+            continue
+        spec = item_hash(item)
+        if use_hash and applied_hash(root, item) == spec:
+            entries.append(Entry(item, "ok", "적용 해시가 명세와 같다"))
+            continue
+        result = check_item(root, item)
+        if not result.ok:
+            entries.append(Entry(item, "pending", result.detail))
+        elif applied_hash(root, item) == spec:
+            entries.append(Entry(item, "ok", result.detail))
+        elif record_passing and record_applied(root, item, spec):
+            entries.append(Entry(item, "recorded", result.detail))
+        else:
+            entries.append(Entry(item, "pending", result.detail + " (기록 실패)" if record_passing else result.detail))
+    return entries, errors
+
+
+def status_lines(root: Path) -> "list[str]":
+    """세션 시작 요약의 환경 갱신 절 줄. 예외는 수집 실패 한 줄로 바꾼다."""
+    try:
+        entries, errors = status(root)
+    except Exception as exc:  # noqa: BLE001 - 요약이 세션 시작을 막지 않게 한다
+        return [f"수집 실패: 환경 갱신 판정 중 오류({type(exc).__name__}). setup.py check로 직접 본다."]
+    if not entries and errors:
+        return [f"수집 실패: {errors[0]}"] + [f"명세 오류: {e}" for e in errors[1:]]
+    lines = []
+    pending = [e for e in entries if e.state == "pending"]
+    if pending:
+        names = ", ".join(f"{e.item.id}({SCOPE_LABEL[e.item.scope]})" for e in pending)
+        lines.append(f'미적용 갱신 {len(pending)}건: {names}. workspace-setup.md "갱신 흐름"대로 사용자에게 알리고 동의를 받는다.')
+    old = [e.item.id for e in entries if e.state == "tool-too-old"]
+    if old:
+        lines.append(f"{TOOL_TOO_OLD}(이 브랜치의 설치기가 모르는 유형): {', '.join(old)}")
+    recorded = [e.item.id for e in entries if e.state == "recorded"]
+    if recorded:
+        lines.append(f"기록만 한 항목: {', '.join(recorded)}")
+    lines += [f"명세 오류: {e}" for e in errors]
+    return lines or ["환경 갱신 없음"]
 
 
 def current_os() -> str:
