@@ -22,7 +22,9 @@
 종료 코드:
     0  성공(status, plan, apply) 또는 모든 항목이 맞음(check)
     1  check에서 미적용 항목이 있음
-    2  사용법 오류, 모르는 id나 유형, 확인 없는 머신 변경 적용, 적용 실패
+    1  check에서 명세 오류가 있음
+    2  사용법 오류, 모르는 id나 유형, 이 머신에 해당하지 않는 항목, 확인 없는 머신 변경 적용,
+       적용 실패, plan에서 명세를 하나도 읽지 못함
 """
 
 import argparse
@@ -67,13 +69,16 @@ def cmd_check(root: Path, as_json: bool) -> int:
         print(f"명세 오류: {e}", file=sys.stderr)
     lines = [f"- {e.item.id} [{e.state}]: {e.detail}" for e in entries]
     emit(entries, root, as_json, lines)
-    return 1 if any(e.state in ("pending", "tool-too-old") for e in entries) else 0
+    return 1 if errors or any(e.state in ("pending", "tool-too-old") for e in entries) else 0
 
 
 def cmd_plan(root: Path, ids: "list[str]", as_json: bool) -> int:
     entries, errors = core.status(root, record_passing=False)
     for e in errors:
         print(f"명세 오류: {e}", file=sys.stderr)
+    if errors and not entries:
+        print("Spec unreadable. 설치 명세를 읽지 못해 계획을 낼 수 없다.", file=sys.stderr)
+        return 2
     by_id = {e.item.id: e for e in entries}
     unknown = [i for i in ids if i not in by_id]
     if unknown:
@@ -98,6 +103,11 @@ def cmd_apply(root: Path, ids: "list[str]", confirm_paused: bool) -> int:
         print(f"Unknown item id. 모르는 항목 id: {', '.join(unknown)}", file=sys.stderr)
         return 2
     chosen = [by_id[i] for i in ids]
+    os_name = core.current_os()
+    skipped = [i.id for i in chosen if not core.applicable(i, os_name, lambda c: core.shutil.which(c) is not None)]
+    if skipped:
+        print(f"Not applicable on this machine. 이 머신에 해당하지 않는 항목: {', '.join(skipped)}", file=sys.stderr)
+        return 2
     old = [i.id for i in chosen if i.kind not in core.KINDS]
     if old:
         print(f"Tool is older than the spec. {core.TOOL_TOO_OLD}: {', '.join(old)}", file=sys.stderr)

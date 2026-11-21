@@ -21,12 +21,15 @@
 """
 
 import hashlib
+import contextlib
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import time
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -42,6 +45,8 @@ STATE_DIR_NAME = ".epistemic"
 STATE_FILE = "setup-state.json"
 PYTHON_FILE = "python"
 CLONE_KEY_PREFIX = "epistemic.setup."
+LOCK_TIMEOUT = 10
+STALE_LOCK_SECONDS = 60
 GIT_TIMEOUT = 20
 GIT_ENV = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never")
 
@@ -86,6 +91,23 @@ def submodule_paths(root: Path) -> "list[str]":
     return [line.split(" ", 1)[1].strip() for line in out.splitlines() if " " in line]
 
 
+def main_module_store(root: Path, sub: str) -> "Path | None":
+    """서브모듈 sub의 주 워크트리 쪽 모듈 저장소 경로. 없으면 None."""
+    code, out = git(root, "rev-parse", "--git-common-dir")
+    if code != 0 or not out.strip():
+        return None
+    common = Path(out.strip())
+    common = (common if common.is_absolute() else root / common).resolve()
+    code, out = git(root, "config", "--file", ".gitmodules", "--get-regexp", r"^submodule\..*\.path$")
+    name = sub
+    for line in out.splitlines():
+        key, _, value = line.partition(" ")
+        if value.strip() == sub:
+            name = key[len("submodule."):-len(".path")]
+    store = common / "modules" / name
+    return store if store.is_dir() else None
+
+
 def read_at_ref(root: Path, path: Path, ref: str = "main") -> "tuple[str | None, str]":
     """path 파일의 ref 판 내용과 그 루트 상대 경로. 읽지 못하면 (None, 경로).
 
@@ -107,8 +129,17 @@ def read_at_ref(root: Path, path: Path, ref: str = "main") -> "tuple[str | None,
             parts = out.split()
             if code != 0 or len(parts) < 3 or parts[1] != "commit":
                 return None, rel
-            code, text = git(root / sub, "show", f"{parts[2]}:{rel[len(sub) + 1:]}")
-            return (text if code == 0 else None), rel
+            inner = rel[len(sub) + 1:]
+            code, text = git(root / sub, "show", f"{parts[2]}:{inner}")
+            if code != 0:
+                # 링크된 워크트리는 서브모듈 객체 저장소를 따로 둔다. main이 가리키는 커밋이
+                # 그 저장소에 없으면 주 워크트리의 모듈 저장소(<공용 git 폴더>/modules/<이름>)에서 읽는다.
+                store = main_module_store(root, sub)
+                if store is not None:
+                    code, text = git(root, f"--git-dir={store}", "show", f"{parts[2]}:{inner}")
+            if code != 0:
+                return None, f"{rel}(서브모듈 {sub}에 {ref}가 가리키는 커밋 {parts[2][:7]}이 없다. git submodule update로 받는다)"
+            return text, rel
     code, text = git(root, "show", f"{ref}:{rel}")
     return (text if code == 0 else None), rel
 
@@ -131,6 +162,10 @@ def parse_spec(text: str, source: str) -> "tuple[list[Item], list[str]]":
             continue
         if raw["scope"] not in SCOPES:
             errors.append(f"{source}: 항목 {raw['id']}의 scope는 clone 또는 machine이어야 한다")
+            continue
+        bad = [k for k, t in (("when", dict), ("params", dict), ("os", list)) if k in raw and not isinstance(raw[k], t)]
+        if bad:
+            errors.append(f"{source}: 항목 {raw['id']}의 {', '.join(bad)} 형식이 어긋났다(when, params는 객체, os는 배열)")
             continue
         items.append(Item(
             id=raw["id"], title=raw["title"], scope=raw["scope"], kind=raw["kind"],
@@ -201,7 +236,7 @@ def read_python_command() -> "str | None":
     """머신별 Python 실행 명령 파일의 첫 줄. 공백으로만 나눠 쓰며 백슬래시를 해석하지 않는다."""
     try:
         lines = (state_dir() / PYTHON_FILE).read_text(encoding="utf-8").splitlines()
-    except OSError:
+    except (OSError, UnicodeDecodeError):
         return None
     first = lines[0].strip() if lines else ""
     return first or None
@@ -231,6 +266,8 @@ def _read_state() -> "dict | None":
     path = state_dir() / STATE_FILE
     try:
         text = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return None
     except OSError:
         return {}
     try:
@@ -242,14 +279,63 @@ def _read_state() -> "dict | None":
 
 def _write_state(data: dict) -> bool:
     folder = state_dir()
+    tmp = folder / f"{STATE_FILE}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
     try:
-        folder.mkdir(parents=True, exist_ok=True)
-        tmp = folder / (STATE_FILE + ".tmp")
         tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        os.replace(tmp, folder / STATE_FILE)
+        for _ in range(50):
+            try:
+                os.replace(tmp, folder / STATE_FILE)
+                return True
+            except PermissionError:
+                # 윈도우는 다른 프로세스가 대상 파일을 열고 있으면 바꾸기를 거부한다.
+                time.sleep(0.05)
+        return False
     except OSError:
         return False
-    return True
+    finally:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+
+
+@contextlib.contextmanager
+def _state_lock():
+    """머신 상태 파일의 읽고 고쳐 쓰기를 프로세스 사이에서 하나씩 하게 하는 잠금 파일.
+
+    잠금을 얻지 못하면 False를 낸다(호출자는 기록 실패로 둔다). STALE_LOCK_SECONDS보다
+    오래된 잠금은 끊긴 프로세스가 남긴 것으로 보고 지운다.
+    """
+    folder = state_dir()
+    lock = folder / (STATE_FILE + ".lock")
+    got = False
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        deadline = time.monotonic() + LOCK_TIMEOUT
+        while True:
+            try:
+                os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+                got = True
+                break
+            except FileExistsError:
+                try:
+                    if time.time() - lock.stat().st_mtime > STALE_LOCK_SECONDS:
+                        lock.unlink()
+                        continue
+                except OSError:
+                    pass
+                if time.monotonic() > deadline:
+                    break
+                time.sleep(0.02)
+            except OSError:
+                break
+        yield got
+    finally:
+        if got:
+            try:
+                lock.unlink()
+            except OSError:
+                pass
 
 
 def applied_hash(root: Path, item: Item) -> "str | None":
@@ -258,7 +344,8 @@ def applied_hash(root: Path, item: Item) -> "str | None":
         code, out = git(root, "config", "--local", "--get", CLONE_KEY_PREFIX + item.id)
         return out.strip() or None if code == 0 else None
     state = _read_state() or {}
-    entry = state.get(repo_identifier(root), {}).get(item.id)
+    repo = state.get(repo_identifier(root))
+    entry = repo.get(item.id) if isinstance(repo, dict) else None
     return entry.get("spec") if isinstance(entry, dict) else None
 
 
@@ -267,16 +354,23 @@ def record_applied(root: Path, item: Item, spec_hash: str) -> bool:
     if item.scope == "clone":
         code, _ = git(root, "config", "--local", CLONE_KEY_PREFIX + item.id, spec_hash)
         return code == 0
-    state = _read_state()
-    if state is None:
-        broken = state_dir() / STATE_FILE
-        try:
-            os.replace(broken, broken.with_name(STATE_FILE + ".broken"))
-        except OSError:
+    repo_id = repo_identifier(root)
+    with _state_lock() as locked:
+        if not locked:
             return False
-        state = {}
-    state.setdefault(repo_identifier(root), {})[item.id] = {"spec": spec_hash}
-    return _write_state(state)
+        state = _read_state()
+        if state is None:
+            broken = state_dir() / STATE_FILE
+            try:
+                os.replace(broken, broken.with_name(STATE_FILE + ".broken"))
+            except OSError:
+                return False
+            state = {}
+        repo = state.get(repo_id)
+        if not isinstance(repo, dict):
+            repo = state[repo_id] = {}
+        repo[item.id] = {"spec": spec_hash}
+        return _write_state(state)
 
 
 @dataclass
@@ -335,12 +429,19 @@ def _run_version(command: str, args: "list[str]") -> "str | None":
     return match.group(0) if match else ""
 
 
+def current_config(root: Path, key: str) -> "str | None":
+    code, out = git(root, "config", "--local", "--get", key)
+    return out.strip() if code == 0 else None
+
+
 def check_item(root: Path, item: Item) -> CheckResult:
     """항목의 실제 상태가 명세와 맞는가."""
     if item.kind not in KINDS:
         return CheckResult(False, f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}")
     if item.kind == "git-config":
         key, value = item.params.get("key", ""), resolve(str(item.params.get("value", "")), root)
+        if value is None:
+            return CheckResult(False, f"{key}: 값의 자리 표시를 풀 수 없다(머신별 Python 실행 명령 파일이 없는 등)")
         code, out = git(root, "config", "--local", "--get", key)
         current = out.strip() if code == 0 else None
         if current == value:
@@ -348,6 +449,9 @@ def check_item(root: Path, item: Item) -> CheckResult:
         return CheckResult(False, f"{key}: 지금 {current if current is not None else '(없음)'}, 명세 {value}")
     found = []
     minimum = item.params.get("min_version")
+    if minimum and not re.fullmatch(r"\d+(\.\d+)*", str(minimum)):
+        return CheckResult(False, f"명세 오류: min_version {minimum!r}는 숫자와 점으로만 쓴다")
+    minimum = str(minimum) if minimum else None
     for command in candidate_commands(item, root):
         version = _run_version(command, list(item.params.get("args", ["--version"])))
         if version is None:
@@ -366,6 +470,8 @@ def apply_item(root: Path, item: Item) -> CheckResult:
         return CheckResult(False, f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}")
     if item.kind == "git-config":
         key, value = item.params.get("key", ""), resolve(str(item.params.get("value", "")), root)
+        if value is None:
+            return CheckResult(False, f"{key}: 값의 자리 표시를 풀 수 없어 적용하지 않았다")
         code, _ = git(root, "config", "--local", key, value)
         return CheckResult(code == 0, f"{key} = {value}" if code == 0 else f"{key} 설정 실패")
     return check_item(root, item)
@@ -390,7 +496,10 @@ def changes(item: Item) -> str:
 def targets(item: Item, root: Path) -> "list[str]":
     """적용이 바꾸거나 확인하는 대상. 동의 요청에 그대로 보인다."""
     if item.kind == "git-config":
-        return [f"{item.params.get('key', '')} -> {resolve(str(item.params.get('value', '')), root)}"]
+        key = item.params.get("key", "")
+        current = current_config(root, key)
+        value = resolve(str(item.params.get("value", "")), root)
+        return [f"{key}: {current if current is not None else '(없음)'} -> {value if value is not None else '(풀 수 없음)'}"]
     if item.kind == "require-command":
         return candidate_commands(item, root)
     return []
@@ -413,7 +522,11 @@ def status(root: Path, record_passing: bool = True, use_hash: bool = True) -> "t
         if use_hash and applied_hash(root, item) == spec:
             entries.append(Entry(item, "ok", "적용 해시가 명세와 같다"))
             continue
-        result = check_item(root, item)
+        try:
+            result = check_item(root, item)
+        except Exception as exc:  # noqa: BLE001 - 항목 하나의 실패를 그 항목에 가둔다
+            entries.append(Entry(item, "pending", f"점검 실패({type(exc).__name__})"))
+            continue
         if not result.ok:
             entries.append(Entry(item, "pending", result.detail))
         elif not record_passing or applied_hash(root, item) == spec:
