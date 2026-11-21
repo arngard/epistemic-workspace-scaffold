@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """세션 시작 요약 (git 의존, 읽기 전용).
 
-session-boundaries.md "세션 시작" 1-4단계 가운데 판단이 필요 없는 부분을 모아
+session-boundaries.md "세션 시작" 1-5단계 가운데 판단이 필요 없는 부분을 모아
 짧은 요약 하나로 낸다. 모델이 명령을 하나씩 돌려 출력을 컨텍스트에 쌓는 대신
 이 요약만 읽게 하려는 것이다. 무엇을 모으는지는 그 절이 정하고, 이 스크립트는
 그 수집을 구현한다. 머리말은 그 절의 경로를 가리킨다.
@@ -399,7 +399,7 @@ def render(sections: "list[tuple[str, list[str]]]", root: "Path | None" = None) 
             pass
     out = [
         title,
-        f"{rule.as_posix()} \"세션 시작\" 1-4단계의 기계 부분을 모은 결과다. "
+        f"{rule.as_posix()} \"세션 시작\" 1-5단계의 기계 부분을 모은 결과다. "
         "이 요약이 컨텍스트에 있으면 다시 실행하지 않는다. 결과의 처리와 남은 단계는 그 절을 따른다.",
     ]
     for title, lines in sections:
