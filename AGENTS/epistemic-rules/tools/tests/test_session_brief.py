@@ -30,18 +30,23 @@ def git(root, *args):
 
 
 _HOME = None
+_HOME_PATCH = None
 
 
 def setUpModule():
-    """모든 시험이 임시 EPISTEMIC_HOME을 쓴다. 요약이 돌 때마다 환경 갱신 판정이 기록만
-    항목을 기록하므로, 실제 홈의 설치 상태 파일을 바꾸지 않게 하려는 것이다."""
-    global _HOME
+    """모든 시험이 임시 홈(HOME, USERPROFILE)과 그 안의 전역 git 설정(GIT_CONFIG_GLOBAL)을 쓰고
+    시스템 git 설정을 끈다(GIT_CONFIG_NOSYSTEM). 요약이 부르는 git과 환경 갱신 판정이
+    실제 사용자 환경에 흔들리지 않게 하려는 것이다."""
+    global _HOME, _HOME_PATCH
     _HOME = tempfile.TemporaryDirectory()
-    os.environ["EPISTEMIC_HOME"] = _HOME.name
+    _HOME_PATCH = mock.patch.dict(os.environ, {"HOME": _HOME.name, "USERPROFILE": _HOME.name,
+                                               "GIT_CONFIG_GLOBAL": os.path.join(_HOME.name, ".gitconfig"),
+                                               "GIT_CONFIG_NOSYSTEM": "1"})
+    _HOME_PATCH.start()
 
 
 def tearDownModule():
-    os.environ.pop("EPISTEMIC_HOME", None)
+    _HOME_PATCH.stop()
     _HOME.cleanup()
 
 
@@ -383,43 +388,60 @@ def git_bash():
     return path
 
 
+class IsolationTest(unittest.TestCase):
+    def test_module_isolated_from_global_and_system_git_config(self):
+        self.assertEqual(os.environ.get("GIT_CONFIG_NOSYSTEM"), "1")
+        self.assertTrue(os.environ["GIT_CONFIG_GLOBAL"].startswith(_HOME.name))
+
+
 class HookCommandTest(TempRepo):
-    """출고 .claude/settings.json의 SessionStart 명령을 임시 홈과 Python 없는 PATH로 돌린다."""
+    """출고 .claude/settings.json의 SessionStart 명령(startup|clear, compact)을 임시 홈으로 돌린다."""
 
     def setUp(self):
         super().setUp()
         import shutil
         self.bash = git_bash()
-        if self.bash is None or not shutil.which("head") or not shutil.which("git"):
-            self.skipTest("Git Bash, head, git이 필요하다")
+        if self.bash is None or not shutil.which("git"):
+            self.skipTest("Git Bash와 git이 필요하다")
         rules_dir = Path(__file__).resolve().parents[2]
         scaffold_root = Path(__file__).resolve().parents[4]
         settings = json.loads((scaffold_root / ".claude" / "settings.json").read_text(encoding="utf-8"))
-        self.command = settings["hooks"]["SessionStart"][0]["hooks"][0]["command"]
+        self.commands = [group["hooks"][0]["command"] for group in settings["hooks"]["SessionStart"]]
         shutil.copytree(rules_dir, self.root / "AGENTS" / "epistemic-rules",
                         ignore=shutil.ignore_patterns("__pycache__", "tests", ".superpowers"))
         home_tmp = tempfile.TemporaryDirectory()
         self.addCleanup(home_tmp.cleanup)
         self.home = Path(home_tmp.name) / "hook home"
-        (self.home / ".epistemic").mkdir(parents=True)
-        dirs = {os.path.dirname(shutil.which(n)) for n in ("bash", "head", "git", "tr")}
-        self.path_without_python = os.pathsep.join(sorted(dirs))
+        self.home.mkdir()
+        self.tool_dirs = sorted({os.path.dirname(shutil.which(n)) for n in ("bash", "git")})
 
-    def run_hook(self):
-        env = dict(os.environ, CLAUDE_PROJECT_DIR=str(self.root), EPISTEMIC_HOME=str(self.home),
-                   PATH=self.path_without_python)
-        return subprocess.run([self.bash, "-c", self.command], capture_output=True, env=env, timeout=120).stdout
+    def run_hook(self, command, path_dirs):
+        env = dict(os.environ, CLAUDE_PROJECT_DIR=str(self.root), HOME=str(self.home),
+                   USERPROFILE=str(self.home), PATH=os.pathsep.join(path_dirs))
+        return subprocess.run([self.bash, "-c", command], capture_output=True, env=env, timeout=120).stdout
 
-    def test_python_file_used_when_python_not_on_path(self):
-        (self.home / ".epistemic" / "python").write_text(sys.executable + "\n", encoding="utf-8")
-        out = self.run_hook()
-        data = json.loads(out.decode("ascii"))
-        self.assertTrue(data["hookSpecificOutput"]["additionalContext"].startswith(MARKER))
+    def test_hook_command_has_no_stored_python(self):
+        self.assertEqual(len(self.commands), 2)
+        for command in self.commands:
+            for needle in (".epis" + "temic", "EPISTEMIC" + "_HOME", "epistemic" + ".python"):
+                self.assertNotIn(needle, command)
+            self.assertIn("for c in python3 python 'py -3'", command)
+
+    def test_python_on_path_used(self):
+        for command in self.commands:
+            out = self.run_hook(command, [os.path.dirname(sys.executable), *self.tool_dirs])
+            data = json.loads(out.decode("ascii"))
+            self.assertTrue(data["hookSpecificOutput"]["additionalContext"].startswith(MARKER))
+        self.assertEqual(list(self.home.iterdir()), [])
 
     def test_first_install_guidance_without_python(self):
-        out = self.run_hook().decode("ascii")
-        self.assertIn("workspace-setup.md (first install)", out)
-        self.assertIn(".epistemic/python", out)
+        import shutil
+        bare = os.pathsep.join(self.tool_dirs)
+        if any(shutil.which(n, path=bare) for n in ("python3", "python", "py")):
+            self.skipTest("bash와 git이 든 폴더에 Python도 있어 Python 없는 PATH를 만들 수 없다")
+        for command in self.commands:
+            out = self.run_hook(command, self.tool_dirs).decode("ascii")
+            self.assertIn("AGENTS/epistemic-rules/workspace-setup.md (first install)", out)
 
 
 if __name__ == "__main__":

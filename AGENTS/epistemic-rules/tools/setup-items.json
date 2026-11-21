@@ -1,5 +1,5 @@
 [
-  {"id": "hooks-path", "title": "커밋 전 훅 연결(core.hooksPath)", "scope": "clone", "kind": "git-config", "params": {"key": "core.hooksPath", "value": "{tools}/hooks"}},
-  {"id": "python", "title": "Python 3.9 이상", "scope": "machine", "kind": "require-command", "params": {"candidates": ["{python_file}", "python3", "python", "py -3"], "args": ["--version"], "min_version": "3.9"}},
-  {"id": "git", "title": "git", "scope": "machine", "kind": "require-command", "params": {"candidates": ["git"], "args": ["--version"]}}
+  {"id": "hooks-path", "title": "커밋 전 훅 연결(core.hooksPath)", "kind": "git-config", "params": {"key": "core.hooksPath", "value": "{tools}/hooks"}},
+  {"id": "python", "title": "Python 3.9 이상", "kind": "require-command", "params": {"candidates": ["python3", "python", "py -3"], "args": ["--version"], "min_version": "3.9"}},
+  {"id": "git", "title": "git", "kind": "require-command", "params": {"candidates": ["git"], "args": ["--version"]}}
 ]
