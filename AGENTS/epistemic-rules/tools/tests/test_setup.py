@@ -384,6 +384,24 @@ class CliTest(SetupTestBase):
             self.assertEqual(set(entry), {"id", "title", "scope", "state", "changes", "targets", "detail"})
         self.assertEqual({e["id"]: e["changes"] for e in data}["git"], "none")
 
+    def test_check_reports_passing_items_ok_without_recording(self):
+        write(self.root / "AGENTS/setup/i.json", json.dumps([
+            {"id": "git", "title": "git", "scope": "machine", "kind": "require-command", "params": {"candidates": ["git"]}},
+        ]))
+        commit_all(self.root)
+        code, out, _ = run_cli("check", str(self.root), "--json")
+        self.assertEqual({e["id"]: e["state"] for e in json.loads(out)}["git"], "ok")
+        item = [i for i in core.load_items(self.root)[0] if i.id == "git"][0]
+        self.assertIsNone(core.applied_hash(self.root, item))
+
+    def test_plan_omits_passing_unrecorded_items(self):
+        write(self.root / "AGENTS/setup/i.json", json.dumps([
+            {"id": "git", "title": "git 항목", "scope": "machine", "kind": "require-command", "params": {"candidates": ["git"]}},
+        ]))
+        commit_all(self.root)
+        _, out, _ = run_cli("plan", str(self.root))
+        self.assertNotIn("git 항목", out)
+
     def test_check_runs_all_items_ignoring_hash(self):
         run_cli("apply", str(self.root), "hooks-path")
         git(self.root, "config", "--local", "--unset", "core.hooksPath")

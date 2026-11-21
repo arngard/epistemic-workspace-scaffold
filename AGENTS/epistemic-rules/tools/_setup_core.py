@@ -416,12 +416,13 @@ def status(root: Path, record_passing: bool = True, use_hash: bool = True) -> "t
         result = check_item(root, item)
         if not result.ok:
             entries.append(Entry(item, "pending", result.detail))
-        elif applied_hash(root, item) == spec:
+        elif not record_passing or applied_hash(root, item) == spec:
+            # 실제 상태가 맞다. 기록하지 않는 모드(check, plan)에서는 바꿀 것이 없는 항목이다.
             entries.append(Entry(item, "ok", result.detail))
-        elif record_passing and record_applied(root, item, spec):
+        elif record_applied(root, item, spec):
             entries.append(Entry(item, "recorded", result.detail))
         else:
-            entries.append(Entry(item, "pending", result.detail + " (기록 실패)" if record_passing else result.detail))
+            entries.append(Entry(item, "pending", result.detail + " (기록 실패)"))
     return entries, errors
 
 
