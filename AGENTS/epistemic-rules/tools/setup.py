@@ -7,24 +7,28 @@
 
 사용법:
     python3 AGENTS/epistemic-rules/tools/setup.py status <루트> [--json]
-        해시 비교로 판정한다. 점검이 통과한 항목은 동의 없이 기록한다(기록만).
+        항목마다 실제 점검을 돌려 미적용 항목만 짧게 낸다(세션 시작 요약의 환경 갱신 절).
     python3 AGENTS/epistemic-rules/tools/setup.py check <루트> [--json]
-        해시와 무관하게 모든 항목의 실제 상태를 점검한다. 기록하지 않는다.
+        모든 항목의 점검 결과를 항목별로 낸다.
     python3 AGENTS/epistemic-rules/tools/setup.py plan <루트> [id ...] [--json]
-        적용할 항목과 바뀔 대상을 동의 요청의 재료로 낸다. id가 없으면 미적용 항목 전부.
-    python3 AGENTS/epistemic-rules/tools/setup.py apply <루트> id ... [--confirm-paused]
-        지정한 항목만 적용하고 적용 해시를 기록한다. 머신을 바꾸는 항목은
-        --confirm-paused(사용자에게 다른 작업 중단을 확인받았다는 표시)가 있어야 적용한다.
+        적용할 항목과 바뀔 대상(지금 값과 새 값)을 동의 요청의 재료로 낸다. id가 없으면
+        미적용 항목 전부.
+    python3 AGENTS/epistemic-rules/tools/setup.py apply <루트> id ...
+        지정한 항목만 적용한다.
     (윈도우에서는 python 또는 py 런처로 동일하게 실행)
 
---json은 항목마다 id, title, scope, state, changes, targets, detail을 담은 배열을 낸다.
+status, check, plan은 아무것도 쓰지 않는다. apply는 적용하는 항목의 값만 쓴다.
+
+--json은 항목마다 id, title, state, changes, targets, detail을 담은 배열을 낸다.
+state는 ok, pending(미적용), tool-too-old(이 설치기가 모르는 유형), not-applicable(이
+머신에 해당하지 않음), changes는 적용이 바꾸는 것(clone: 그 클론의 git 설정, none: 없음)이다.
 
 종료 코드:
     0  성공(status, plan, apply) 또는 모든 항목이 맞음(check)
     1  check에서 미적용 항목이 있음
     1  check에서 명세 오류가 있음
-    2  사용법 오류, 모르는 id나 유형, 이 머신에 해당하지 않는 항목, 확인 없는 머신 변경 적용,
-       적용 실패, plan에서 명세를 하나도 읽지 못함
+    2  사용법 오류, 모르는 id나 유형, 이 머신에 해당하지 않는 항목, 적용 실패,
+       plan에서 명세를 하나도 읽지 못함
 """
 
 import argparse
@@ -34,13 +38,10 @@ from pathlib import Path
 
 import _setup_core as core
 
-PAUSE_LINE = "다른 작업 중단 필요: 이 머신의 다른 레포와 세션에 영향"
-
-
 def entry_dict(entry: "core.Entry", root: Path) -> dict:
     item = entry.item
     return {
-        "id": item.id, "title": item.title, "scope": item.scope, "state": entry.state,
+        "id": item.id, "title": item.title, "state": entry.state,
         "changes": core.changes(item), "targets": core.targets(item, root), "detail": entry.detail,
     }
 
@@ -64,7 +65,7 @@ def cmd_status(root: Path, as_json: bool) -> int:
 
 
 def cmd_check(root: Path, as_json: bool) -> int:
-    entries, errors = core.status(root, record_passing=False, use_hash=False)
+    entries, errors = core.status(root)
     for e in errors:
         print(f"명세 오류: {e}", file=sys.stderr)
     lines = [f"- {e.item.id} [{e.state}]: {e.detail}" for e in entries]
@@ -73,7 +74,7 @@ def cmd_check(root: Path, as_json: bool) -> int:
 
 
 def cmd_plan(root: Path, ids: "list[str]", as_json: bool) -> int:
-    entries, errors = core.status(root, record_passing=False)
+    entries, errors = core.status(root)
     for e in errors:
         print(f"명세 오류: {e}", file=sys.stderr)
     if errors and not entries:
@@ -88,14 +89,12 @@ def cmd_plan(root: Path, ids: "list[str]", as_json: bool) -> int:
     lines = []
     for e in chosen:
         target = "; ".join(core.targets(e.item, root)) or e.detail
-        lines.append(f"- {e.item.title} [{core.SCOPE_LABEL[e.item.scope]}]: {target}")
-    if any(core.changes(e.item) == "machine" for e in chosen):
-        lines.append(PAUSE_LINE)
+        lines.append(f"- {e.item.title} [{core.CHANGES_LABEL[core.changes(e.item)]}]: {target}")
     emit(chosen, root, as_json, lines or ["적용할 항목이 없다"])
     return 0
 
 
-def cmd_apply(root: Path, ids: "list[str]", confirm_paused: bool) -> int:
+def cmd_apply(root: Path, ids: "list[str]") -> int:
     items, errors = core.load_items(root)
     by_id = {i.id: i for i in items}
     unknown = [i for i in ids if i not in by_id]
@@ -112,14 +111,10 @@ def cmd_apply(root: Path, ids: "list[str]", confirm_paused: bool) -> int:
     if old:
         print(f"Tool is older than the spec. {core.TOOL_TOO_OLD}: {', '.join(old)}", file=sys.stderr)
         return 2
-    machine = [i.id for i in chosen if core.changes(i) == "machine"]
-    if machine and not confirm_paused:
-        print(f"Pause confirmation required. 머신을 바꾸는 항목({', '.join(machine)})은 사용자에게 다른 작업 중단을 확인받은 뒤 --confirm-paused로 적용한다.", file=sys.stderr)
-        return 2
     code = 0
     for item in chosen:
         result = core.apply_item(root, item)
-        if result.ok and core.record_applied(root, item, core.item_hash(item)):
+        if result.ok:
             print(f"- {item.id}: 적용함 ({result.detail})")
         else:
             print(f"- {item.id}: 실패 ({result.detail})", file=sys.stderr)
@@ -135,9 +130,7 @@ def main(argv: "list[str] | None" = None) -> int:
         p.add_argument("root")
         if name in ("plan", "apply"):
             p.add_argument("ids", nargs="*" if name == "plan" else "+")
-        if name == "apply":
-            p.add_argument("--confirm-paused", action="store_true")
-        else:
+        if name != "apply":
             p.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
@@ -150,7 +143,7 @@ def main(argv: "list[str] | None" = None) -> int:
         return cmd_check(root, args.json)
     if args.command == "plan":
         return cmd_plan(root, args.ids, args.json)
-    return cmd_apply(root, args.ids, args.confirm_paused)
+    return cmd_apply(root, args.ids)
 
 
 if __name__ == "__main__":

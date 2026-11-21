@@ -30,18 +30,20 @@ def git(root, *args):
 
 
 _HOME = None
+_HOME_PATCH = None
 
 
 def setUpModule():
-    """모든 시험이 임시 EPISTEMIC_HOME을 쓴다. 요약이 돌 때마다 환경 갱신 판정이 기록만
-    항목을 기록하므로, 실제 홈의 설치 상태 파일을 바꾸지 않게 하려는 것이다."""
-    global _HOME
+    """모든 시험이 임시 홈(HOME, USERPROFILE)을 쓴다. 요약이 부르는 git과 환경 갱신 판정이
+    실제 사용자 홈과 전역 git 설정에 흔들리지 않게 하려는 것이다."""
+    global _HOME, _HOME_PATCH
     _HOME = tempfile.TemporaryDirectory()
-    os.environ["EPISTEMIC_HOME"] = _HOME.name
+    _HOME_PATCH = mock.patch.dict(os.environ, {"HOME": _HOME.name, "USERPROFILE": _HOME.name})
+    _HOME_PATCH.start()
 
 
 def tearDownModule():
-    os.environ.pop("EPISTEMIC_HOME", None)
+    _HOME_PATCH.stop()
     _HOME.cleanup()
 
 

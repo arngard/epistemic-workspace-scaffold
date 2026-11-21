@@ -1,35 +1,38 @@
 """워크스페이스 설치 체계의 공용 모듈 (git 의존).
 
-설치 명세를 읽고, 항목 해시와 적용 상태를 다루며, 항목을 점검하고 적용한다.
-명령줄은 setup.py, 세션 시작 요약 연결은 session_brief.py가 이 모듈을 쓴다.
-규범(범위, 갱신 흐름, 처음 설치)의 정본은 AGENTS/epistemic-rules/workspace-setup.md다.
+설치 명세를 읽고, 항목을 점검하고 적용한다. 상태를 저장하지 않는다: 판정은 매번 항목의
+실제 점검으로 하고, 레포 밖에 파일을 만들지 않으며, git 설정에는 apply가 적용하는 항목
+값만 쓴다. 명령줄은 setup.py, 세션 시작 요약 연결은 session_brief.py가 이 모듈을 쓴다.
+규범(갱신 흐름, 처음 설치)의 정본은 AGENTS/epistemic-rules/workspace-setup.md다.
 
 명세: JSON 배열 파일. 스캐폴드 공통 항목은 이 도구 폴더의 setup-items.json,
 자손 항목은 레포 루트의 AGENTS/setup/*.json(상류는 이 폴더를 출고하지 않는다).
-항목의 키:
-    id      레포 안에서 유일한 이름(필수)
+항목의 키(목록에 없는 키는 무시한다):
+    id      레포 안에서 유일한 이름(필수). 영문자로 시작하고 영숫자와 하이픈만 쓴다
     title   갱신 알림과 동의 요청에 보이는 한 줄(필수)
-    scope   적용 해시를 두는 자리. clone(그 클론의 git 설정) 또는 machine(홈 상태 파일)
     kind    적용 유형(KINDS). 모르는 유형은 그 항목만 "도구가 명세보다 낡았다"로 알린다
     os      적용할 OS 목록(windows, macos, linux). 없으면 모두
     when    적용 조건. {"command": "<이름>"}이면 그 명령이 있는 머신에만 적용
     params  유형별 값
+
+유형:
+    git-config       params.key의 클론 git 설정(--local)이 params.value와 같은가를 점검하고,
+                     적용은 그 값을 쓴다. 값의 자리 표시 {tools}는 이 도구 폴더의 루트 상대
+                     POSIX 경로(루트 밖이면 절대 경로)로 푼다
+    require-command  params.candidates를 순서대로 params.args(기본 --version)로 실행해,
+                     실행되고 params.min_version 이상인 것이 있는가를 점검한다. 바꾸지 않는다
 
 판 기준: 명세는 main 판에서 읽는다(작업 브랜치 워크트리에서도 같은 판정이 나오게 하려는
 것이다). 명세 파일이 서브모듈 안에 있으면 main이 가리키는 gitlink 커밋에서 읽고, 이 도구
 폴더가 루트 밖에 있으면 도구 폴더가 든 레포의 main에서 읽는다.
 """
 
-import hashlib
-import contextlib
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
-import time
-import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -38,24 +41,15 @@ TOOLS_DIR = Path(__file__).resolve().parent
 SCAFFOLD_SPEC = TOOLS_DIR / "setup-items.json"
 INSTANCE_SPEC_DIR_REL = Path("AGENTS/setup")
 KINDS = frozenset({"git-config", "require-command"})
-SCOPES = ("clone", "machine")
-REQUIRED_KEYS = ("id", "title", "scope", "kind")
+REQUIRED_KEYS = ("id", "title", "kind")
 ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*$")
-STATE_DIR_NAME = ".epistemic"
-STATE_FILE = "setup-state.json"
-PYTHON_FILE = "python"
-CLONE_KEY_PREFIX = "epistemic.setup."
-LOCK_TIMEOUT = 10
-STALE_LOCK_SECONDS = 60
 GIT_TIMEOUT = 20
-GIT_ENV = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never")
 
 
 @dataclass(frozen=True)
 class Item:
     id: str
     title: str
-    scope: str
     kind: str
     os: "tuple[str, ...]"
     when: dict = field(hash=False)
@@ -68,8 +62,8 @@ def git(cwd: Path, *args: str, timeout: float = GIT_TIMEOUT) -> "tuple[int, str]
     try:
         proc = subprocess.run(
             ["git", "-c", "core.quotePath=false", *args], cwd=cwd,
-            capture_output=True, encoding="utf-8", errors="replace",
-            stdin=subprocess.DEVNULL, env=GIT_ENV, timeout=timeout,
+            capture_output=True, encoding="utf-8", errors="replace", stdin=subprocess.DEVNULL,
+            env=dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never"), timeout=timeout,
         )
     except (OSError, subprocess.TimeoutExpired):
         return -1, ""
@@ -158,17 +152,14 @@ def parse_spec(text: str, source: str) -> "tuple[list[Item], list[str]]":
             errors.append(f"{source}: {n}번째 항목에 {', '.join(REQUIRED_KEYS)} 가운데 빠진 것이 있다")
             continue
         if not ID_RE.match(raw["id"]):
-            errors.append(f"{source}: 항목 id {raw['id']}는 영문자로 시작하고 영숫자와 하이픈만 쓴다(git 설정 키로 쓰기 때문이다)")
-            continue
-        if raw["scope"] not in SCOPES:
-            errors.append(f"{source}: 항목 {raw['id']}의 scope는 clone 또는 machine이어야 한다")
+            errors.append(f"{source}: 항목 id {raw['id']}는 영문자로 시작하고 영숫자와 하이픈만 쓴다")
             continue
         bad = [k for k, t in (("when", dict), ("params", dict), ("os", list)) if k in raw and not isinstance(raw[k], t)]
         if bad:
             errors.append(f"{source}: 항목 {raw['id']}의 {', '.join(bad)} 형식이 어긋났다(when, params는 객체, os는 배열)")
             continue
         items.append(Item(
-            id=raw["id"], title=raw["title"], scope=raw["scope"], kind=raw["kind"],
+            id=raw["id"], title=raw["title"], kind=raw["kind"],
             os=tuple(raw.get("os") or ()), when=dict(raw.get("when") or {}),
             params=dict(raw.get("params") or {}), source=source,
         ))
@@ -209,170 +200,6 @@ def load_items(root: Path, ref: str = "main") -> "tuple[list[Item], list[str]]":
     return items, errors
 
 
-def item_hash(item: Item) -> str:
-    """항목 내용(출처 경로 제외)의 정규화된 JSON sha256."""
-    body = {
-        "id": item.id, "title": item.title, "scope": item.scope, "kind": item.kind,
-        "os": list(item.os), "when": item.when, "params": item.params,
-    }
-    data = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
-
-def home_dir() -> Path:
-    """설치 상태의 홈. 환경 변수 EPISTEMIC_HOME이 있으면 그 값, 없으면 Path.home().
-
-    세션 시작 훅도 같은 규칙(EPISTEMIC_HOME, 없으면 USERPROFILE, 없으면 HOME)을 쓴다.
-    """
-    value = os.environ.get("EPISTEMIC_HOME")
-    return Path(value) if value else Path.home()
-
-
-def state_dir() -> Path:
-    return home_dir() / STATE_DIR_NAME
-
-
-def read_python_command() -> "str | None":
-    """머신별 Python 실행 명령 파일의 첫 줄. 공백으로만 나눠 쓰며 백슬래시를 해석하지 않는다."""
-    try:
-        lines = (state_dir() / PYTHON_FILE).read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeDecodeError):
-        return None
-    first = lines[0].strip() if lines else ""
-    return first or None
-
-
-def repo_identifier(root: Path) -> str:
-    """머신 상태 파일에서 레포를 가르는 이름. origin URL을 정규화하고, 없으면 주 레포 폴더 이름."""
-    code, out = git(root, "remote", "get-url", "origin")
-    url = out.strip()
-    if code == 0 and url:
-        url = re.sub(r"^[a-z+]+://", "", url)
-        url = re.sub(r"^[^@/]+@", "", url)
-        url = re.sub(r"^([^/:]+):(?!\d+/)", r"\1/", url)
-        url = re.sub(r"\.git/?$", "", url.rstrip("/"))
-        return url.lower()
-    code, out = git(root, "rev-parse", "--git-common-dir")
-    if code == 0 and out.strip():
-        common = Path(out.strip())
-        common = (common if common.is_absolute() else root / common).resolve()
-        if common.name == ".git":
-            return common.parent.name
-    return root.resolve().name
-
-
-def _read_state() -> "dict | None":
-    """머신 상태 파일. 없으면 빈 dict, 깨졌으면 None."""
-    path = state_dir() / STATE_FILE
-    try:
-        text = path.read_text(encoding="utf-8")
-    except UnicodeDecodeError:
-        return None
-    except OSError:
-        return {}
-    try:
-        data = json.loads(text)
-    except ValueError:
-        return None
-    return data if isinstance(data, dict) else None
-
-
-def _write_state(data: dict) -> bool:
-    folder = state_dir()
-    tmp = folder / f"{STATE_FILE}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
-    try:
-        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        for _ in range(50):
-            try:
-                os.replace(tmp, folder / STATE_FILE)
-                return True
-            except PermissionError:
-                # 윈도우는 다른 프로세스가 대상 파일을 열고 있으면 바꾸기를 거부한다.
-                time.sleep(0.05)
-        return False
-    except OSError:
-        return False
-    finally:
-        try:
-            tmp.unlink()
-        except OSError:
-            pass
-
-
-@contextlib.contextmanager
-def _state_lock():
-    """머신 상태 파일의 읽고 고쳐 쓰기를 프로세스 사이에서 하나씩 하게 하는 잠금 파일.
-
-    잠금을 얻지 못하면 False를 낸다(호출자는 기록 실패로 둔다). STALE_LOCK_SECONDS보다
-    오래된 잠금은 끊긴 프로세스가 남긴 것으로 보고 지운다.
-    """
-    folder = state_dir()
-    lock = folder / (STATE_FILE + ".lock")
-    got = False
-    try:
-        folder.mkdir(parents=True, exist_ok=True)
-        deadline = time.monotonic() + LOCK_TIMEOUT
-        while True:
-            try:
-                os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
-                got = True
-                break
-            except FileExistsError:
-                try:
-                    if time.time() - lock.stat().st_mtime > STALE_LOCK_SECONDS:
-                        lock.unlink()
-                        continue
-                except OSError:
-                    pass
-                if time.monotonic() > deadline:
-                    break
-                time.sleep(0.02)
-            except OSError:
-                break
-        yield got
-    finally:
-        if got:
-            try:
-                lock.unlink()
-            except OSError:
-                pass
-
-
-def applied_hash(root: Path, item: Item) -> "str | None":
-    """마지막으로 적용하거나 기록한 명세 해시. 없거나 읽지 못하면 None."""
-    if item.scope == "clone":
-        code, out = git(root, "config", "--local", "--get", CLONE_KEY_PREFIX + item.id)
-        return out.strip() or None if code == 0 else None
-    state = _read_state() or {}
-    repo = state.get(repo_identifier(root))
-    entry = repo.get(item.id) if isinstance(repo, dict) else None
-    return entry.get("spec") if isinstance(entry, dict) else None
-
-
-def record_applied(root: Path, item: Item, spec_hash: str) -> bool:
-    """적용 해시를 범위의 자리에 기록한다. 기록하지 못하면 False(호출자는 미적용으로 둔다)."""
-    if item.scope == "clone":
-        code, _ = git(root, "config", "--local", CLONE_KEY_PREFIX + item.id, spec_hash)
-        return code == 0
-    repo_id = repo_identifier(root)
-    with _state_lock() as locked:
-        if not locked:
-            return False
-        state = _read_state()
-        if state is None:
-            broken = state_dir() / STATE_FILE
-            try:
-                os.replace(broken, broken.with_name(STATE_FILE + ".broken"))
-            except OSError:
-                return False
-            state = {}
-        repo = state.get(repo_id)
-        if not isinstance(repo, dict):
-            repo = state[repo_id] = {}
-        repo[item.id] = {"spec": spec_hash}
-        return _write_state(state)
-
-
 @dataclass
 class CheckResult:
     ok: bool
@@ -384,27 +211,21 @@ VERSION_RE = re.compile(r"\d+\.\d+(?:\.\d+)?")
 COMMAND_TIMEOUT = 10
 
 
-def resolve(value: str, root: Path) -> "str | None":
-    """자리 표시를 푼다. {tools}는 도구 폴더의 루트 상대 POSIX 경로(루트 밖이면 절대 경로),
-    {python_file}은 머신별 Python 실행 명령. 풀 수 없는 자리 표시가 있으면 None."""
+def resolve(value: str, root: Path) -> str:
+    """자리 표시 {tools}를 도구 폴더의 루트 상대 POSIX 경로(루트 밖이면 절대 경로)로 푼다."""
     if "{tools}" in value:
         try:
             tools = TOOLS_DIR.resolve().relative_to(root.resolve()).as_posix()
         except ValueError:
             tools = TOOLS_DIR.resolve().as_posix()
         value = value.replace("{tools}", tools)
-    if "{python_file}" in value:
-        command = read_python_command()
-        if command is None:
-            return None
-        value = value.replace("{python_file}", command)
     return value
 
 
 def candidate_commands(item: Item, root: Path) -> "list[str]":
-    """require-command 항목의 후보 명령(자리 표시를 푼 것, 풀 수 없는 후보는 뺀다)."""
-    resolved = (resolve(c, root) for c in item.params.get("candidates", []))
-    return [c for c in resolved if c]
+    """require-command 항목의 후보 명령(자리 표시를 푼 것, 빈 후보는 뺀다)."""
+    resolved = (resolve(str(c), root) for c in item.params.get("candidates", []))
+    return [c for c in resolved if c.strip()]
 
 
 def _version_tuple(text: str) -> "tuple[int, ...]":
@@ -440,10 +261,7 @@ def check_item(root: Path, item: Item) -> CheckResult:
         return CheckResult(False, f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}")
     if item.kind == "git-config":
         key, value = item.params.get("key", ""), resolve(str(item.params.get("value", "")), root)
-        if value is None:
-            return CheckResult(False, f"{key}: 값의 자리 표시를 풀 수 없다(머신별 Python 실행 명령 파일이 없는 등)")
-        code, out = git(root, "config", "--local", "--get", key)
-        current = out.strip() if code == 0 else None
+        current = current_config(root, key)
         if current == value:
             return CheckResult(True, f"{key} = {value}")
         return CheckResult(False, f"{key}: 지금 {current if current is not None else '(없음)'}, 명세 {value}")
@@ -470,22 +288,20 @@ def apply_item(root: Path, item: Item) -> CheckResult:
         return CheckResult(False, f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}")
     if item.kind == "git-config":
         key, value = item.params.get("key", ""), resolve(str(item.params.get("value", "")), root)
-        if value is None:
-            return CheckResult(False, f"{key}: 값의 자리 표시를 풀 수 없어 적용하지 않았다")
         code, _ = git(root, "config", "--local", key, value)
         return CheckResult(code == 0, f"{key} = {value}" if code == 0 else f"{key} 설정 실패")
     return check_item(root, item)
 
 
-# 유형별로 적용이 무엇을 바꾸는가. machine이면 적용 전에 다른 작업 중단을 확인받는다.
+# 유형별로 적용이 무엇을 바꾸는가. clone은 그 클론의 git 설정, none은 바꾸는 것 없음.
 KIND_CHANGES = {"git-config": "clone", "require-command": "none"}
-SCOPE_LABEL = {"clone": "클론", "machine": "머신"}
+CHANGES_LABEL = {"clone": "클론", "none": "바꾸는 것 없음"}
 
 
 @dataclass
 class Entry:
     item: Item
-    state: str  # ok, pending, recorded, tool-too-old, not-applicable
+    state: str  # ok, pending, tool-too-old, not-applicable
     detail: str
 
 
@@ -499,15 +315,17 @@ def targets(item: Item, root: Path) -> "list[str]":
         key = item.params.get("key", "")
         current = current_config(root, key)
         value = resolve(str(item.params.get("value", "")), root)
-        return [f"{key}: {current if current is not None else '(없음)'} -> {value if value is not None else '(풀 수 없음)'}"]
+        return [f"{key}: {current if current is not None else '(없음)'} -> {value}"]
     if item.kind == "require-command":
         return candidate_commands(item, root)
     return []
 
 
-def status(root: Path, record_passing: bool = True, use_hash: bool = True) -> "tuple[list[Entry], list[str]]":
-    """항목마다 상태를 정한다. 해시가 같으면 ok. 다르거나 없으면 점검해, 통과하면 동의 없이
-    기록하고 recorded(기록만), 아니면 pending. use_hash=False면 해시와 무관하게 점검한다."""
+def status(root: Path) -> "tuple[list[Entry], list[str]]":
+    """항목마다 실제 점검을 돌려 상태를 정한다. 통과하면 ok, 아니면 pending.
+
+    두 번째 값은 명세의 실패 줄 목록이다. 아무것도 쓰지 않는다.
+    """
     items, errors = load_items(root)
     entries = []
     os_name = current_os()
@@ -518,24 +336,12 @@ def status(root: Path, record_passing: bool = True, use_hash: bool = True) -> "t
         if item.kind not in KINDS:
             entries.append(Entry(item, "tool-too-old", f"{TOOL_TOO_OLD}: 모르는 유형 {item.kind}"))
             continue
-        spec = item_hash(item)
-        if use_hash and applied_hash(root, item) == spec:
-            entries.append(Entry(item, "ok", "적용 해시가 명세와 같다"))
-            continue
         try:
             result = check_item(root, item)
         except Exception as exc:  # noqa: BLE001 - 항목 하나의 실패를 그 항목에 가둔다
             entries.append(Entry(item, "pending", f"점검 실패({type(exc).__name__})"))
             continue
-        if not result.ok:
-            entries.append(Entry(item, "pending", result.detail))
-        elif not record_passing or applied_hash(root, item) == spec:
-            # 실제 상태가 맞다. 기록하지 않는 모드(check, plan)에서는 바꿀 것이 없는 항목이다.
-            entries.append(Entry(item, "ok", result.detail))
-        elif record_applied(root, item, spec):
-            entries.append(Entry(item, "recorded", result.detail))
-        else:
-            entries.append(Entry(item, "pending", result.detail + " (기록 실패)"))
+        entries.append(Entry(item, "ok" if result.ok else "pending", result.detail))
     return entries, errors
 
 
@@ -548,16 +354,12 @@ def status_lines(root: Path) -> "list[str]":
     if not entries and errors:
         return [f"수집 실패: {errors[0]}"] + [f"명세 오류: {e}" for e in errors[1:]]
     lines = []
-    pending = [e for e in entries if e.state == "pending"]
+    pending = [e.item.id for e in entries if e.state == "pending"]
     if pending:
-        names = ", ".join(f"{e.item.id}({SCOPE_LABEL[e.item.scope]})" for e in pending)
-        lines.append(f'미적용 갱신 {len(pending)}건: {names}. workspace-setup.md "갱신 흐름"대로 사용자에게 알리고 동의를 받는다.')
+        lines.append(f'미적용 갱신 {len(pending)}건: {", ".join(pending)}. workspace-setup.md "갱신 흐름"대로 사용자에게 알리고 동의를 받는다.')
     old = [e.item.id for e in entries if e.state == "tool-too-old"]
     if old:
         lines.append(f"{TOOL_TOO_OLD}(이 브랜치의 설치기가 모르는 유형): {', '.join(old)}")
-    recorded = [e.item.id for e in entries if e.state == "recorded"]
-    if recorded:
-        lines.append(f"기록만 한 항목: {', '.join(recorded)}")
     lines += [f"명세 오류: {e}" for e in errors]
     return lines or ["환경 갱신 없음"]
 
