@@ -18,8 +18,9 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
    - 머지 전 브랜치의 착수 등재는 주 워크트리의 작업 트리에 보이지 않으므로 요약의 진행 노드로 파악해 중복 착수하지 않는다. 그 노드의 작업을 이 세션이 이어받으면 아래 "끊김, 재진입"을, 아니면 "다른 세션 작업과의 격리"를 따른다.
 2. 요약의 형식 감사 결과에 위반이 있으면 [working-principles.md](working-principles.md) "1. 넘겨짚지 않는다"의 감사 결과 처리대로 정리한다. 요약에 다 담기지 않은 위반과 경고는 `python3 AGENTS/epistemic-rules/tools/audit.py .`로 직접 본다 (see: [tools.md](tools.md) "기계 감사 스크립트").
 3. 요약의 의미 감사 트리거 판정이 충족이면 착수 전 epistemic-auditor로 의미 감사를 받고 STATUS를 갱신한다 (판정 기준과 기준점 커밋은 [trigger-baseline.md](agent-roles/epistemic-auditor/trigger-baseline.md)).
-4. 요약의 `reference/` 미처리 항목(`미등록`, `처리 대기`)과 형식 감사가 `reference/INDEX.yaml`에 낸 경고를 확인한다. 미처리 자료는 [ingest-workflow.md](ingest-workflow.md)로 진행한다.
-5. 읽기 목록 [when-to-read.md](when-to-read.md)를 열어 작업 범위의 규범과 `epistemic-structure/` 문서를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [ingest-workflow.md](ingest-workflow.md)를 따른다.
+4. 요약의 "환경 갱신" 절이 미적용 갱신을 알리면 [workspace-setup.md](workspace-setup.md) "갱신 흐름"을 따른다.
+5. 요약의 `reference/` 미처리 항목(`미등록`, `처리 대기`)과 형식 감사가 `reference/INDEX.yaml`에 낸 경고를 확인한다. 미처리 자료는 [ingest-workflow.md](ingest-workflow.md)로 진행한다.
+6. 읽기 목록 [when-to-read.md](when-to-read.md)를 열어 작업 범위의 규범과 `epistemic-structure/` 문서를 읽고 기존 결정과 충돌이 없는지 확인한다. 세션 중 새 정보가 들어오면 [ingest-workflow.md](ingest-workflow.md)를 따른다.
 
 ## 끊김, 재진입
 

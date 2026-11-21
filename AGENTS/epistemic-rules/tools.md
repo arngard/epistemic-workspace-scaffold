@@ -12,7 +12,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 검사 진입점은 [audit.py](tools/audit.py) 하나, 파일을 쓰는 생성 진입점은 [build_index.py](tools/build_index.py) 하나다. 검사 로직은 공용 인프라([_audit_core.py](tools/_audit_core.py) 등)와 의미별 검사 모듈로 나뉘며 audit.py가 import해 조합한다. 모듈 구성은 audit.py 모듈 docstring의 "구조"에 있다.
 
-그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. [session_brief.py](tools/session_brief.py)는 파일을 고치지 않지만 `git fetch`로 원격 참조를 갱신하고 레포의 확장 코드를 실행한다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
+그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. 설치기 [setup.py](tools/setup.py)는 사용자 동의 뒤 클론 설정을 바꾸는 도구로, 규범은 [workspace-setup.md](workspace-setup.md)에 있다. [session_brief.py](tools/session_brief.py)는 파일을 고치지 않지만 `git fetch`로 원격 참조를 갱신하고 레포의 확장 코드를 실행한다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md).
 
 ## 시험
 
@@ -35,7 +35,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 - 실행: 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/build_index.py .` (윈도우는 `python` 또는 `py -3`). `--dry-run`은 바뀔 경로만 낸다. `--bundle-manifest`는 색인 대신 상류 묶음 목록만 만든다. 누가 다시 만드는가는 [instance-specialization.md](instance-specialization.md) "특수화 방식".
 - 종료 코드: 성공 0, 형식 오류나 git 무시 파일 등으로 실패 2.
-- 커밋 전 훅 연결(클론마다 한 번): `git config core.hooksPath AGENTS/epistemic-rules/tools/hooks`. 훅은 색인만 다시 만들고 상류 묶음 목록은 만들지 않는다.
+- 커밋 전 훅 연결: 설치 명세의 `hooks-path` 항목(`core.hooksPath`를 `AGENTS/epistemic-rules/tools/hooks`로)이 맡고, 설치기가 클론마다 맞춘다 (see: [workspace-setup.md](workspace-setup.md)). 훅은 색인만 다시 만들고 상류 묶음 목록은 만들지 않는다.
 
 ## 의미 감사 트리거 판정 스크립트
 
@@ -57,3 +57,11 @@ tags: [규칙, 도구, epistemic-rules]
   - 실패: 종료 코드가 0이 아니거나 제한 시간 안에 끝나지 않으면 출력을 버리고 수집 실패 한 줄을 적는다. 시간 초과 때 확장이 띄운 다른 프로세스는 정리하지 않는다.
   - 주의: 확장은 읽기만 하고 `session_brief.py`를 다시 부르지 않는다(재귀를 막는 장치가 없다). 세션 시작 훅이 있으면 세션마다 레포의 확장 코드가 자동으로 실행되므로, 신뢰하지 않는 레포에서는 세션을 열거나 요약을 실행하지 않는다.
 - 종료 코드: 요약을 냈으면 0(감사 위반, 의미 감사 충족, 원격 조회 실패도 요약에 적는다), 사용법 오류 2. 훅이 세션을 막지 않게 하려고 수집 결과로 종료 코드를 바꾸지 않는다.
+
+## 설치기
+
+[tools/setup.py](tools/setup.py)는 설치 명세의 항목을 점검하고 사용자 동의 뒤 적용한다. 공용 로직은 [tools/_setup_core.py](tools/_setup_core.py)에 있고, 세션 시작 요약이 같은 모듈로 "환경 갱신" 절을 낸다. 갱신 흐름과 처음 설치는 [workspace-setup.md](workspace-setup.md)가 정본이다.
+
+- 실행: AI가 워크스페이스 루트에서 `python3 AGENTS/epistemic-rules/tools/setup.py <status|check|plan|apply> .`로 부른다(윈도우는 `python` 또는 `py`). 하위 명령과 인자, `--json` 출력은 setup.py docstring에 있다.
+- 종료 코드: 성공 0, `check`에 미적용 항목이 있으면 1, 사용법 오류와 거부와 적용 실패 2.
+- 상태의 자리: 클론 범위는 그 클론의 git 설정(`epistemic.setup.<id>`), 머신 범위는 홈의 `.epistemic/setup-state.json`이다. 시험은 환경 변수 `EPISTEMIC_HOME`으로 임시 홈을 쓴다.

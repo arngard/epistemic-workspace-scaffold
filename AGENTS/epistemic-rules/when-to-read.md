@@ -1,6 +1,6 @@
 ---
 date created: 2026-11-03
-date modified: 2026-11-08
+date modified: 2026-11-21
 tags: [규칙, epistemic-rules]
 description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확인). 작업을 시작할 때와 작업의 종류나 상황이 바뀔 때 연다
 ---
@@ -23,6 +23,7 @@ description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확
 - 공용 태그를 작성하거나 마주칠 때 -> [공용 태그 형식](agent-tag-format.md)
 - 서브에이전트 호출, 감사자 확장 -> [서브에이전트 역할](agent-roles.md)
 - 감사 스크립트 실행 -> [감사 도구](tools.md)
+- 환경 갱신 알림, 설치 요청, 처음 설치 -> [설치 체계](workspace-setup.md)
 - 새 용어 도입, 도메인 클래스 설계 전 -> [온톨로지 규범](../../epistemic-structure/ontology/AGENTS/epistemic-rules.md) "용어 도입 전 검증"
 - 새 클래스나 모듈 생성, 모듈 구성, 의존성, 도메인의 운영 절차의 변경, 명세 신설 -> [architecture/](../../epistemic-structure/architecture/INDEX.md)
 - 구현 착수 전 -> [핵심 제약](../../epistemic-structure/architecture/core-constraints.md)
