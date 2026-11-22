@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-07
+date modified: 2026-11-22
 tags: [agents, 문서관리, 네이밍, epistemic-rules]
 ---
 
@@ -8,7 +8,7 @@ tags: [agents, 문서관리, 네이밍, epistemic-rules]
 
 ## 결정
 
-지침 본체는 루트와 각 폴더의 `AGENTS.md`에 둔다. 각 AI 도구의 진입점 파일은 본체를 담지 않는다. Claude Code 진입점은 `AGENTS.md`가 있는 폴더마다 두는 `CLAUDE.md`이며 내용은 `@AGENTS.md` 한 줄이다. Copilot 진입점은 루트 `AGENTS.md`를 먼저 읽고 `@` 줄의 대상과 작업 폴더의 `AGENTS.md`를 함께 읽으라는 포인터다. `AGENTS.md`를 직접 읽는 도구에는 진입점 파일을 두지 않는다. 도구별 읽기 동작과 조회 일자는 [tool-environment.md](tool-environment.md) "도구별 자동 참조 파일"에 있다.
+지침 본체는 루트와 각 폴더의 `AGENTS.md`에 둔다. 각 AI 도구의 진입점 파일은 본체를 담지 않는다. Claude Code 진입점은 `AGENTS.md`가 있는 폴더마다 두는 `CLAUDE.md`이며 내용은 `@AGENTS.md` 한 줄이다. Copilot 진입점은 루트 `AGENTS.md`를 먼저 읽고 `@` 줄의 대상과 작업 폴더의 `AGENTS.md`를 함께 읽으라는 포인터다. `AGENTS.md`를 직접 읽는 도구에는 진입점 파일을 두지 않는다. 도구별 읽기 동작과 조회 일자는 [entry-files.md](tool-environment/entry-files.md)에 있다.
 
 ## 근거
 - 각 AI 도구는 자기만의 파일명을 사용한다 (Claude Code->CLAUDE.md, Copilot->.github/copilot-instructions.md). `AGENTS.md`를 직접 읽는 도구(Codex, Antigravity(미확인))도 있으나 모든 도구가 읽는 범용 표준 파일명은 아직 없다.
