@@ -15,8 +15,8 @@ session-boundaries.md "세션 시작" 1-5단계 가운데 판단이 필요 없�
 EPISTEMIC_AUDIT_TOOLS에 이 도구 폴더), 표준 출력의 텍스트를 "확장: <파일 이름 줄기>"
 절로 붙인다. 확장 하나는 EXTENSION_MAX_CHARS, 확장 절 합계는 EXTENSION_TOTAL_MAX_CHARS,
 실행 시간은 확장 하나 EXTENSION_TIMEOUT, 전체 EXTENSION_TOTAL_BUDGET 안으로 묶어, 확장이
-늘어도 판정 절이 요약 상한 밖으로 밀려나지 않게 한다. 계약은 tools.md "세션 시작 요약
-스크립트"에 있다.
+늘어도 판정 절이 요약 상한 밖으로 밀려나지 않게 한다. 계약은
+session-brief-extensions.md에 있다.
 
 절의 순서: 인스턴스 확장 절을 맨 앞에 두고, 이어서 짧고 판정이 걸린 절(형식 감사, 의미 감사 판정, reference 미처리,
 워크트리, 머지 전 브랜치)을 앞에, 길어질 수 있는 최근 머지 문서 목록을 끝에

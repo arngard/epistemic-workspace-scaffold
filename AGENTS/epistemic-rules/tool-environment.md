@@ -10,35 +10,20 @@ tags: [agents, 도구, 환경, IDE, epistemic-rules]
 
 ## 도구별 자동 참조 파일
 
-각 AI 도구는 고유 경로의 파일을 자동으로 참조한다. 진입점 파일은 지침을 담지 않고 [AGENTS.md](../../AGENTS.md)를 가져오거나 가리킨다.
-
-| 도구 | 진입점 파일 | 비고 | 조회 일자 |
-|------|------------|------|-----------|
-| Claude Code | 루트 [CLAUDE.md](../../CLAUDE.md)와 `AGENTS.md`가 있는 폴더의 `CLAUDE.md` | 시작 시 작업 폴더와 그 상위 폴더의 `CLAUDE.md`를 읽는다. 하위 폴더의 `CLAUDE.md`는 그 폴더의 파일을 읽거나 쓰거나 고칠 때 읽힌다. `@경로` 가져오기는 그 줄이 든 파일 기준 상대 경로로 해석하고, 네 단계까지 재귀로 펼친다. 코드 스팬과 코드 블록 안의 가져오기는 펼치지 않는다. 작업 폴더나 상위 폴더에 `CLAUDE.md`가 있으면 `AGENTS.md`를 기본으로 읽지 않으며, 이를 바꾸는 설정은 사용자 설정과 관리 설정에서만 읽고 프로젝트 설정에서는 읽지 않는다. | 2026-10-25 |
-| Codex | 레포(레포지토리) 루트부터 작업 폴더까지의 `AGENTS.md` | 레포 루트에서 작업 폴더까지 경로에 있는 `AGENTS.md`를 읽는다. `@` 줄을 가져오기로 펼치지 않는다. 별도 진입점 파일을 두지 않는다. | 2026-10-25 |
-| GitHub Copilot | [.github/copilot-instructions.md](../../.github/copilot-instructions.md) | 레포 전체 지침으로 읽는다. 레포의 `AGENTS.md`도 에이전트 지침으로 읽으며 에이전트 작업에서는 가장 가까운 `AGENTS.md`가 우선한다. `@` 가져오기 펼침과 IDE(integrated development environment; 통합 개발 환경)별 읽기 대상은 조회한 문서에 없다. | 2026-10-26 |
-| Antigravity | 없음 | `agy`를 실행한 폴더와 그 상위 폴더를 레포 루트까지 올라가며 `AGENTS.md`와 `GEMINI.md`를 읽는다. 하위 폴더의 규칙은 그 안의 파일을 다뤄도 읽지 않는다. 규칙 안의 가져오기는 `@[이름](경로)` 형식만 펼치고, 그 경로는 규칙 파일 기준 상대 경로다. 별도 진입점 파일을 두지 않는다. | 2026-11-08 |
-
-출처: [Claude Code memory](https://code.claude.com/docs/en/memory), [Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md), [Copilot repository instructions](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions), [Antigravity rules](https://antigravity.google/docs/rules/). "미확인"은 공식 문서로 확인하지 못한 행이다.
-
-Claude Code에서 실측한 동작: 깊은 하위 폴더의 파일을 다루거나 셸 `cat`으로 파일을 볼 때도 그 경로의 폴더 `CLAUDE.md`가 읽힌다. 문장 중간의 `@경로`도 가져오기로 펼친다.
-
-Antigravity에서 실측한 동작: 줄 전체가 `@경로`인 줄은 펼치지 않는다. 펼쳐 넣은 파일 안의 `@[이름](경로)`는 다시 펼치지 않는다.
-
-재확인 조건: 도구의 읽기 동작이 바뀐다는 공지를 보거나 이 표와 다른 동작을 실측하면 공식 문서를 다시 조회하고 표와 조회 일자를 고친다.
+각 AI 도구는 고유 경로의 파일을 자동으로 참조한다. 진입점 파일은 지침을 담지 않고 [AGENTS.md](../../AGENTS.md)를 가져오거나 가리킨다. 도구마다 읽는 파일과 가져오기 펼침 동작, 출처와 조회 일자, 실측 동작, 재확인 조건은 [entry-files.md](tool-environment/entry-files.md)에 있다. 진입점 파일을 만들거나 고칠 때, 도구를 더할 때, 도구가 그 표와 다르게 읽는다고 의심될 때 읽고, 표와 다른 동작을 실측하면 공식 문서를 다시 조회해 표를 고친다.
 
 ## 도구의 기억 기능
 
-도구가 세션 밖에 두는 기억 기능은 머신이나 계정에 묶여 다른 작업자에게 보이지 않고, 도구에 따라 다른 머신에도 없다. 작업에서 얻은 규칙, 사실, 교훈은 워크스페이스 문서에 기록하고, 기억 기능에는 레포에 둘 수 없는 개인 사정만 둔다.
+도구가 세션 밖에 두는 기억 기능은 머신이나 계정에 묶여 다른 작업자에게 보이지 않고, 도구에 따라 다른 머신에도 없다. 작업에서 얻은 규칙, 사실, 교훈은 워크스페이스 문서에 기록하고, 기억 기능에는 레포(레포지토리)에 둘 수 없는 개인 사정만 둔다.
 
 ## 진입점 유지 원칙
 
 - `AGENTS.md`가 있는 폴더(루트 포함)마다 내용이 `@AGENTS.md` 한 줄인 `CLAUDE.md`를 둔다. 지침 자체는 적지 않는다(중복, 불일치 방지). 규범 폴더의 예외는 [folder-structure.md](folder-structure.md) "폴더 구조와 디스크립터".
-- Copilot 진입점과 루트 [AGENTS.md](../../AGENTS.md)가 `@` 표기를 설명한다. `@`로 시작하는 줄은 그 경로의 파일을 지금 읽으라는 뜻이다. 경로는 레포 루트가 아니라 그 줄이 든 파일의 위치 기준이다.
+- Copilot 진입점과 루트 [AGENTS.md](../../AGENTS.md)가 `@` 표기를 설명한다. `@`로 시작하는 줄은 그 경로의 파일을 지금 읽으라는 뜻이고, 경로는 레포 루트가 아니라 그 줄이 든 파일의 위치 기준이다.
 - 루트 [AGENTS.md](../../AGENTS.md)는 요지 가져오기 줄 아래에 요지와 요지가 가져오는 문서를 `@[이름](경로)` 줄로 나란히 둔다. Antigravity가 펼치는 형식이고, Antigravity는 펼친 파일 안의 가져오기를 다시 펼치지 않기 때문이다. 요지의 가져오기 대상이 바뀌면 이 줄도 함께 고친다.
 - 가져오기를 펼치지 않는 도구에서 `@` 대상과 폴더 `AGENTS.md`를 읽는 것은 모델이 그 설명을 따르는지에 의존하며 보장되지 않는다.
 - 가져오기가 아닌 글 속의 `@경로` 언급은 인라인 코드로 쓴다. Claude Code는 문장 중간의 `@경로`도 펼친다.
-- 새로운 도구가 추가되면: 해당 도구의 자동 참조 경로에 진입점 파일을 만들고, 이 표에 등록하며 공식 문서의 조회 일자(확인하지 못했으면 "미확인")를 적는다.
+- 새 도구가 추가되면 그 도구의 자동 참조 경로에 진입점 파일을 만들고, [entry-files.md](tool-environment/entry-files.md)의 표에 등록하며 공식 문서의 조회 일자(확인하지 못했으면 "미확인")를 적는다.
 
 ## Claude Code 래퍼(절차 스킬, 서브에이전트)
 
@@ -48,11 +33,4 @@ Antigravity에서 실측한 동작: 줄 전체가 `@경로`인 줄은 펼치지 
 
 ## 세션 시작 훅
 
-세션 시작 요약([tools.md](tools.md) "세션 시작 요약 스크립트")은 도구의 세션 시작 훅이 실행하게 한다. 규범이 실행을 요구하는 문장보다 훅이 확실하게 지켜진다. 훅 설정에는 스크립트를 부르는 명령만 두고 절차 내용은 적지 않는다 - 절차의 SSOT는 [session-boundaries.md](session-boundaries.md) "세션 시작"이고, 요약 머리말이 그 절을 가리킨다. 훅이 없는 도구에서는 그 절의 문장대로 모델이 스크립트를 직접 실행한다.
-
-| 도구 | 설정 | 비고 | 조회 일자 |
-|------|------|------|-----------|
-| Claude Code | 루트 `.claude/settings.json`의 `SessionStart` 훅 | 새 세션(`startup`)과 `/clear`에는 전체 요약을, 압축(`compact`) 뒤에는 원격 조회와 형식 감사를 뺀 요약을 다시 낸다. 이어 받는 세션(`resume`, `fork`)은 대화에 요약이 남아 있어 걸지 않는다. 요약은 `--hook-json`으로 `hookSpecificOutput.additionalContext` JSON에 담아 낸다. 주입 텍스트가 10,000자를 넘으면 파일로 빠진다. 프로젝트 설정은 세션을 시작한 폴더의 것만 읽어, 레포의 하위 폴더에서 시작한 세션에서는 훅이 돌지 않는다. 이때는 "세션 시작"의 문장대로 스크립트를 직접 실행한다. 명령은 Python을 실행할 때 `python3`, `python`, `py -3` 순으로 찾고(see: [workspace-setup.md](workspace-setup.md) "처음 설치"), 찾지 못하면 그 절을 가리키는 안내를 낸다. 명령은 bash로 돌며, 윈도우에서는 Git for Windows의 Git Bash가 있어야 한다. PowerShell로 돌면 명령이 파싱되지 않아 요약 없이 끝난다. 훅의 timeout은 스크립트 내부 제한 시간의 합보다 길게 둔다. 인스턴스는 이 파일의 훅 인자(머지 건수 등)를 고유 절차에 맞게 고칠 수 있다. 훅이 끝날 때까지 세션 시작이 기다리므로, 형식 감사가 오래 걸리는 레포는 `--no-audit`를 주고 감사를 백그라운드로 돌린다. | 2026-11-21 |
-| Codex, GitHub Copilot, Antigravity | 미확인 | 세션 시작 훅의 지원 여부를 확인하지 않았다. | 미확인 |
-
-출처: [Claude Code hooks](https://code.claude.com/docs/en/hooks), [Claude Code settings](https://code.claude.com/docs/en/settings).
+세션 시작 요약([tools.md](tools.md) "세션 시작 요약 스크립트")은 도구의 세션 시작 훅이 실행하게 한다. 규범이 실행을 요구하는 문장보다 훅이 확실하게 지켜진다. 훅 설정에는 스크립트를 부르는 명령만 두고 절차 내용은 적지 않는다 - 절차의 SSOT는 [session-boundaries.md](session-boundaries.md) "세션 시작"이고, 요약 머리말이 그 절을 가리킨다. 훅이 없는 도구에서는 그 절의 문장대로 모델이 스크립트를 직접 실행한다. 도구마다 훅을 거는 자리, 실행 조건, 주입 길이, 셸과 제한 시간, 인스턴스가 고칠 수 있는 인자는 [session-start-hook.md](tool-environment/session-start-hook.md)에 있고, 훅 명령이나 훅 인자, 요약 출력 형식을 고칠 때 읽는다.
