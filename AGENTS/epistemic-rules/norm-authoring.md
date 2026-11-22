@@ -1,6 +1,6 @@
 ---
 date created: 2026-11-02
-date modified: 2026-11-07
+date modified: 2026-11-22
 tags: [agents, 규칙, 문서관리, epistemic-rules]
 description: 규범과 절차를 더하거나 고치거나 지울 때의 판단 기준과 입구 유지 방법
 ---
@@ -49,7 +49,7 @@ description: 규범과 절차를 더하거나 고치거나 지울 때의 판단 
 - 새 규범 문서는 읽을 때를 묶음의 트리거(루트 묶음은 읽기 목록 [when-to-read.md](when-to-read.md))나 부모 문서 본문에 적는다. 읽기 목록에 올리면 작업, 상황, 확인 가운데 한 갈래에 둔다. 작업 도중에 생기고 놓치면 되돌리기 어려우며 늘 적재되는 다른 글이 그 상황에서 그 문서를 가리키지 않는 트리거는 루트 요지 "이럴 때 읽는다"에도 같은 문장으로 둔다. 자손 규범은 그 폴더 `AGENTS.md`에 등재한다.
 - 트리거는 작업이나 상황의 이름으로 시작하고, 한 경우를 다른 말로 되풀이하지 않는다.
 - 작업이 여러 문서를 거치고 절차 문서 하나로 묶이지 않으면 [document-authoring.md](document-authoring.md) 같은 입구 문서를 둔다.
-- 절차 문서나 입구 문서를 신설하면 [tool-environment.md](tool-environment.md) "Claude Code 래퍼(절차 스킬, 서브에이전트)"대로 래퍼가 필요한지 정한다.
+- 절차 문서나 입구 문서를 신설하면 래퍼가 필요한지 [workflow-wrapping.md](workflow-wrapping.md) "판단 기준"으로 정하고, 래퍼의 형식은 [tool-environment.md](tool-environment.md) "Claude Code 래퍼(절차 스킬, 서브에이전트)"를 따른다.
 - 여러 단계로 나뉜 절차는 [unit-task/stage-authority.md](unit-task/stage-authority.md)로 판정 권한을 정한다.
 
 ## 고치거나 지울 때

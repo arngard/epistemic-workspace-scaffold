@@ -1,6 +1,6 @@
 ---
 date created: 2026-11-03
-date modified: 2026-11-21
+date modified: 2026-11-22
 tags: [규칙, epistemic-rules]
 description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확인). 작업을 시작할 때와 작업의 종류나 상황이 바뀔 때 연다
 ---
@@ -13,6 +13,7 @@ description: 루트 상류 묶음의 상황별 읽기 목록(작업, 상황, 확
 
 - 문서 신설, 범주 판단, 날짜 프리픽스 문서 작성과 수정, 문서 폐기 -> [문서 작성](document-authoring.md)
 - 규범, 절차, 스킬, 역할 정의의 신설, 변경, 삭제 -> [규범 작성](norm-authoring.md)
+- 스킬, 훅, 스크립트로 감쌀 워크플로의 발견과 제안 -> [워크플로 감싸기 제안](workflow-wrapping.md)
 - 새 사실, 의견, 예측, 결정, 자료가 들어올 때 -> [정보 유입 처리](ingest-workflow.md)
 - 브랜치와 워크트리 생성, 정리 -> [브랜치 전략](branch-strategy.md)
 - PR 생성, PR 검토 대응 -> [PR 워크플로](pr-workflow.md)
