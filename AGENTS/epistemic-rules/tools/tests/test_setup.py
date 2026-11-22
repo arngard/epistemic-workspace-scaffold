@@ -451,6 +451,29 @@ class CliTest(SetupTestBase):
         self.assertEqual({e["id"]: e["changes"] for e in data}, {"hooks-path": "clone", "git": "none"})
         self.assertEqual({e["id"]: e["state"] for e in data}, {"hooks-path": "pending", "git": "ok"})
 
+    def test_apply_json_output_shape(self):
+        code, out, _ = run_cli("apply", str(self.root), "hooks-path", "--json")
+        self.assertEqual(code, 0)
+        data = json.loads(out)
+        self.assertEqual([set(e) for e in data], [{"id", "title", "action", "changes", "targets", "detail"}])
+        self.assertEqual(data[0]["action"], "applied")
+        self.assertEqual(data[0]["changes"], "clone")
+        self.assertEqual(data[0]["targets"], ["core.hooksPath: (없음) -> AGENTS/epistemic-rules/tools/hooks"])
+        self.assertEqual(git(self.root, "config", "--local", "--get", "core.hooksPath").strip(),
+                         "AGENTS/epistemic-rules/tools/hooks")
+
+    def test_apply_json_reports_failed_items(self):
+        self.add_instance([{"id": "x", "title": "엑스", "kind": "require-command",
+                            "params": {"candidates": ["없는명령-xyz"]}}])
+        code, out, _ = run_cli("apply", str(self.root), "hooks-path", "x", "--json")
+        self.assertEqual(code, 2)
+        self.assertEqual({e["id"]: e["action"] for e in json.loads(out)}, {"hooks-path": "applied", "x": "failed"})
+
+    def test_apply_json_refusal_writes_no_stdout(self):
+        code, out, _ = run_cli("apply", str(self.root), "없는-id", "--json")
+        self.assertEqual(code, 2)
+        self.assertEqual(out, "")
+
     def test_check_reports_passing_items_ok(self):
         self.add_instance([GIT_ITEM])
         code, out, _ = run_cli("check", str(self.root), "--json")

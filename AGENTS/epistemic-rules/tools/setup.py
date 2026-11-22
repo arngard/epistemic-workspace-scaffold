@@ -13,15 +13,18 @@
     python3 -B AGENTS/epistemic-rules/tools/setup.py plan <루트> [id ...] [--json]
         적용할 항목과 바뀔 대상(지금 값과 새 값)을 동의 요청의 재료로 낸다. id가 없으면
         미적용 항목 전부.
-    python3 -B AGENTS/epistemic-rules/tools/setup.py apply <루트> id ...
+    python3 -B AGENTS/epistemic-rules/tools/setup.py apply <루트> id ... [--json]
         지정한 항목만 적용한다.
     (윈도우에서는 python 또는 py -3 런처로 동일하게 실행)
 
 status, check, plan은 아무것도 쓰지 않는다. apply는 적용하는 항목의 값만 쓴다.
 
---json은 항목마다 id, title, state, changes, targets, detail을 담은 배열을 낸다.
+status, check, plan의 --json은 항목마다 id, title, state, changes, targets, detail을 담은 배열을 낸다.
 state는 ok, pending(미적용), tool-too-old(이 설치기가 모르는 유형), not-applicable(이
 머신에 해당하지 않음), changes는 적용이 바꾸는 것(clone: 그 클론의 git 설정, none: 없음)이다.
+apply의 --json은 지정한 항목마다 id, title, action, changes, targets, detail을 담은 배열을
+낸다. action은 applied(적용함) 또는 failed(실패)이고, targets는 적용 직전의 값으로 셈한다.
+적용 전에 거부하면(모르는 id, 해당하지 않는 항목, 모르는 유형) 표준 출력에 아무것도 내지 않는다.
 
 종료 코드:
     0  성공(status, plan, apply) 또는 모든 항목이 맞음(check)
@@ -94,7 +97,7 @@ def cmd_plan(root: Path, ids: "list[str]", as_json: bool) -> int:
     return 0
 
 
-def cmd_apply(root: Path, ids: "list[str]") -> int:
+def cmd_apply(root: Path, ids: "list[str]", as_json: bool) -> int:
     items, errors = core.load_items(root)
     by_id = {i.id: i for i in items}
     unknown = [i for i in ids if i not in by_id]
@@ -112,13 +115,24 @@ def cmd_apply(root: Path, ids: "list[str]") -> int:
         print(f"Tool is older than the spec. {core.TOOL_TOO_OLD}: {', '.join(old)}", file=sys.stderr)
         return 2
     code = 0
+    records = []
     for item in chosen:
+        targets = core.targets(item, root)
         result = core.apply_item(root, item)
+        records.append({
+            "id": item.id, "title": item.title, "action": "applied" if result.ok else "failed",
+            "changes": core.changes(item), "targets": targets, "detail": result.detail,
+        })
+        if not result.ok:
+            code = 2
+        if as_json:
+            continue
         if result.ok:
             print(f"- {item.id}: 적용함 ({result.detail})")
         else:
             print(f"- {item.id}: 실패 ({result.detail})", file=sys.stderr)
-            code = 2
+    if as_json:
+        print(json.dumps(records, ensure_ascii=False, indent=2))
     return code
 
 
@@ -130,8 +144,7 @@ def main(argv: "list[str] | None" = None) -> int:
         p.add_argument("root")
         if name in ("plan", "apply"):
             p.add_argument("ids", nargs="*" if name == "plan" else "+")
-        if name != "apply":
-            p.add_argument("--json", action="store_true")
+        p.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     if not root.is_dir():
@@ -143,7 +156,7 @@ def main(argv: "list[str] | None" = None) -> int:
         return cmd_check(root, args.json)
     if args.command == "plan":
         return cmd_plan(root, args.ids, args.json)
-    return cmd_apply(root, args.ids)
+    return cmd_apply(root, args.ids, args.json)
 
 
 if __name__ == "__main__":
