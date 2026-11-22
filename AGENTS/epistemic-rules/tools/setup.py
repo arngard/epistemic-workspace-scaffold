@@ -14,7 +14,9 @@
         적용할 항목과 바뀔 대상(지금 값과 새 값)을 동의 요청의 재료로 낸다. id가 없으면
         미적용 항목 전부.
     python3 -B AGENTS/epistemic-rules/tools/setup.py apply <루트> id ... [--json]
-        지정한 항목만 적용한다.
+        지정한 항목만 적용한다. 항목마다 적용 직전에 점검해 이미 맞으면 쓰지 않는다.
+        한 항목이 실패하거나 예외를 내도 그 항목만 실패로 적고 나머지 항목을 계속 적용한다
+        (항목은 서로 독립된 설정이다).
     (윈도우에서는 python 또는 py -3 런처로 동일하게 실행)
 
 status, check, plan은 아무것도 쓰지 않는다. apply는 적용하는 항목의 값만 쓴다.
@@ -23,15 +25,19 @@ status, check, plan의 --json은 항목마다 id, title, state, changes, targets
 state는 ok, pending(미적용), tool-too-old(이 설치기가 모르는 유형), not-applicable(이
 머신에 해당하지 않음), changes는 적용이 바꾸는 것(clone: 그 클론의 git 설정, none: 없음)이다.
 apply의 --json은 지정한 항목마다 id, title, action, changes, targets, detail을 담은 배열을
-낸다. action은 applied(적용함) 또는 failed(실패)이고, targets는 적용 직전의 값으로 셈한다.
-적용 전에 거부하면(모르는 id, 해당하지 않는 항목, 모르는 유형) 표준 출력에 아무것도 내지 않는다.
+낸다. action은 applied(적용함), unchanged(이미 맞아 쓰지 않음), failed(실패, 예외 포함)이고,
+targets는 적용 직전의 값으로 셈한다. 텍스트 출력도 같은 셋(적용함, 이미 맞음, 실패)으로 나눈다.
+적용 전에 거부하면(명세를 읽지 못함, 모르는 id, 해당하지 않는 항목, 모르는 유형) 표준 출력에
+아무것도 내지 않는다.
 
 종료 코드:
-    0  성공(status, plan, apply) 또는 모든 항목이 맞음(check)
+    0  성공(status, plan), 실패 항목이 없음(apply, unchanged 포함) 또는 모든 항목이 맞음(check)
     1  check에서 미적용 항목이 있음
     1  check에서 명세 오류가 있음
-    2  사용법 오류, 모르는 id나 유형, 이 머신에 해당하지 않는 항목, 적용 실패,
-       plan에서 명세를 하나도 읽지 못함
+    2  사용법 오류, 모르는 id나 유형, 이 머신에 해당하지 않는 항목, apply에서 실패 항목이
+       하나라도 있음, plan과 apply에서 명세를 하나도 읽지 못함
+check, plan, apply와 status --json은 명세 오류(읽지 못한 명세 파일이나 항목)를 표준 에러에
+"명세 오류:" 줄로 낸다. status의 텍스트 출력은 명세 오류를 본문에 넣는다.
 """
 
 import argparse
@@ -97,8 +103,32 @@ def cmd_plan(root: Path, ids: "list[str]", as_json: bool) -> int:
     return 0
 
 
+APPLY_LABEL = {"applied": "적용함", "unchanged": "이미 맞음", "failed": "실패"}
+
+
+def apply_one(root: Path, item: "core.Item") -> "tuple[str, list[str], str]":
+    """항목 하나를 적용해 (action, targets, detail)을 낸다. 예외는 그 항목의 failed로 가둔다."""
+    targets: "list[str]" = []
+    try:
+        targets = core.targets(item, root)
+        before = core.check_item(root, item)
+        if before.ok:
+            return "unchanged", targets, before.detail
+        if core.changes(item) == "none":
+            return "failed", targets, before.detail
+        result = core.apply_item(root, item)
+    except Exception as exc:  # noqa: BLE001 - 항목 하나의 실패를 그 항목에 가둔다
+        return "failed", targets, f"적용 실패({type(exc).__name__}: {exc})"
+    return ("applied" if result.ok else "failed"), targets, result.detail
+
+
 def cmd_apply(root: Path, ids: "list[str]", as_json: bool) -> int:
     items, errors = core.load_items(root)
+    for e in errors:
+        print(f"명세 오류: {e}", file=sys.stderr)
+    if errors and not items:
+        print("Spec unreadable. 설치 명세를 읽지 못해 적용할 수 없다.", file=sys.stderr)
+        return 2
     by_id = {i.id: i for i in items}
     unknown = [i for i in ids if i not in by_id]
     if unknown:
@@ -117,20 +147,15 @@ def cmd_apply(root: Path, ids: "list[str]", as_json: bool) -> int:
     code = 0
     records = []
     for item in chosen:
-        targets = core.targets(item, root)
-        result = core.apply_item(root, item)
+        action, targets, detail = apply_one(root, item)
         records.append({
-            "id": item.id, "title": item.title, "action": "applied" if result.ok else "failed",
-            "changes": core.changes(item), "targets": targets, "detail": result.detail,
+            "id": item.id, "title": item.title, "action": action,
+            "changes": core.changes(item), "targets": targets, "detail": detail,
         })
-        if not result.ok:
+        if action == "failed":
             code = 2
-        if as_json:
-            continue
-        if result.ok:
-            print(f"- {item.id}: 적용함 ({result.detail})")
-        else:
-            print(f"- {item.id}: 실패 ({result.detail})", file=sys.stderr)
+        if not as_json:
+            print(f"- {item.id}: {APPLY_LABEL[action]} ({detail})", file=sys.stderr if action == "failed" else sys.stdout)
     if as_json:
         print(json.dumps(records, ensure_ascii=False, indent=2))
     return code

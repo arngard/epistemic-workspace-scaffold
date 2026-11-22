@@ -474,6 +474,60 @@ class CliTest(SetupTestBase):
         self.assertEqual(code, 2)
         self.assertEqual(out, "")
 
+    def test_apply_skips_items_already_ok(self):
+        self.add_instance([GIT_ITEM])
+        run_cli("apply", str(self.root), "hooks-path")
+        with mock.patch.object(core, "apply_item", side_effect=AssertionError("적용을 부르면 안 된다")):
+            code, out, _ = run_cli("apply", str(self.root), "hooks-path", "git", "--json")
+            text_code, text_out, _ = run_cli("apply", str(self.root), "hooks-path")
+        self.assertEqual(code, 0)
+        self.assertEqual({e["id"]: e["action"] for e in json.loads(out)}, {"hooks-path": "unchanged", "git": "unchanged"})
+        self.assertEqual(text_code, 0)
+        self.assertIn("- hooks-path: 이미 맞음 (", text_out)
+
+    def test_apply_reports_spec_errors(self):
+        write(self.root / "AGENTS/setup/bad.json", "[{")
+        commit_all(self.root)
+        code, out, err = run_cli("apply", str(self.root), "hooks-path", "--json")
+        self.assertEqual(code, 0)
+        self.assertEqual([e["id"] for e in json.loads(out)], ["hooks-path"])
+        self.assertIn("명세 오류: ", err)
+        self.assertIn("AGENTS/setup/bad.json", err)
+
+    def test_apply_fails_when_spec_unreadable(self):
+        git(self.root, "branch", "-m", "main", "trunk")
+        code, out, err = run_cli("apply", str(self.root), "hooks-path", "--json")
+        self.assertEqual(code, 2)
+        self.assertEqual(out, "")
+        self.assertIn("Spec unreadable.", err)
+        self.assertNotIn("Unknown item id.", err)
+
+    def test_apply_exception_fails_item_and_continues(self):
+        self.add_instance([{"id": "ab", "title": "에이비", "kind": "git-config",
+                            "params": {"key": "a.b", "value": "1"}}])
+        with mock.patch.object(core, "apply_item", side_effect=RuntimeError("터짐")):
+            code, out, _ = run_cli("apply", str(self.root), "hooks-path", "ab", "--json")
+        self.assertEqual(code, 2)
+        data = json.loads(out)
+        self.assertEqual({e["id"]: e["action"] for e in data}, {"hooks-path": "failed", "ab": "failed"})
+        self.assertTrue(all("RuntimeError" in e["detail"] for e in data))
+
+    def test_apply_continues_after_exception(self):
+        self.add_instance([{"id": "ab", "title": "에이비", "kind": "git-config",
+                            "params": {"key": "a.b", "value": "1"}}])
+        real = core.apply_item
+
+        def first_raises(root, item):
+            if item.id == "hooks-path":
+                raise RuntimeError("터짐")
+            return real(root, item)
+
+        with mock.patch.object(core, "apply_item", side_effect=first_raises):
+            code, out, _ = run_cli("apply", str(self.root), "hooks-path", "ab", "--json")
+        self.assertEqual(code, 2)
+        self.assertEqual({e["id"]: e["action"] for e in json.loads(out)}, {"hooks-path": "failed", "ab": "applied"})
+        self.assertEqual(git(self.root, "config", "--local", "--get", "a.b").strip(), "1")
+
     def test_check_reports_passing_items_ok(self):
         self.add_instance([GIT_ITEM])
         code, out, _ = run_cli("check", str(self.root), "--json")
