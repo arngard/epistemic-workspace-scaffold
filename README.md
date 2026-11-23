@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-21
+date modified: 2026-11-23
 tags: [소개]
 description: 스캐폴드의 취지, 구조, 사용법 소개
 ---
@@ -44,7 +44,7 @@ description: 스캐폴드의 취지, 구조, 사용법 소개
 
 스캐폴드 이력을 받았다면 `upstream` 연결은 고를 수 있는 선택지가 아니라 시작 상태다. 감사는 이 연결로 상류 커밋과 자기 커밋을 구분한다. 고른 방식과 이유는 결정 문서로 남긴다.
 
-가져온 뒤에는 첫 커밋 전에 AI에게 환경 설치를 요청한다. AI가 설치기로 커밋 전 훅 연결 같은 클론 설정을 점검하고 동의를 받아 맞춘다(see: [workspace-setup.md](AGENTS/epistemic-rules/workspace-setup.md) "처음 설치"). 이어서 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 상속 자산을 바꿀 때는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
+가져온 뒤에는 첫 커밋 전에 AI에게 환경 설치를 요청한다. AI가 설치기로 커밋 전 훅 연결 같은 클론 설정을 점검하고, 바뀔 내용을 보인 뒤 맞춘다(see: [workspace-setup.md](AGENTS/epistemic-rules/workspace-setup.md) "처음 설치"). 이어서 워크스페이스 폴더 이름을 프로젝트에 맞게 바꾸고, `worklog/TASK_TREE.md`의 "워크스페이스 초기 세팅" 체크리스트를 따르며, AGENTS.md의 "이 워크스페이스의 정체" 절을 프로젝트에 맞게 특수화한다. 그 밖의 상속 자산을 바꿀 때는 [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md)를 따른다.
 
 ## 더 읽을 거리
 

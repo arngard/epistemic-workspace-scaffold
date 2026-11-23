@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-21
+date modified: 2026-11-23
 tags: [소개]
 description: 스캐폴드 소개의 영어판
 ---
@@ -44,7 +44,7 @@ There are two ways to obtain the scaffold.
 
 If you received the scaffold history, the `upstream` connection is not optional; it is the starting state. Audits use it to tell upstream commits from your own. Record the chosen approach and its rationale as a decision document.
 
-After obtaining it, before your first commit, ask your AI agent to set up the environment. The agent checks clone settings such as the pre-commit hook with the setup tool and applies them after your consent (see [workspace-setup.md](AGENTS/epistemic-rules/workspace-setup.md) "처음 설치"). Then rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md).
+After obtaining it, before your first commit, ask your AI agent to set up the environment. The agent checks clone settings such as the pre-commit hook with the setup tool, shows what will change, and applies them (see [workspace-setup.md](AGENTS/epistemic-rules/workspace-setup.md) "처음 설치"). Then rename the workspace folder to match your project, follow the "Workspace initial setup" checklist in `worklog/TASK_TREE.md`, and specialize the workspace identity section ("이 워크스페이스의 정체") of AGENTS.md for your project. To change other inherited assets, follow [AGENTS/epistemic-rules/instance-specialization.md](AGENTS/epistemic-rules/instance-specialization.md).
 
 ## Further reading
 
