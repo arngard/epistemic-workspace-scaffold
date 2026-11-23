@@ -1,6 +1,6 @@
 ---
 date created: 2026-11-03
-date modified: 2026-11-22
+date modified: 2026-11-23
 tags: [agents, 워크스페이스, 운영, epistemic-rules]
 description: 단위 작업 종료 흐름 다섯 단계의 세부(마무리 커밋, 작업 트리 정리, 사용자 검토, main 머지, 서브모듈 정합화)
 ---
@@ -15,6 +15,6 @@ description: 단위 작업 종료 흐름 다섯 단계의 세부(마무리 커�
    - 결정 갈래: OK 머지, 추가 정정(명시받아 커밋한 뒤 본 단계 반복), 롤백(브랜치 폐기).
    - 결정 신호는 명시적이어야 한다. 침묵이나 다음 작업 시작을 OK로 추론하지 않는다. 채팅 내 명시 승인("머지해")과 PR Approve가 등가다.
    - [procedure-shrinking.md](procedure-shrinking.md) "조건은 결과 동등성이다"의 조건을 모두 만족하는 작은 변경(단발 작업, 오탈자 등)은 본 단계의 보고와 결정 신호를 면제한다. 아래 머지 전 확인은 면제하지 않는다.
-   - 머지 전 확인: 브랜치의 첫 커밋이 그 작업을 TASK_TREE에 `[/]`로 등재한 커밋인지 `git log --reverse --first-parent --format=%h main..<브랜치>`의 첫 줄을 `git show --stat`으로 보고, 브랜치가 의미 단위 하나를 담는지 본다. 서로 다른 의미 단위를 묶었으면 착수 노드의 설명에 묶은 이유가 있어야 한다. 하나라도 어긋나면 머지하지 않는다 (ref: [procedure-shrinking.md](procedure-shrinking.md) "공용 브랜치에 들어가는 변경은 축약하지 않는다").
+   - 머지 전 확인: 브랜치의 첫 커밋이 그 작업을 TASK_TREE에 `[/]`로 등재한 커밋(작업 트리의 기존 노드를 닫기만 하는 변경이면 그 노드를 `[x]`/`[-]`로 마크하거나 마크된 노드를 지운 커밋)인지 `git log --reverse --first-parent --format=%h main..<브랜치>`의 첫 줄을 `git show --stat`으로 보고, 브랜치가 의미 단위 하나를 담는지 본다. 노드를 닫기만 하는 변경이면 `git diff --stat main...<브랜치>`가 작업 트리와 닫는 노드가 링크한 문서에만 걸리는지도 본다. 서로 다른 의미 단위를 묶었으면 착수 노드의 설명에 묶은 이유가 있어야 한다. 하나라도 어긋나면 머지하지 않는다 (ref: [procedure-shrinking.md](procedure-shrinking.md) "공용 브랜치에 들어가는 변경은 축약하지 않는다", "노드를 닫기만 하는 변경은 첫 마크 커밋이 시작점을 겸한다").
 4. main 머지 - 타입 분기: PR 타입과 브랜치 관리자 타입(직접 머지) 중 하나로 진행한다. 타입 결정 규칙, 두 타입의 절차, 환경 안전망, 잔존 점검은 [merge-types.md](merge-types.md)를 따른다.
 5. 서브모듈 커밋 포인터 재귀 정합화 (해당 시): 본 레포(레포지토리)가 다른 레포의 서브모듈이면 [submodule-pointer-sync.md](../submodule-pointer-sync.md)를 조립한다.

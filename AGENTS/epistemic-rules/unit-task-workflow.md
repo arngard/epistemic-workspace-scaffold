@@ -1,6 +1,6 @@
 ---
 date created: 2026-05-09
-date modified: 2026-11-22
+date modified: 2026-11-23
 tags: [agents, 워크스페이스, 운영, epistemic-rules]
 ---
 
@@ -8,7 +8,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 단위 작업 하나를 진입-진행-종료로 수행하는 일반 프레임이다. 단위 작업이 무엇인가(의미적 분절, 표현과의 층위, 중첩, 프로젝션)와 워크플로 조립은 [unit-task.md](unit-task.md)에, 토대 원칙은 [working-principles.md](working-principles.md)에 있다. 세션 경계의 재진입과 격리는 [session-boundaries.md](session-boundaries.md)가 다룬다.
 
-자료 N건 묶음 ingest, 메타 결정이나 정책 변경, 큰 마이그레이션이나 구조 재편, 도메인 모듈 신설, 한 세션을 넘어갈 가능성이 큰 작업은 본 흐름을 그대로 밟는다. 그보다 작은 변경도 단위 작업이고, main 같은 공용 브랜치에 반영하면 작아도 본 흐름을 밟는다. 절차 축약은 공용 브랜치에 반영하지 않는 변경에만 쓴다 (sub: [unit-task-workflow/procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md)). 모호하면 축약하지 않는 쪽이 안전하다 - 끊겼을 때 회복 비용이 작다.
+자료 N건 묶음 ingest, 메타 결정이나 정책 변경, 큰 마이그레이션이나 구조 재편, 도메인 모듈 신설, 한 세션을 넘어갈 가능성이 큰 작업은 본 흐름을 그대로 밟는다. 그보다 작은 변경도 단위 작업이고, main 같은 공용 브랜치에 반영하면 작아도 본 흐름을 밟는다. 노드만 닫는 변경은 첫 마크 커밋이 진입 3, 4단계를 대신하고, 절차 축약은 공용 브랜치에 반영하지 않는 변경에만 쓴다 (sub: [unit-task-workflow/procedure-shrinking.md](unit-task-workflow/procedure-shrinking.md)). 모호하면 축약하지 않는 쪽이 안전하다 - 끊겼을 때 회복 비용이 작다.
 
 ## 진입 흐름
 
@@ -35,7 +35,7 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 
 1. 마무리 커밋: 미캡처 보강, 학습 사항 반영, TASK_TREE 완료 마크와 브랜치 속성 제거를 담고, 워크로그는 머지 이후 상태를 미리 기록한다.
 2. TASK_TREE 정리: 마크 커밋과 분리한 커밋으로 노드를 삭제한다.
-3. 사용자 검토 통과: 명시적인 결정 신호를 받는다. AI 자율 판단으로 머지하지 않는다. 머지하기 전에 브랜치의 첫 커밋이 착수 등재인지, 브랜치가 의미 단위 하나인지 확인한다.
+3. 사용자 검토 통과: 명시적인 결정 신호를 받는다. AI 자율 판단으로 머지하지 않는다. 머지 전에 첫 커밋과 의미 단위를 확인한다.
 4. main 머지 - 타입 분기: [merge-types.md](unit-task-workflow/merge-types.md).
 5. 서브모듈 커밋 포인터 재귀 정합화 (해당 시): [submodule-pointer-sync.md](submodule-pointer-sync.md).
 
