@@ -12,7 +12,7 @@ description: 작업의 계층 구조와 다음 작업 포인터
 - [ ] 워크스페이스 초기 세팅
   - 설명: 이 단계의 모든 "선정/작성" 작업은 사용자 입력 없이 채울 수 없다. AI는 각 작업 전에 필요한 정보를 사용자에게 인터뷰하여 확보한다. 추측으로 채우지 않는다. ref: [epistemic-rules.md](../AGENTS/epistemic-rules.md) "비협상 게이트".
   - [ ] 환경 설치(커밋 전 훅 연결 등)
-    - 설명: 첫 커밋 전에 한다. AI가 설치기로 클론 설정과 실행 환경을 점검하고, 사용자 동의를 받아 맞춘다. 커밋 전 훅을 연결하지 않으면 커밋할 때 폴더 색인이 다시 만들어지지 않아 CI(continuous integration) 감사가 낡은 색인을 위반으로 잡는다. 절차는 [workspace-setup.md](../AGENTS/epistemic-rules/workspace-setup.md) "처음 설치".
+    - 설명: 첫 커밋 전에 한다. AI가 설치기로 클론 설정과 실행 환경을 점검하고, 사용자 동의를 받아 맞춘다. 커밋 전 훅을 연결하지 않으면 커밋할 때 폴더 색인이 다시 만들어지지 않고 형식 감사도 돌지 않는다. 절차는 [workspace-setup.md](../AGENTS/epistemic-rules/workspace-setup.md) "처음 설치".
   - [ ] 상류 연결과 채택 방식 기록
     - 설명: 스캐폴드 이력을 받았다면 원본을 `upstream` 원격으로 연결한다. 고른 방식과 이유를 [epistemic-structure/strategy/](../epistemic-structure/strategy/AGENTS.md)에 남긴다. 날짜 처리는 고른 방식에 따라 다르다.
   - [ ] 워크스페이스 폴더 이름을 프로젝트에 맞게 변경

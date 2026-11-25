@@ -123,11 +123,9 @@ reference/<자료 폴더>/AGENTS/ 안의 md는 자료가 아니라 운영 파일
         # 감사 대신 등재한 진척 기록 폴더를 루트 상대 경로(끝 /)로 한 줄에 하나씩 낸다
     (윈도우에서는 python 또는 py 런처로 동일하게 실행)
 
-종료 코드:
-    0  위반 없음 (경고만 있거나 없음)
-    1  위반 있음
-    2  사용법 오류 (인자가 디렉토리가 아님)
-    --progress-folders는 목록을 내면 0, 사용법 오류면 2
+종료 코드는 위반 없음(경고 유무 무관) 또는 목록 출력 성공 0, 위반 있음 1,
+사용법 오류(인자가 디렉토리가 아님) 2, 처리하지 못한 예외 3이다.
+처리하지 못한 예외의 traceback은 표준 오류에 출력한다.
 
 이식성 노트:
 - Python 3.9+ 표준 라이브러리만 사용. 특정 AI 도구, OS에 의존하지 않는다.
@@ -161,39 +159,44 @@ reference/<자료 폴더>/AGENTS/ 안의 md는 자료가 아니라 운영 파일
 """
 
 import sys
+import traceback
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from _audit_core import Finding, VIOLATION, WARNING, registered_progress_dirs
-from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags
-from audit_links import (
-    check_links, check_link_text, check_section_refs, check_link_whitespace,
-    check_reference_markers, check_imports,
-)
-from audit_bundle import check_bundle_identity, check_source_tags
-from audit_extensions import run_extensions
-from audit_index import check_index_files, check_index_sources
-from audit_structure import (
-    check_descriptors, check_empty_folders,
-    check_name_collision, check_filename_portability, check_scaffold_state_markers,
-    check_date_prefix_separator, check_claude_pointers, check_norms_dir_descriptors,
-    check_parent_documents,
-)
-from audit_worklog import (
-    check_status_registry, check_status_schema,
-    check_task_tree_attrs, check_task_tree_completed_branch,
-)
-from audit_content import check_size, check_temporality_mix, check_ascii_punctuation
+if TYPE_CHECKING:
+    from _audit_core import Finding
 
 
 PROGRESS_OPTION = "--progress-folders"
 
 
-def run_audit(root: Path) -> list[Finding]:
+def run_audit(root: Path) -> "list[Finding]":
     """모든 검사를 순서대로 실행해 Finding 리스트를 모은다.
 
     입출력, 종료 코드와 분리된 순수 오케스트레이션 - 단위 테스트가 이 함수를
     직접 호출해 결과를 검증할 수 있다.
     """
+    # 검사 모듈을 불러올 때 생긴 예외도 진입점에서 처리한다.
+    from audit_bundle import check_bundle_identity, check_source_tags
+    from audit_content import check_size, check_temporality_mix, check_ascii_punctuation
+    from audit_extensions import run_extensions
+    from audit_frontmatter import check_front_matter, check_strategy_fields, check_tags
+    from audit_index import check_index_files, check_index_sources
+    from audit_links import (
+        check_links, check_link_text, check_section_refs, check_link_whitespace,
+        check_reference_markers, check_imports,
+    )
+    from audit_structure import (
+        check_descriptors, check_empty_folders,
+        check_name_collision, check_filename_portability, check_scaffold_state_markers,
+        check_date_prefix_separator, check_claude_pointers, check_norms_dir_descriptors,
+        check_parent_documents,
+    )
+    from audit_worklog import (
+        check_status_registry, check_status_schema,
+        check_task_tree_attrs, check_task_tree_completed_branch,
+    )
+
     findings: list[Finding] = []
     findings += check_front_matter(root)
     findings += check_links(root)
@@ -241,6 +244,9 @@ def main() -> int:
     if not root.is_dir():
         print(f"Error: not a directory. 디렉토리가 아님 - {root}", file=sys.stderr)
         return 2
+
+    from _audit_core import VIOLATION, WARNING, registered_progress_dirs
+
     if list_progress:
         for d in registered_progress_dirs(root):
             print(d)
@@ -259,4 +265,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        status = main()
+    except Exception:
+        traceback.print_exc()
+        status = 3
+    sys.exit(status)
