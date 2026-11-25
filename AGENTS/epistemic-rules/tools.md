@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-22
+date modified: 2026-11-25
 tags: [규칙, 도구, epistemic-rules]
 ---
 
@@ -26,16 +26,16 @@ tags: [규칙, 도구, epistemic-rules]
 
 - 임계값은 공용 인프라 `tools/_audit_core.py` 상단의 상수이고 상류가 운영하며 조정한다. 상속한 레포(레포지토리)는 이 상수를 고치지 않는다(항목 30). 다른 값이 필요하면 경고를 의식적으로 수용하거나 상류에 변경을 제안한다.
 - `.tmp/`는 에이전트의 임시 작업 공간이다. gitignore 대상이며 감사에서 제외된다.
-- 실행: `python3 AGENTS/epistemic-rules/tools/audit.py .`를 새 세션 시작 시와 push, PR 시에 돌리고, 그 밖의 커밋이나 답변마다 돌리지 않는다. push와 pull request 시점에는 GitHub Actions([.github/workflows/epistemic-audit.yml](../../.github/workflows/epistemic-audit.yml))가, 새 세션 시작 시에는 아래 "세션 시작 요약 스크립트"가 실행한다 (see: [session-boundaries.md](session-boundaries.md) "세션 시작"). 오래 걸릴 수 있는 검증은 커밋과 한 명령으로 묶지 않는다. 묶으면 검증이 끝날 때까지 커밋과 응답이 밀린다.
+- 실행: `python3 AGENTS/epistemic-rules/tools/audit.py .`는 새 세션 시작 시와 커밋, 머지 커밋 시에 돈다. 새 세션 시작 시에는 아래 "세션 시작 요약 스크립트"가 (see: [session-boundaries.md](session-boundaries.md) "세션 시작"), 커밋과 머지 커밋 시에는 커밋 전 훅이 실행한다 (see: [commit-hook.md](folder-index/commit-hook.md)). 훅이 돌지 않은 머지 뒤와 감사 결과를 직접 볼 때 말고는 답변마다 따로 돌리지 않는다. 오래 걸릴 수 있는 검증은 커밋과 한 명령으로 묶지 않는다. 묶으면 검증이 끝날 때까지 커밋과 응답이 밀린다.
 - 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS에 의존하지 않는다. git이 있으면 git이 무시하는 경로를 뺀다.
-- 종료 코드와 강제력: 위반이 없으면(경고만 있거나 없음) 0, 위반이 있으면 1, 사용법 오류는 2다. 위반(violation)은 CI를 실패시키고 경고(warning)는 통과시킨다 - 경고는 사람이나 LLM의 판단이 필요한 신호라 기계적으로 차단하지 않는다. 경고는 방치하면 쌓이므로 감사 시 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)한다.
+- 종료 코드와 강제력: 위반이 없으면(경고만 있거나 없음) 0, 위반이 있으면 1, 사용법 오류는 2, 처리하지 못한 예외는 3이고 예외의 traceback은 표준 오류에 낸다. 커밋 전 훅은 1을 위반으로, 그 밖의 0이 아닌 값을 실행 오류로 안내하고 커밋을 막는다. 경고(warning)는 통과시킨다 - 경고는 사람이나 LLM의 판단이 필요한 신호라 기계적으로 차단하지 않는다. 경고는 방치하면 쌓이므로 감사 시 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)한다.
 
 ## 색인 생성 스크립트
 
 [tools/build_index.py](tools/build_index.py)는 폴더 색인을 만든다. 규칙은 [folder-index.md](folder-index.md) "생성과 확인", 훅은 [commit-hook.md](folder-index/commit-hook.md).
 
 - 실행: `python3 AGENTS/epistemic-rules/tools/build_index.py .`. `--dry-run`은 바뀔 경로만 내고, `--bundle-manifest`는 색인 대신 상류 묶음 목록만 만든다. 누가 다시 만드는가는 [instance-specialization.md](instance-specialization.md) "특수화 방식".
-- 커밋 전 훅 연결: 설치 명세의 `hooks-path` 항목(`core.hooksPath`를 `AGENTS/epistemic-rules/tools/hooks`로)이 맡고, 설치기가 클론마다 맞춘다 (see: [workspace-setup.md](workspace-setup.md)). 훅은 색인만 다시 만들고 상류 묶음 목록은 만들지 않는다.
+- 커밋 전 훅 연결: 설치 명세의 `hooks-path` 항목(`core.hooksPath`를 `AGENTS/epistemic-rules/tools/hooks`로)이 맡고, 설치기가 클론마다 맞춘다 (see: [workspace-setup.md](workspace-setup.md)). 훅은 색인을 다시 만들고 형식 감사를 돌리며, 상류 묶음 목록은 만들지 않는다.
 
 ## 의미 감사 트리거 판정 스크립트
 

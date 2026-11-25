@@ -3,6 +3,7 @@
 import contextlib
 import io
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -23,6 +24,9 @@ FM = "---\ndescription: 문서 설명\n---\n본문\n"
 # 손으로 바꾼 생성 쪽(머리말은 남음).
 GEN = INDEX_HEADER + "\nx\n"
 HAS_GIT = shutil.which("git") is not None
+# 훅 시험 문서. 훅이 감사를 돌리므로 감사를 통과하는 front matter를 쓴다.
+HFM = ("---\ndate created: 2026-01-01\ndate modified: 2026-01-01\n"
+       "tags: [규칙]\ndescription: 문서 설명\n---\n\n# 문서\n\n본문\n")
 
 
 class BuildTest(unittest.TestCase):
@@ -301,7 +305,7 @@ class IgnoredEntriesTest(unittest.TestCase):
             os.environ.update(old)
 
 
-@unittest.skipIf(not HAS_GIT or os.name == "nt", "git, sh")
+@unittest.skipIf(not HAS_GIT, "git 없음")
 class HookTest(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -315,8 +319,9 @@ class HookTest(unittest.TestCase):
         self.git("config", "user.name", "t")
         self.git("config", "user.email", "t@example.com")
         self.git("config", "commit.gpgsign", "false")
-        self.write("AGENTS.md", FM)
-        self.write("a.md", FM)
+        self.write("AGENTS.md", HFM)
+        self.write("a.md", HFM)
+        self.write("CLAUDE.md", "@AGENTS.md\n")
 
     def write(self, name, text):
         p = self.root / name
@@ -335,9 +340,28 @@ class HookTest(unittest.TestCase):
         dest = self.root / rel
         shutil.copytree(str(TOOLS), str(dest),
                         ignore=shutil.ignore_patterns("__pycache__"))
-        os.chmod(str(dest / "hooks" / "pre-commit"), 0o755)
+        for name in ("pre-commit", "pre-merge-commit"):
+            os.chmod(str(dest / "hooks" / name), 0o755)
         self.git("config", "core.hooksPath", rel + "/hooks")
+        # 복사한 도구만 있는 저장소에 맞게 상류 묶음 목록을 다시 만든다.
+        # 출고 목록 그대로면 없는 묶음 파일 때문에 감사가 막는다.
+        self.manifest(dest.parent.parent.parent, dest)
         return dest
+
+    def manifest(self, root, tools):
+        subprocess.run(
+            [sys.executable, str(tools / "build_index.py"), str(root),
+             "--bundle-manifest"], env=self.env, check=True,
+            stdout=subprocess.PIPE)
+
+    def run_git(self, *args):
+        r = subprocess.run(["git", *args], cwd=str(self.root), env=self.env,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.last_err = r.stderr.decode("utf-8", "replace")
+        return r.returncode
+
+    def staged(self):
+        return self.git("diff", "--cached", "--name-only").split()
 
     def commit(self, *paths):
         self.git("add", "--", *paths)
@@ -365,7 +389,7 @@ class HookTest(unittest.TestCase):
         sub.mkdir()
         subprocess.run(["git", "init", "-q"], cwd=str(sub), env=self.env,
                        check=True)
-        self.write("sub/AGENTS.md", FM)
+        self.write("sub/AGENTS.md", HFM)
         self.install_tools("sub/AGENTS/epistemic-rules/tools")
         self.assertIn("INDEX.md", self.committed_names())
         self.assertTrue((self.root / "INDEX.md").exists())
@@ -397,7 +421,7 @@ class HookTest(unittest.TestCase):
         self.write("INDEX2.md", GEN)
         self.assertEqual(self.commit("AGENTS.md", "a.md", "INDEX2.md"), 0)
         self.install_tools()
-        self.write("b.md", FM)
+        self.write("b.md", HFM)
         self.assertEqual(self.commit("b.md"), 0, self.last_err)
         tracked = self.git("ls-files").split()
         self.assertNotIn("INDEX2.md", tracked)
@@ -410,20 +434,22 @@ class HookTest(unittest.TestCase):
         self.assertEqual(self.commit("c.txt"), 0, self.last_err)
         names = self.git("show", "--name-only", "--format=", "HEAD").split()
         self.assertEqual(sorted(names), ["INDEX.md", "c.txt"])
-        self.write("a.md", FM + "more\n")
+        self.write("a.md", HFM + "more\n")
         self.assertEqual(self.commit("a.md"), 0, self.last_err)
         names = self.git("show", "--name-only", "--format=", "HEAD").split()
         self.assertEqual(names, ["a.md"])
 
+    @unittest.skipIf(os.name == "nt", "윈도우 파일 이름에 콜론을 쓸 수 없음")
     def test_colon_folder_staged(self):
         self.install_tools()
-        self.write(":x/AGENTS.md", FM)
-        self.write(":x/b.md", FM)
-        self.assertEqual(self.commit("AGENTS.md", "a.md", ":(literal):x"), 0,
-                         self.last_err)
-        names = self.git("show", "--name-only", "--format=", "HEAD").split()
-        self.assertIn(":x/INDEX.md", names)
+        self.write(":x/AGENTS.md", HFM)
+        self.write(":x/b.md", HFM)
+        self.assertNotEqual(self.commit("AGENTS.md", "a.md", ":(literal):x"), 0)
+        self.assertIn(":x/INDEX.md", self.staged())
+        self.assertIn("VIOLATION [portability] :x:", self.last_err)
+        self.assertIn("audit violations", self.last_err)
 
+    @unittest.skipIf(os.name == "nt", "/bin/sh와 심볼릭 링크")
     def test_no_python_blocks(self):
         tools = self.install_tools()
         bindir = Path(self._tmp.name) / "bin"
@@ -448,36 +474,206 @@ class HookTest(unittest.TestCase):
 
     def test_hook_does_not_touch_manifest(self):
         tools = self.install_tools()
-        self.write("AGENTS/epistemic-rules/x.md", FM)
-        subprocess.run(
-            [sys.executable, str(tools / "build_index.py"), str(self.root),
-             "--bundle-manifest"], env=self.env, check=True,
-            stdout=subprocess.PIPE)
+        x = "AGENTS/epistemic-rules/x.md"
+        # 상류 묶음 문서는 tags에 epistemic-rules를 단다.
+        xfm = HFM.replace("[규칙]", "[규칙, epistemic-rules]")
+        self.write(x, xfm)
+        self.manifest(self.root, tools)
         self.assertEqual(self.commit_status(), 0, self.last_err)
-        self.assertEqual(
-            self.commit(MANIFEST_REL, "AGENTS/epistemic-rules/x.md"), 0,
-            self.last_err)
+        self.assertEqual(self.commit(MANIFEST_REL, x), 0, self.last_err)
         before = self.git("show", "HEAD:" + MANIFEST_REL)
         self.assertTrue(before)
-        self.write("AGENTS/epistemic-rules/x.md", FM + "more\n")
-        self.assertEqual(self.commit("AGENTS/epistemic-rules/x.md"), 0,
+        manifest_disk = (self.root / MANIFEST_REL).read_bytes()
+        # 목록을 그대로 두고 묶음 파일을 바꾸면 감사가 막고 목록은 그대로다.
+        self.write(x, xfm + "more\n")
+        self.assertNotEqual(self.commit(x), 0)
+        self.assertIn("audit violations", self.last_err)
+        self.assertIn(x, self.last_err)
+        self.assertEqual((self.root / MANIFEST_REL).read_bytes(),
+                         manifest_disk)
+        self.assertNotIn(MANIFEST_REL, self.staged())
+        # 목록을 다시 만들어 함께 스테이지하면 통과한다.
+        self.manifest(self.root, tools)
+        self.assertEqual(self.commit(x, MANIFEST_REL), 0, self.last_err)
+        self.assertNotEqual(self.git("show", "HEAD:" + MANIFEST_REL), before)
+
+    def test_violation_blocks_and_keeps_index_staged(self):
+        self.install_tools()
+        self.write("a.md", "본문\n")
+        self.assertNotEqual(self.commit_status(), 0)
+        self.assertIn("VIOLATION", self.last_err)
+        self.assertIn("audit violations", self.last_err)
+        self.assertNotIn("audit failed", self.last_err)
+        self.assertEqual(self.run_git("rev-parse", "-q", "--verify", "HEAD"),
+                         1)
+        # 막혀도 다시 만든 색인은 스테이지에 남아 재시도에 들어간다.
+        self.assertIn("INDEX.md", self.staged())
+        self.write("a.md", HFM)
+        self.assertIn("INDEX.md", self.committed_names())
+
+    def test_audit_error_blocks_with_traceback(self):
+        tools = self.install_tools()
+        with (tools / "audit_structure.py").open("a", encoding="utf-8") as f:
+            f.write("\n\ndef check_filename_portability(root):\n"
+                    "    raise RuntimeError('감사 시험 예외')\n")
+        self.assertNotEqual(self.commit_status(), 0)
+        self.assertIn("Traceback", self.last_err)
+        self.assertIn("RuntimeError: 감사 시험 예외", self.last_err)
+        self.assertIn("audit failed", self.last_err)
+        self.assertIn("종료 코드 3", self.last_err)
+        self.assertNotIn("audit violations", self.last_err)
+
+    def test_audit_syntax_error_is_failure(self):
+        # 진입 파일의 구문 오류는 Python이 1로 끝내도 위반이 아니라 실행 오류다.
+        tools = self.install_tools()
+        with (tools / "audit.py").open("a", encoding="utf-8") as f:
+            f.write("\ndef (\n")
+        self.assertNotEqual(self.commit_status(), 0)
+        self.assertIn("SyntaxError", self.last_err)
+        self.assertIn("audit failed", self.last_err)
+        self.assertNotIn("audit violations", self.last_err)
+
+    def test_warning_passes_with_summary(self):
+        warning_root = self.root.with_name("repo's 경고 0건 (")
+        self.root.rename(warning_root)
+        self.root = warning_root
+        tools = self.install_tools()
+        self.git("config", "core.hooksPath", (tools / "hooks").as_posix())
+        (self.root / "CLAUDE.md").unlink()
+        self.assertEqual(self.commit_status(), 0, self.last_err)
+        self.assertIn("경고 1건", self.last_err)
+        self.assertIn("경고 상세는", self.last_err)
+        args = self.detail_args()
+        audit_suffix = f"/{warning_root.name}/AGENTS/epistemic-rules/tools/audit.py"
+        self.assertTrue(args[-2].endswith(audit_suffix), args)
+        self.assertNotIn("WARNING", self.last_err)
+
+    def detail_args(self):
+        """경고 상세 명령의 인자. 끝의 두 인자는 감사 스크립트와 루트다."""
+        command = self.last_err.split("경고 상세는 ", 1)[1].splitlines()[0]
+        args = shlex.split(command[:-len(" 로 본다.")])
+        self.assertEqual(args[-3], "-B")
+        self.assertEqual(Path(args[-1]).resolve(), self.root.resolve())
+        return args
+
+    def test_warning_detail_runs_from_anywhere(self):
+        # 상대 경로로 연결한 훅도 어느 폴더에서나 실행할 수 있는 명령을 낸다.
+        self.install_tools()
+        (self.root / "CLAUDE.md").unlink()
+        self.assertEqual(self.commit_status(), 0, self.last_err)
+        args = self.detail_args()
+        r = subprocess.run(
+            [sys.executable, "-B", args[-2], args[-1]], cwd=self._tmp.name,
+            env=self.env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("claude-pointer", r.stdout.decode("utf-8", "replace"))
+
+    def test_clean_passes_with_summary(self):
+        self.install_tools()
+        self.assertEqual(self.commit_status(), 0, self.last_err)
+        self.assertIn("위반 0건, 경고 0건", self.last_err)
+        self.assertNotIn("경고 상세는", self.last_err)
+
+    def branch_with(self, files, verify=True, build=False):
+        """side 브랜치에 files를 커밋하고 원래 브랜치에도 한 커밋을 더한다."""
+        tools = self.install_tools()
+        self.git("add", "-A")
+        self.assertEqual(self.run_git("commit", "-q", "-m", "base"), 0,
+                         self.last_err)
+        main = self.git("rev-parse", "--abbrev-ref", "HEAD").strip()
+        self.git("checkout", "-q", "-b", "side")
+        for name, text in files.items():
+            self.write(name, text)
+        if build:
+            subprocess.run(
+                [sys.executable, str(tools / "build_index.py"),
+                 str(self.root)], env=self.env, check=True,
+                stdout=subprocess.PIPE)
+        self.git("add", "-A")
+        args = ["commit", "-q", "-m", "side"]
+        if not verify:
+            args.insert(1, "--no-verify")
+        self.git(*args)
+        self.git("checkout", "-q", main)
+        # 색인에 영향이 없는 변경이라 텍스트 머지한 색인이 생성 결과와 같다.
+        self.write("a.md", HFM + "more\n")
+        self.assertEqual(self.commit("a.md"), 0, self.last_err)
+        return main
+
+    def merge_side(self):
+        return self.run_git("merge", "--no-ff", "-q", "-m", "m", "side")
+
+    def parents(self):
+        return len(self.git("log", "-1", "--format=%P").split())
+
+    def test_merge_clean_passes(self):
+        self.branch_with({"b.md": HFM})
+        self.assertEqual(self.merge_side(), 0, self.last_err)
+        self.assertIn("pre-merge-commit", self.last_err)
+        self.assertEqual(self.parents(), 2)
+
+    def test_merge_stale_index_stops_then_commit(self):
+        self.branch_with({"b.md": HFM}, verify=False)
+        self.assertNotEqual(self.merge_side(), 0)
+        self.assertIn("index out of date", self.last_err)
+        self.assertTrue((self.root / ".git" / "MERGE_HEAD").exists())
+        # 머지 모드는 색인을 쓰거나 스테이지하지 않는다.
+        before = self.git("show", "HEAD:INDEX.md")
+        self.assertEqual(
+            (self.root / "INDEX.md").read_text(encoding="utf-8"), before)
+        self.assertEqual(self.run_git("diff", "--cached", "--quiet", "HEAD",
+                                      "--", "INDEX.md"), 0)
+        self.assertEqual(self.run_git("commit", "-q", "--no-edit"), 0,
+                         self.last_err)
+        self.assertEqual(self.parents(), 2)
+        self.assertIn("b.md", self.git("show", "HEAD:INDEX.md"))
+
+    def test_commit_all_retry_after_block(self):
+        # git commit -a가 막히면 훅의 스테이지가 버려지므로 다시 만든 색인을 알린다.
+        self.install_tools()
+        self.git("add", "-A")
+        self.assertEqual(self.run_git("commit", "-q", "-m", "base"), 0,
+                         self.last_err)
+        self.write("sub/AGENTS.md", HFM)
+        self.write("sub/CLAUDE.md", "@AGENTS.md\n")
+        self.write("sub/b.md", "본문\n")
+        self.git("add", "sub")
+        # 생성기가 지울 미추적 남는 쪽은 안내에서 빠져야 git add가 실패하지 않는다.
+        self.write("INDEX2.md", GEN)
+        self.assertNotEqual(self.run_git("commit", "-a", "-q", "-m", "t"), 0)
+        self.assertIn("git add로 올리고", self.last_err)
+        self.assertIn("sub/INDEX.md", self.last_err)
+        self.assertFalse((self.root / "INDEX2.md").exists())
+        self.assertNotIn("INDEX2.md", self.last_err)
+        self.write("sub/b.md", HFM)
+        self.git("add", "sub/INDEX.md")
+        self.assertEqual(self.run_git("commit", "-a", "-q", "-m", "t"), 0,
                          self.last_err)
         names = self.git("show", "--name-only", "--format=", "HEAD").split()
-        self.assertNotIn(MANIFEST_REL, names)
-        self.assertEqual(self.git("show", "HEAD:" + MANIFEST_REL), before)
+        self.assertIn("sub/INDEX.md", names)
+
+    def test_merge_violation_stops(self):
+        self.branch_with({"b.md": "본문\n"}, verify=False, build=True)
+        self.assertNotEqual(self.merge_side(), 0)
+        self.assertIn("audit violations", self.last_err)
+        self.assertTrue((self.root / ".git" / "MERGE_HEAD").exists())
+        self.write("b.md", HFM)
+        self.git("add", "b.md")
+        self.assertEqual(self.run_git("commit", "-q", "--no-edit"), 0,
+                         self.last_err)
+        self.assertEqual(self.parents(), 2)
 
     def test_hook_mode_executable_in_git(self):
         repo = TOOLS.parent.parent.parent
         if not (repo / ".git").exists():
             self.skipTest("git 작업 트리 밖")
-        r = subprocess.run(
-            ["git", "ls-files", "-s", "--",
-             "AGENTS/epistemic-rules/tools/hooks/pre-commit"],
-            cwd=str(repo), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out = r.stdout.decode("utf-8")
-        if not out:
-            self.skipTest("훅이 아직 추적되지 않음")
-        self.assertTrue(out.startswith("100755 "), out)
+        for name in ("pre-commit", "pre-merge-commit"):
+            rel = "AGENTS/epistemic-rules/tools/hooks/" + name
+            r = subprocess.run(
+                ["git", "ls-files", "-s", "--", rel],
+                cwd=str(repo), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out = r.stdout.decode("utf-8")
+            self.assertTrue(out.startswith("100755 "), rel + ": " + out)
 
 
 if __name__ == "__main__":
