@@ -49,9 +49,9 @@ from pathlib import Path
 from typing import Optional
 
 from _audit_core import (
-    DESCRIPTOR_NAME, EXEMPT_DIRS, FRONT_MATTER_RE, INDEX_NAME,
+    DESCRIPTOR_NAME, FRONT_MATTER_RE, INDEX_NAME,
     INDEX_YAML_NAME, NORMS_DIR_NAME, REFERENCE_DIR, SIZE_LIMIT_NODE,
-    content_dirs, in_norms_dir, is_index_file, is_link, nfc, read, text_size)
+    content_dirs, in_norms_dir, is_exempt_name, is_index_file, is_link, nfc, read, text_size)
 
 # 항목 필드로 허용하는 키.
 INDEX_KEYS = ("description", "status")
@@ -433,7 +433,7 @@ def _entry_children(d: Path) -> "list[Path]":
     out: "list[Path]" = []
     for p in d.iterdir():
         name = p.name
-        if name.startswith(".") or name in EXEMPT_DIRS:
+        if is_exempt_name(name):
             continue
         if is_link(p):  # 심볼릭 링크와 윈도우 정션
             continue

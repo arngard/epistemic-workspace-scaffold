@@ -670,9 +670,16 @@ def locate_target(
             continue
         return _via_link(root, raw)
     check = raw if verdict == "exact" and raw is not None else str(current)
-    if not os.path.exists(check):
+    if "\0" in check:
         return "missing", None, False
     real = os.path.realpath(check)
+    if not os.path.exists(check):
+        # POSIX는 없는 폴더 뒤의 .. 을 열지 못한다. 윈도우처럼 글자대로 접어(realpath는 있는
+        # 링크는 따라간다) 한 번 더 본다. 끝이 / 나 /. 이면 realpath가 그 폴더 조건을 지우므로
+        # 다시 보지 않는다.
+        parts = re.split(r"[\\/]", check)
+        if ".." not in parts or parts[-1] in ("", ".") or not os.path.exists(real):
+            return "missing", None, False
     return verdict, real, _inside(real, root)
 
 
