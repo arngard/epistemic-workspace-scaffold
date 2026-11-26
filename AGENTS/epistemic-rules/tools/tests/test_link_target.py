@@ -43,6 +43,19 @@ class LinkCaseTest(TargetCase):
         self.write("a.md", "[t](Docs/Target.md)\n")
         self.assertEqual(self.found(check_links, "a.md"), [])
 
+    def test_dotdot_through_missing_folder_passes_on_every_os(self):
+        # 없는 폴더 뒤의 .. 은 OS와 무관하게 글자대로 접혀 대상이 있으면 통과한다.
+        self.write("a.md", "[t](nope/../Docs/Target.md)\n@nope/../Docs/Target.md\n")
+        self.assertEqual(self.found(check_links, "a.md"), [])
+        self.assertEqual(self.found(check_imports, "a.md"), [])
+
+    @unittest.skipIf(os.name == "nt", "윈도우는 파일/. 을 파일로 연다")
+    def test_file_used_as_folder_is_broken(self):
+        self.write("a.md", "[t](Docs/Target.md/.)\n")
+        self.assertEqual(len(self.found(check_links, "a.md")), 1)
+        self.write("sub/b.md", "[t](../Docs/Target.md/.)\n[u](nope/../../Docs/Target.md/)\n")
+        self.assertEqual(len(self.found(check_links, "sub/b.md")), 2)
+
     @unittest.skipIf(os.name != "nt", "윈도우 경로 길이 제한(MAX_PATH)")
     def test_long_unfolded_path_still_found(self):
         # 접은 경로는 짧고 접지 않은 경로만 260자를 넘는다.
