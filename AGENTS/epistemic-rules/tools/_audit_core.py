@@ -563,9 +563,15 @@ def join_raw(source: Path, target: str) -> str:
     """source 문서 위치 기준으로 target(퍼센트 인코딩 해제)을 이은 경로. .. 을 접지 않는다.
 
     실재 확인에 쓴다. 링크 폴더 뒤의 .. 은 OS가 링크를 따라간 뒤에 풀어야
-    실제 대상과 같다.
+    실제 대상과 같다. 윈도우는 .. 을 링크를 따르기 전에 문자열로 풀므로 접은 경로를
+    쓴다. 접지 않으면 긴 폴더 아래에서 경로 길이 제한(MAX_PATH)에 걸려 있는 대상도
+    없다고 나온다. 끝 구분자와 NUL은 접으면 사라지므로 남겨 파일로 열리지 않게 한다.
     """
-    return os.path.join(str(source.parent), urllib.parse.unquote(target))
+    raw = os.path.join(str(source.parent), urllib.parse.unquote(target))
+    if os.name != "nt" or "\0" in raw:
+        return raw
+    folded = os.path.abspath(raw)
+    return folded + os.sep if raw.endswith(("/", "\\")) else folded
 
 
 def join_target(source: Path, target: str) -> Path:
