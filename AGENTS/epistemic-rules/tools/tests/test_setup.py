@@ -34,7 +34,8 @@ def git(cwd, *args):
 
 def write(path: Path, text: str):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8", newline="\n")
+    with path.open("w", encoding="utf-8", newline="\n") as f:  # write_text의 newline은 Python 3.10부터다.
+        f.write(text)
 
 
 def make_repo(path: Path) -> Path:
