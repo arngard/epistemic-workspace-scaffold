@@ -104,6 +104,11 @@ epistemic-auditor의 형식 점검 항목을 결정론적으로 검사한다.
      부모 문서(X.md)가 없는 폴더 - 경고
      (규범 폴더, 순차 분류 최상위와 그 자손, 이름이 날짜인 폴더 제외.
      디스크립터 없는 폴더는 항목 7 소관)
+ 32. 레포 루트 .claude/skills/<이름>/SKILL.md마다 Codex 사본
+     .agents/skills/<이름>/SKILL.md의 부재와 내용 차이 - 위반
+     (내용은 CRLF를 LF로 바꿔 비교. .agents/skills에만 있는 스킬은 허용.
+      경로 단계의 심볼릭 링크와 정션은 따라가지 않고 위반, 일반 파일이 아니거나
+      읽지 못한 SKILL.md도 위반. .claude/skills가 없으면 보지 않음)
 
 등재한 진척 기록 폴더: reference/AGENTS.md에 인라인 코드로 적은
 reference/<자료 폴더>/AGENTS/ 안의 md는 자료가 아니라 운영 파일이라 위 항목의
@@ -190,7 +195,7 @@ def run_audit(root: Path) -> "list[Finding]":
         check_descriptors, check_empty_folders,
         check_name_collision, check_filename_portability, check_scaffold_state_markers,
         check_date_prefix_separator, check_claude_pointers, check_norms_dir_descriptors,
-        check_parent_documents,
+        check_parent_documents, check_codex_skill_mirror,
     )
     from audit_worklog import (
         check_status_registry, check_status_schema,
@@ -222,6 +227,7 @@ def run_audit(root: Path) -> "list[Finding]":
     findings += check_ascii_punctuation(root)
     findings += check_scaffold_state_markers(root)
     findings += check_claude_pointers(root)
+    findings += check_codex_skill_mirror(root)
     findings += check_imports(root)
     findings += check_norms_dir_descriptors(root)
     findings += check_index_sources(root)

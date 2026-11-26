@@ -1,6 +1,6 @@
 ---
 date created: 2026-04-18
-date modified: 2026-11-22
+date modified: 2026-11-26
 tags: [agents, 도구, 환경, IDE, epistemic-rules]
 ---
 
@@ -25,11 +25,13 @@ tags: [agents, 도구, 환경, IDE, epistemic-rules]
 - 가져오기가 아닌 글 속의 `@경로` 언급은 인라인 코드로 쓴다. Claude Code는 문장 중간의 `@경로`도 펼친다.
 - 새 도구가 추가되면 그 도구의 자동 참조 경로에 진입점 파일을 만들고, [entry-files.md](tool-environment/entry-files.md)의 표에 등록하며 공식 문서의 조회 일자(확인하지 못했으면 "미확인")를 적는다.
 
-## Claude Code 래퍼(절차 스킬, 서브에이전트)
+## 도구 래퍼(절차 스킬, 서브에이전트)
 
-`.claude/skills/` 하위의 각 SKILL.md(ingest, unit-task-start, unit-task-finish, pr-create, pr-respond, document-authoring, norm-authoring, workspace-setup, workflow-wrapping)는 절차 문서를 해당 시점에 로드하는 얇은 래퍼(thin wrapper)다. 절차 내용을 복사하지 않고 트리거 조건과 SSOT(single source of truth; 단일 진실 공급원) 링크만 담는다. 복사하면 SSOT를 위배하고 사본이 원본과 어긋난다. 다른 도구 사용자는 SSOT 절차 문서를 직접 읽으면 같은 효과를 얻는다.
+`.claude/skills/` 하위의 각 SKILL.md(ingest, unit-task-start, unit-task-finish, pr-create, pr-respond, document-authoring, norm-authoring, workspace-setup, workflow-wrapping)는 Claude Code가 절차 문서를 해당 시점에 로드하는 얇은 래퍼(thin wrapper)다. 절차 내용을 복사하지 않고 트리거 조건과 SSOT(single source of truth; 단일 진실 공급원) 링크만 담는다. 복사하면 SSOT를 위배하고 사본이 원본과 어긋난다.
 
-`.claude/agents/` 하위의 서브에이전트 정의도 같은 원칙을 따른다. 역할 정의 원본(상류 역할은 [agent-roles.md](agent-roles.md)가 링크하는 역할별 문서, 인스턴스 역할은 루트 `AGENTS.md`가 링크하는 낱개 문서)을 읽고 따르라는 지시, 도구별 제한, 호출 판단용 역할 요약(description)만 담고, 점검 항목이나 절차를 옮겨 적지 않는다 - 옮겨 적은 사본은 원본이 바뀔 때 어긋나며, 실제로 실행되는 것은 사본이다.
+`.agents/skills/`는 Codex가 레포 범위 스킬로 읽는 폴더다 (ref: [Codex build skills](https://learn.chatgpt.com/docs/build-skills), 조회 2026-11-26). 여기에는 `.claude/skills/`와 같은 이름의 폴더에 같은 SKILL.md를 둔다. 두 폴더의 SKILL.md는 같은 커밋에서 함께 고친다. 형식 감사가 `.claude/skills/`의 SKILL.md마다 `.agents/skills/`에 같은 내용의 사본이 있는지 확인하며, `.agents/skills/`에만 둔 Codex 전용 스킬은 허용한다. 이 두 스킬 폴더를 읽지 않는 도구의 사용자는 SSOT 절차 문서를 직접 읽으면 같은 효과를 얻는다.
+
+`.claude/agents/` 하위의 Claude Code 서브에이전트 정의도 얇은 래퍼 원칙을 따른다. 역할 정의 원본(상류 역할은 [agent-roles.md](agent-roles.md)가 링크하는 역할별 문서, 인스턴스 역할은 루트 `AGENTS.md`가 링크하는 낱개 문서)을 읽고 따르라는 지시, 도구별 제한, 호출 판단용 역할 요약(description)만 담고, 점검 항목이나 절차를 옮겨 적지 않는다 - 옮겨 적은 사본은 원본이 바뀔 때 어긋나며, 실제로 실행되는 것은 사본이다.
 
 ## 세션 시작 훅
 

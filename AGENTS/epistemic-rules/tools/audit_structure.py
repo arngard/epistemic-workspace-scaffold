@@ -2,10 +2,13 @@
 
 공용 인프라는 _audit_core, 오케스트레이션은 audit.py.
 """
+import os
 import re
+import stat
 from pathlib import Path
 
 from _audit_core import *  # noqa: F401,F403 - Finding, 상수, 공용 헬퍼
+from _bundle_core import file_digest
 from _index_core import (
     IndexFormatError, front_matter_description, sequential_tops, under_sequential)
 
@@ -239,6 +242,149 @@ def check_claude_pointers(root: Path) -> list[Finding]:
                 WARNING, "claude-pointer", rel,
                 f"CLAUDE.md 내용이 {CLAUDE_POINTER}가 아님",
             ))
+    return out
+
+
+CLAUDE_SKILLS = (".claude", "skills")
+CODEX_SKILLS = (".agents", "skills")
+SKILL_FILE = "SKILL.md"
+
+# _lstat_kind의 결과. BLOCKED는 발견을 이미 낸 경로다(링크, 정션, 읽기 실패).
+_MISSING, _DIR, _FILE, _OTHER, _BLOCKED = "missing", "dir", "file", "other", "blocked"
+# 윈도우 정션의 재분석 태그. stat 모듈은 이 상수를 윈도우에서만 두므로 값을 함께 둔다.
+IO_REPARSE_TAG_MOUNT_POINT = getattr(stat, "IO_REPARSE_TAG_MOUNT_POINT", 0xA0000003)
+
+
+def _is_link(st: os.stat_result) -> bool:
+    """lstat 결과가 심볼릭 링크나 윈도우 정션(마운트 지점 재분석 지점)이면 참."""
+    if stat.S_ISLNK(st.st_mode):
+        return True
+    if getattr(st, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+        tag = getattr(st, "st_reparse_tag", None)
+        return tag is None or tag == IO_REPARSE_TAG_MOUNT_POINT
+    return False
+
+
+def _skill_finding(rel: str, message: str) -> Finding:
+    return Finding(VIOLATION, "codex-skill", rel, message)
+
+
+def _lstat_kind(root: Path, path: Path, out: "list[Finding]") -> str:
+    """링크를 따라가지 않고 path의 종류를 가린다. 링크와 읽기 실패는 위반을 더한다."""
+    rel = path.relative_to(root).as_posix()
+    try:
+        st = os.lstat(path)
+    except FileNotFoundError:
+        return _MISSING
+    except OSError as e:
+        out.append(_skill_finding(rel, f"읽기 실패 ({type(e).__name__})"))
+        return _BLOCKED
+    if _is_link(st):
+        out.append(_skill_finding(rel, "심볼릭 링크나 정션. 따라가지 않으므로 실제 폴더나 파일로 둔다"))
+        return _BLOCKED
+    if stat.S_ISDIR(st.st_mode):
+        return _DIR
+    if stat.S_ISREG(st.st_mode):
+        return _FILE
+    return _OTHER
+
+
+def _walk_dirs(root: Path, parts: "tuple[str, ...]", out: "list[Finding]") -> str:
+    """root 아래 parts 경로를 위에서부터 한 단계씩 lstat으로 내려간다.
+
+    모든 단계가 폴더면 _DIR, 어느 단계가 없거나 폴더가 아니면 _MISSING,
+    링크나 정션이나 읽기 실패를 만나면 그 단계의 위반을 더하고 _BLOCKED를
+    돌려준다. 막힌 단계 아래로는 내려가지 않는다.
+    """
+    path = root
+    for part in parts:
+        path = path / part
+        kind = _lstat_kind(root, path, out)
+        if kind == _BLOCKED:
+            return _BLOCKED
+        if kind != _DIR:
+            return _MISSING
+    return _DIR
+
+
+def _entries(root: Path, d: Path, out: "list[Finding]") -> "list[str]":
+    """폴더 d의 엔트리 이름. 나열에 실패하면 위반을 더하고 빈 목록."""
+    try:
+        return sorted(os.listdir(d))
+    except OSError as e:
+        out.append(_skill_finding(d.relative_to(root).as_posix(), f"읽기 실패 ({type(e).__name__})"))
+        return []
+
+
+def _skill_digest(root: Path, path: Path, out: "list[Finding]") -> "str | None":
+    """SKILL.md의 CRLF 정규화 해시. 없으면 _MISSING. 일반 파일이 아니거나 읽지 못하면 위반을 더하고 None."""
+    kind = _lstat_kind(root, path, out)
+    if kind == _MISSING:
+        return _MISSING  # 목록 조회 뒤 사라진 파일. 호출부가 없음으로 다룬다
+    if kind == _BLOCKED:
+        return None
+    rel = path.relative_to(root).as_posix()
+    if kind != _FILE:
+        out.append(_skill_finding(rel, f"{SKILL_FILE}이 일반 파일이 아님"))
+        return None
+    try:
+        return file_digest(path)
+    except OSError as e:
+        out.append(_skill_finding(rel, f"읽기 실패 ({type(e).__name__})"))
+        return None
+
+
+def check_codex_skill_mirror(root: Path) -> list[Finding]:
+    """레포 루트 .claude/skills의 SKILL.md마다 .agents/skills에 같은 사본이 있는지 검사 (위반).
+
+    Claude Code는 .claude/skills를, Codex는 .agents/skills를 레포 범위 스킬로
+    읽는다. .claude/skills/<이름>/SKILL.md마다 .agents/skills/<이름>/SKILL.md가
+    있고 내용(CRLF를 LF로 바꾼 바이트, 묶음 해시와 같은 정규화)이 같아야 한다.
+    .agents/skills에만 있는 스킬은 허용한다. .claude/skills가 없으면 볼 것이 없다.
+    경로 단계(.claude, .agents, skills, 스킬 폴더, SKILL.md)의 심볼릭 링크와
+    윈도우 정션은 따라가지 않고 그 경로의 위반으로 낸다. SKILL.md가 일반 파일이
+    아니거나 읽기에 실패해도 감사를 멈추지 않고 그 경로의 위반으로 낸다.
+    이름 대조는 디렉토리 엔트리끼리 한다. 대소문자를 무시하는 파일시스템에서도
+    이름이 다르면 사본 없음이다.
+    """
+    out: list[Finding] = []
+    if _walk_dirs(root, CLAUDE_SKILLS, out) != _DIR:
+        return out
+    sources: "list[tuple[str, str]]" = []
+    for name in _entries(root, root.joinpath(*CLAUDE_SKILLS), out):
+        if _walk_dirs(root, CLAUDE_SKILLS + (name,), out) != _DIR:
+            continue
+        if SKILL_FILE not in _entries(root, root.joinpath(*CLAUDE_SKILLS, name), out):
+            continue
+        digest = _skill_digest(root, root.joinpath(*CLAUDE_SKILLS, name, SKILL_FILE), out)
+        if digest is not None and digest != _MISSING:
+            sources.append((name, digest))
+    if not sources:
+        return out
+
+    dst_state = _walk_dirs(root, CODEX_SKILLS, out)
+    if dst_state == _BLOCKED:
+        return out  # .agents나 skills를 따라가지 않으므로 사본을 볼 수 없다
+    dst_names = set(_entries(root, root.joinpath(*CODEX_SKILLS), out)) if dst_state == _DIR else set()
+    for name, digest in sources:
+        rel = "/".join(CODEX_SKILLS + (name, SKILL_FILE))
+        source_rel = "/".join(CLAUDE_SKILLS + (name, SKILL_FILE))
+        missing = _skill_finding(rel, f"Codex 스킬 사본 없음. {source_rel}과 같은 내용으로 둔다")
+        if name not in dst_names:
+            out.append(missing)
+            continue
+        state = _walk_dirs(root, CODEX_SKILLS + (name,), out)
+        if state == _BLOCKED:
+            continue
+        copy = root.joinpath(*CODEX_SKILLS, name, SKILL_FILE)
+        if state == _MISSING or SKILL_FILE not in _entries(root, copy.parent, out):
+            out.append(missing)
+            continue
+        copy_digest = _skill_digest(root, copy, out)
+        if copy_digest == _MISSING:
+            out.append(missing)
+        elif copy_digest is not None and copy_digest != digest:
+            out.append(_skill_finding(rel, f"내용이 {source_rel}과 다름"))
     return out
 
 

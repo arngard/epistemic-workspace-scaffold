@@ -21,7 +21,7 @@ WORKLOG_DIR = "worklog"
 # 아래 두 목록이나 git 무시 경로의 처리(git_ignored_paths)를 바꾸면 writing-style.md
 # "도구 전용 설정 파일 예외"의 도구 전용 파일과 대상 밖 목록도 함께 고친다.
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
-EXEMPT_DIRS = {".git", ".claude", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
+EXEMPT_DIRS = {".git", ".claude", ".agents", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
 
 # 폴더 디스크립터 파일명. 예외로 정한 폴더를 뺀 모든 폴더가 이 파일을 가진다 (folder-structure.md
 # "폴더 구조와 디스크립터"). 같은 폴더의 CLAUDE.md가 @AGENTS.md로 가져온다.
