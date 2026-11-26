@@ -43,6 +43,17 @@ class LinkCaseTest(TargetCase):
         self.write("a.md", "[t](Docs/Target.md)\n")
         self.assertEqual(self.found(check_links, "a.md"), [])
 
+    @unittest.skipIf(os.name != "nt", "윈도우 경로 길이 제한(MAX_PATH)")
+    def test_long_unfolded_path_still_found(self):
+        # 접은 경로는 짧고 접지 않은 경로만 260자를 넘는다.
+        deep = "/".join(["d" * 40] * 3)
+        target = "../../../" + "./" * 60 + "Docs/Target.md"
+        rel = deep + "/a.md"
+        self.write(rel, f"[t]({target})\n@{target}\n")
+        self.assertGreater(len(os.path.join(str(self.root / deep), target)), 260)
+        self.assertEqual(self.found(check_links, rel), [])
+        self.assertEqual(self.found(check_imports, rel), [])
+
     def test_case_mismatch_link_is_violation(self):
         self.write("a.md", "[t](docs/target.md)\n")
         got = self.found(check_links, "a.md")
