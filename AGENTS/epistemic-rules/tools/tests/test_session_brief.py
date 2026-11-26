@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import session_brief  # noqa: E402
 
 from session_brief import (  # noqa: E402
-    MARKER, MAX_CHARS, MAX_DOCS_PER_MERGE, doc_summary, main, merge_lines, origin_main_state,
-    parse_audit, pending_references, recent_merges, render, unmerged_branches,
+    MARKER, MAX_CHARS, MAX_DOCS_PER_MERGE, main, merge_lines, origin_main_state,
+    parse_audit, pending_references, recent_merges, render, summarize, unmerged_branches,
 )
 
 
@@ -92,26 +92,18 @@ class TempRepo(TempDir):
         git(self.root, "merge", "-q", "--no-ff", "-m", subject, branch)
 
 
-class DocSummaryTest(TempDir):
+class DocSummaryTest(unittest.TestCase):
     def test_description_preferred(self):
-        self.write("a.md", "---\ndescription: 요약 한 줄\n---\n\n# 제목\n")
-        self.assertEqual(doc_summary(self.root / "a.md"), "요약 한 줄")
+        self.assertEqual(summarize("---\ndescription: 요약 한 줄\n---\n\n# 제목\n"), "요약 한 줄")
 
     def test_heading_fallback(self):
-        self.write("b.md", "---\ntags: [x]\n---\n\n# 제목만 있다\n")
-        self.assertEqual(doc_summary(self.root / "b.md"), "제목만 있다")
+        self.assertEqual(summarize("---\ntags: [x]\n---\n\n# 제목만 있다\n"), "제목만 있다")
 
     def test_crlf_front_matter(self):
-        crlf = "---\r\ndescription: 줄바꿈 CRLF\r\n---\r\n"
-        (self.root / "d.md").write_bytes(crlf.encode("utf-8"))
-        self.assertEqual(doc_summary(self.root / "d.md"), "줄바꿈 CRLF")
-
-    def test_missing_file(self):
-        self.assertIsNone(doc_summary(self.root / "none.md"))
+        self.assertEqual(summarize("---\r\ndescription: 줄바꿈 CRLF\r\n---\r\n"), "줄바꿈 CRLF")
 
     def test_long_summary_truncated(self):
-        self.write("c.md", "---\ndescription: " + "가" * 500 + "\n---\n")
-        self.assertLessEqual(len(doc_summary(self.root / "c.md")), 160)
+        self.assertLessEqual(len(summarize("---\ndescription: " + "가" * 500 + "\n---\n")), 160)
 
 
 class RecentMergesTest(TempRepo):
@@ -144,16 +136,53 @@ class RecentMergesTest(TempRepo):
         files = {f"many/d{i}.md": f"# 문서 {i}\n" for i in range(MAX_DOCS_PER_MERGE + 5)}
         self.merge_branch("docs/many", files, "Merge many")
         calls = []
-        original = session_brief.main_doc_summary
+        original = session_brief.main_doc_summaries
 
-        def counting(root, rel):
-            calls.append(rel)
-            return original(root, rel)
+        def counting(root, rels, offline=False):
+            calls.append(list(rels))
+            return original(root, rels, offline)
 
-        with mock.patch.object(session_brief, "main_doc_summary", counting):
+        with mock.patch.object(session_brief, "main_doc_summaries", counting):
             docs = recent_merges(self.root, 1)[0][2]
         self.assertEqual(len(docs), MAX_DOCS_PER_MERGE + 5)
-        self.assertEqual(len(calls), MAX_DOCS_PER_MERGE)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(calls[0]), MAX_DOCS_PER_MERGE)
+
+    def test_present_and_missing_docs_read_in_one_git_call(self):
+        """공백, 한글이 든 경로와 여러 바이트 글자, CRLF 본문, 사이에 낀 지운 문서를 한 번에 읽는다."""
+        self.merge_branch("docs/a", {"b 지움.md": "# 곧 지운다\n"}, "Merge a")
+        git(self.root, "checkout", "-q", "-b", "docs/b")
+        git(self.root, "rm", "-q", "b 지움.md")
+        self.write("a 한글 폴더/첫 문서.md", "---\ndescription: 첫 요약 가나다\n---\n\n본문 " + "한" * 300 + "\n")
+        (self.root / "c 문서.md").write_bytes("---\r\ndescription: 셋째 CRLF\r\n---\r\n".encode("utf-8"))
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "mix")
+        git(self.root, "checkout", "-q", "main")
+        git(self.root, "merge", "-q", "--no-ff", "-m", "Merge b", "docs/b")
+        self.merge_branch("docs/d", {"d.md": "# 넷째\n"}, "Merge d")
+        reads = []
+        real_popen = subprocess.Popen
+
+        def counting(cmd, *args, **kwargs):
+            if "show" in cmd or "cat-file" in cmd:
+                reads.append(cmd)
+            return real_popen(cmd, *args, **kwargs)
+
+        # subprocess.run도 안에서 Popen을 부르므로 git show와 cat-file 호출을 모두 센다.
+        with mock.patch.object(session_brief.subprocess, "Popen", counting):
+            merges = recent_merges(self.root, 2)
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(merges[0][2], [("d.md", "넷째")])
+        self.assertEqual(merges[1][2], [
+            ("a 한글 폴더/첫 문서.md", "첫 요약 가나다"),
+            ("b 지움.md", None),
+            ("c 문서.md", "셋째 CRLF"),
+        ])
+
+    def test_batch_failure_reported_as_collection_failure(self):
+        self.merge_branch("docs/x", {"x.md": "# x\n"}, "Merge x")
+        with mock.patch.object(session_brief, "main_doc_summaries", return_value=None):
+            self.assertIsNone(recent_merges(self.root, 1))
 
     def test_docs_per_merge_capped(self):
         docs = [(f"d{i}.md", "s") for i in range(MAX_DOCS_PER_MERGE + 3)]
@@ -332,6 +361,15 @@ class MainTest(TempRepo):
         _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
         self.assertLess(text.index("## 의미 감사 트리거"), text.index("## main의 최근 머지"))
 
+    def test_no_fetch_passed_to_doc_lookup(self):
+        self.merge_branch("docs/x", {"x.md": "# x\n"}, "Merge x")
+        original = session_brief.main_doc_summaries
+        for argv, offline in ((["--no-fetch"], True), ([], False)):
+            with mock.patch.object(session_brief, "main_doc_summaries", wraps=original) as summaries:
+                _, text = run_main(str(self.root), "--no-audit", *argv)
+            self.assertEqual(summaries.call_args.args[2], offline)
+            self.assertIn("  - x.md - x", text)
+
     def test_missing_main_reported_not_empty(self):
         git(self.root, "branch", "-m", "main", "trunk")
         _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
@@ -356,6 +394,346 @@ class MainTest(TempRepo):
     def test_usage_error(self):
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(main([str(self.root / "없는 폴더")]), 2)
+
+
+def ext_command(*argv):
+    """git ext:: 원격 주소. 인자 사이는 공백, 인자 안의 공백과 %는 %로 이스케이프한다."""
+    return "ext::" + " ".join(a.replace("%", "%%").replace(" ", "% ") for a in argv)
+
+
+class FetchTimeoutTest(TempRepo):
+    def test_slow_remote_cut_at_timeout(self):
+        # 원격 도우미가 출력 없이 오래 머무는 원격. 상한에 끊겨야 한다.
+        git(self.root, "config", "protocol.ext.allow", "always")
+        git(self.root, "remote", "add", "origin", ext_command(sys.executable, "-c", "import time; time.sleep(8)"))
+        started = time.monotonic()
+        with mock.patch.object(session_brief, "FETCH_TIMEOUT", 1):
+            line = session_brief.fetch(self.root)
+        self.assertLess(time.monotonic() - started, 5)
+        self.assertIn("1초 초과", line)
+
+
+FAKE_SEMANTIC = "print('미충족: 시험')\n"
+
+
+class AuditOverlapTest(TempRepo):
+    """형식 감사를 다른 단계와 겹쳐 돌리고, 제한 시간에 자식 트리까지 정리한다."""
+
+    def setUp(self):
+        super().setUp()
+        tools = tempfile.TemporaryDirectory()
+        self.addCleanup(tools.cleanup)
+        self.tools = Path(tools.name).resolve()
+        (self.tools / "check_semantic_audit.py").write_text(FAKE_SEMANTIC, encoding="utf-8")
+        patcher = mock.patch.object(session_brief, "TOOLS_DIR", self.tools)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def fake_audit(self, body):
+        (self.tools / "audit.py").write_text(body, encoding="utf-8")
+
+    def test_audit_overlaps_later_steps(self):
+        # 감사 3초, 확장 1.5초, 의미 감사 판정 1.5초. 감사가 앞뒤 단계와 모두 겹쳐야 4초 안에 끝난다.
+        self.fake_audit("import time\ntime.sleep(3)\nprint('감사 완료: 위반 0건, 경고 0건 (x)')\n")
+        (self.tools / "check_semantic_audit.py").write_text("import time\ntime.sleep(1.5)\n" + FAKE_SEMANTIC, encoding="utf-8")
+        self.write("AGENTS/session-brief/slow.py", "import time\ntime.sleep(1.5)\nprint('확장 끝')\n")
+        started = time.monotonic()
+        _, text = run_main(str(self.root), "--no-fetch")
+        self.assertLess(time.monotonic() - started, 4.2)
+        self.assertIn("## 의미 감사 트리거\n미충족: 시험", text)
+        self.assertIn("## 형식 감사\n감사 완료: 위반 0건, 경고 0건 (x)", text)
+        self.assertIn("확장 끝", text)
+        self.assertLess(text.index("## 확장: slow"), text.index("## 형식 감사"))
+        self.assertLess(text.index("## 형식 감사"), text.index("## 의미 감사 트리거"))
+
+    def test_audit_timeout_kills_child_tree(self):
+        marker = self.root.parent / (self.root.name + "-alive")
+        self.addCleanup(lambda: marker.exists() and marker.unlink())
+        # 감사가 띄운 자식은 2초 뒤 표지 파일을 만든다. 제한 시간에 함께 정리되면 파일이 생기지 않는다.
+        self.fake_audit(
+            "import subprocess, sys, tempfile, time\n"
+            "code = 'import pathlib, sys, time; time.sleep(2); pathlib.Path(sys.argv[1]).write_text(\"x\")'\n"
+            f"subprocess.Popen([sys.executable, '-c', code, {str(marker)!r}], cwd=tempfile.gettempdir())\n"
+            "time.sleep(30)\n"
+        )
+        started = time.monotonic()
+        with mock.patch.object(session_brief, "AUDIT_TIMEOUT", 1):
+            _, text = run_main(str(self.root), "--no-fetch")
+        self.assertLess(time.monotonic() - started, 6)
+        self.assertIn("audit.py가 1초 안에 끝나지 않았다", text)
+        time.sleep(max(0.0, 3.5 - (time.monotonic() - started)))
+        self.assertFalse(marker.exists(), "시간 초과 뒤에도 감사의 자식 프로세스가 남았다")
+
+    def test_audit_failure_output_kept(self):
+        self.fake_audit("import sys\nsys.stderr.write('Traceback 시험\\n')\nsys.exit(3)\n")
+        _, text = run_main(str(self.root), "--no-fetch")
+        self.assertIn("audit.py 종료 코드 3, 요약 줄을 찾지 못했다", text)
+
+    def test_finished_result_accepted_when_collected_after_timeout(self):
+        # 제한 시간은 거둘 때 적용한다. 그 전에 이미 끝났으면 늦게 거둬도 정상 결과다.
+        self.fake_audit("print('감사 완료: 위반 0건, 경고 0건 (x)')\n")
+        run = session_brief.ToolRun("audit.py", self.root, 0.5)
+        deadline = time.monotonic() + 10
+        while run.run.proc.poll() is None and time.monotonic() < deadline:
+            time.sleep(0.05)
+        time.sleep(max(0.0, 0.6 - (time.monotonic() - run.run.started)))
+        self.assertEqual(run.result(), (0, "감사 완료: 위반 0건, 경고 0건 (x)\n"))
+
+    def test_streams_decoded_separately_with_newlines_normalized(self):
+        # stdout 끝과 stderr 앞에 나뉜 바이트가 한 글자(€)로 합쳐지지 않고, CRLF는 LF가 된다.
+        self.fake_audit(
+            "import sys\n"
+            "sys.stdout.buffer.write(b'out\\r\\n\\xe2\\x82')\n"
+            "sys.stderr.buffer.write(b'\\xac err\\r\\n')\n"
+        )
+        code, text = session_brief.run_tool("audit.py", self.root, 30)
+        self.assertEqual(code, 0)
+        self.assertNotIn("\r", text)
+        self.assertNotIn("€", text)
+        self.assertTrue(text.startswith("out\n"))
+        self.assertTrue(text.endswith(" err\n"))
+
+
+class WorkingFolderPathTest(TempRepo):
+    """요약의 규범 문서와 감사 위반 경로를 작업 폴더 기준으로 적는다."""
+
+    def chdir(self, path):
+        old = os.getcwd()
+        os.chdir(path)
+        self.addCleanup(os.chdir, old)
+
+    def brief(self):
+        rule = self.root / "AGENTS" / "epistemic-rules" / "session-boundaries.md"
+        with mock.patch.object(session_brief, "RULE_DOC", rule):
+            return render([("절", ["x"])], self.root)
+
+    def test_container_folder_prefixes_repo(self):
+        self.chdir(self.root.parent)
+        self.assertEqual(session_brief.cwd_prefix(self.root), self.root.name + "/")
+        self.assertIn(f"\n{self.root.name}/AGENTS/epistemic-rules/session-boundaries.md \"세션 시작\"", self.brief())
+
+    def test_inside_repo_unchanged(self):
+        sub = self.root / "sub"
+        sub.mkdir()
+        for cwd in (self.root, sub):
+            self.chdir(cwd)
+            self.assertEqual(session_brief.cwd_prefix(self.root), "")
+            self.assertIn("\nAGENTS/epistemic-rules/session-boundaries.md \"세션 시작\"", self.brief())
+
+    def test_unrelated_folder_unchanged(self):
+        other = tempfile.TemporaryDirectory()
+        self.addCleanup(other.cleanup)
+        self.chdir(other.name)
+        self.assertEqual(session_brief.cwd_prefix(self.root), "")
+        self.assertIn("\nAGENTS/epistemic-rules/session-boundaries.md \"세션 시작\"", self.brief())
+
+    def test_relpath_failure_falls_back_to_repo(self):
+        self.chdir(self.root.parent)
+        with mock.patch.object(session_brief.os.path, "relpath", side_effect=ValueError("drive")):
+            self.assertEqual(session_brief.cwd_prefix(self.root), "")
+
+    def test_audit_paths_prefixed_keeping_line_format(self):
+        out = (
+            "VIOLATION [link] a b/c.md: 깨진 링크: x.md\n"
+            "VIOLATION [ext:x] .: 레포 전체\n"
+            "WARNING   [index] reference/INDEX.yaml: 대상 자료가 없다\n"
+            "\n감사 완료: 위반 2건, 경고 1건 (/x)\n"
+        )
+        self.assertEqual(parse_audit(1, out, "repo/"), [
+            "감사 완료: 위반 2건, 경고 1건 (/x)",
+            "VIOLATION [link] repo/a b/c.md: 깨진 링크: x.md",
+            "VIOLATION [ext:x] repo: 레포 전체",
+            "WARNING   [index] repo/reference/INDEX.yaml: 대상 자료가 없다",
+        ])
+        self.assertEqual(parse_audit(1, out)[1], "VIOLATION [link] a b/c.md: 깨진 링크: x.md")
+
+    def test_dot_colon_file_name_is_ordinary_path(self):
+        out = "VIOLATION [link] .:notes.md: 깨진 링크\n감사 완료: 위반 1건, 경고 0건 (/x)\n"
+        self.assertEqual(parse_audit(1, out, "repo/")[1], "VIOLATION [link] repo/.:notes.md: 깨진 링크")
+
+
+class CatFileParseTest(unittest.TestCase):
+    """cat-file --batch 응답이 선언한 모양과 어긋나면 절 전체를 수집 실패(None)로 둔다.
+    missing이 있으면 ls-tree로 main 트리에 그 경로가 정말 없는지 본다."""
+
+    def fake(self, code, stdout):
+        run = mock.Mock()
+        run.wait.return_value = code
+        run.output.return_value = stdout
+        return run
+
+    def parse(self, stdout, rels=("a.md",), code=0, tree=None, tree_code=0, offline=False):
+        runs = [self.fake(code, stdout)]
+        if tree is not None:
+            runs.append(self.fake(tree_code, tree))
+        with mock.patch.object(session_brief, "Spawn", side_effect=runs) as spawn:
+            result = session_brief.main_doc_summaries(Path("."), list(rels), offline)
+        for run in runs:
+            run.close.assert_called()
+        return result, spawn
+
+    def test_well_formed(self):
+        body = "# 가\n".encode("utf-8")
+        result, spawn = self.parse(b"abc blob %d\n" % len(body) + body + b"\nrefs/heads/main:b c.md missing\n",
+                                   ("a.md", "b c.md"), tree=b"")
+        self.assertEqual(result, ["가", None])
+        cmd, _, env, timeout, data = spawn.call_args_list[0].args
+        self.assertEqual(cmd, ["git", "cat-file", "--batch"])
+        self.assertEqual(timeout, session_brief.GIT_TIMEOUT)
+        self.assertEqual(data, "refs/heads/main:a.md\nrefs/heads/main:b c.md\n".encode("utf-8"))
+        cmd, _, tree_env, timeout = spawn.call_args_list[1].args
+        self.assertEqual(cmd[-3:], ["refs/heads/main", "--", "b c.md"])
+        self.assertIn("ls-tree", cmd)
+        self.assertIs(tree_env, env)
+        self.assertEqual(timeout, session_brief.GIT_TIMEOUT)
+
+    def test_caller_lazy_fetch_setting_kept(self):
+        with mock.patch.dict(os.environ, {"GIT_NO_LAZY_FETCH": "1"}), \
+                mock.patch.dict(session_brief.GIT_ENV, {"GIT_NO_LAZY_FETCH": "1"}):
+            _, spawn = self.parse(b"refs/heads/main:a.md missing\n", tree=b"")
+            # GIT_ENV 객체를 그대로 넘기므로 패치가 풀리기 전에 확인한다.
+            self.assertEqual(spawn.call_args_list[0].args[2]["GIT_NO_LAZY_FETCH"], "1")
+
+    def test_offline_disables_lazy_fetch(self):
+        # 사용자 셸의 설정에 흔들리지 않게 초기 환경을 고정한다.
+        clean = {k: v for k, v in session_brief.GIT_ENV.items()
+                 if k not in ("GIT_NO_LAZY_FETCH", "GIT_ALLOW_PROTOCOL")}
+        with mock.patch.object(session_brief, "GIT_ENV", clean):
+            _, spawn = self.parse(b"abc blob 4\n# x\n\n", offline=True)
+            env = spawn.call_args.args[2]
+            self.assertEqual(env["GIT_NO_LAZY_FETCH"], "1")
+            self.assertEqual(env["GIT_ALLOW_PROTOCOL"], "")
+            self.assertNotIn("GIT_NO_LAZY_FETCH", session_brief.GIT_ENV)
+            self.assertNotIn("GIT_ALLOW_PROTOCOL", session_brief.GIT_ENV)
+
+    def test_no_missing_skips_ls_tree(self):
+        result, spawn = self.parse(b"abc blob 4\n# x\n\n")
+        self.assertEqual(result, ["x"])
+        self.assertEqual(spawn.call_count, 1)
+
+    def test_missing_but_in_main_tree_is_collection_failure(self):
+        # 부분 클론에서 지연 fetch가 꺼져 본문만 로컬에 없는 경우다.
+        self.assertIsNone(self.parse(b"refs/heads/main:a.md missing\n", tree=b"a.md\0")[0])
+
+    def test_ls_tree_failure_is_collection_failure(self):
+        self.assertIsNone(self.parse(b"refs/heads/main:a.md missing\n", tree=b"", tree_code=128)[0])
+        self.assertIsNone(self.parse(b"refs/heads/main:a.md missing\n", tree=b"", tree_code=None)[0])
+
+    def test_timeout_or_failure_is_collection_failure(self):
+        self.assertIsNone(self.parse(b"", code=None)[0])
+        self.assertIsNone(self.parse(b"", code=128)[0])
+
+    def test_short_body(self):
+        self.assertIsNone(self.parse(b"abc blob 10\n# x\n")[0])
+
+    def test_missing_separator(self):
+        self.assertIsNone(self.parse(b"abc blob 4\n# x\nX")[0])
+
+    def test_trailing_bytes(self):
+        self.assertIsNone(self.parse(b"abc blob 4\n# x\n\nextra\n")[0])
+
+
+class ProcessCleanupTest(unittest.TestCase):
+    """중단과 정리 실패에도 자식 트리를 정리하고, 정리가 요약을 붙잡거나 죽이지 않는다."""
+
+    def test_kill_tree_bounded_and_never_raises(self):
+        proc = mock.Mock(pid=12345)
+        proc.wait.side_effect = subprocess.TimeoutExpired("x", 5)
+        with mock.patch.object(session_brief.subprocess, "run", side_effect=subprocess.TimeoutExpired("taskkill", 5)) as run, \
+                mock.patch.object(session_brief.os, "killpg", side_effect=OSError, create=True):
+            session_brief.kill_tree(proc)
+        if os.name == "nt":
+            self.assertLessEqual(run.call_args.kwargs["timeout"], 5)
+        self.assertLessEqual(proc.wait.call_args.kwargs["timeout"], 5)
+
+    def interrupted_proc(self):
+        proc = mock.Mock(pid=12345)
+        proc.wait.side_effect = KeyboardInterrupt
+        proc.poll.return_value = None
+        return proc
+
+    def test_git_quiet_interrupt_kills_tree(self):
+        proc = self.interrupted_proc()
+        with mock.patch.object(session_brief.subprocess, "Popen", return_value=proc), \
+                mock.patch.object(session_brief, "kill_tree") as kill:
+            with self.assertRaises(KeyboardInterrupt):
+                session_brief.git_quiet(Path("."), "fetch", timeout=1)
+        kill.assert_called_with(proc)
+
+    def test_tool_run_interrupt_kills_tree(self):
+        proc = self.interrupted_proc()
+        with mock.patch.object(session_brief.subprocess, "Popen", return_value=proc), \
+                mock.patch.object(session_brief, "kill_tree") as kill:
+            run = session_brief.ToolRun("audit.py", Path("."), 1)
+            with self.assertRaises(KeyboardInterrupt):
+                run.result()
+        kill.assert_called_with(proc)
+
+    def test_close_twice_kills_tree_once(self):
+        proc = mock.Mock(pid=12345)
+        proc.poll.return_value = None
+        proc.wait.side_effect = subprocess.TimeoutExpired("x", 0)
+        with mock.patch.object(session_brief.subprocess, "Popen", return_value=proc), \
+                mock.patch.object(session_brief, "kill_tree") as kill:
+            run = session_brief.ToolRun("audit.py", Path("."), 0)
+            self.assertEqual(run.result()[0], -1)  # 시간 초과 정리 뒤 result의 finally가 close를 부른다.
+            run.close()  # main의 finally
+            run.close()
+        self.assertEqual(kill.call_count, 1)
+
+    def test_timeout_kills_tree_even_if_child_just_exited(self):
+        # 직접 자식이 시간 초과 직후 끝나도 그 하위 프로세스가 남을 수 있어 정리를 시도한다.
+        proc = mock.Mock(pid=12345)
+        proc.wait.side_effect = subprocess.TimeoutExpired("x", 0)
+        proc.poll.return_value = 0
+        with mock.patch.object(session_brief.subprocess, "Popen", return_value=proc), \
+                mock.patch.object(session_brief, "kill_tree") as kill:
+            run = session_brief.Spawn(["x"], None, {}, 0)
+            self.assertIsNone(run.wait())
+            run.close()
+        kill.assert_called_once_with(proc)
+
+    def test_git_quiet_discards_output_without_temp_files(self):
+        proc = mock.Mock(pid=12345)
+        proc.wait.return_value = 0
+        proc.poll.return_value = 0
+        with mock.patch.object(session_brief.tempfile, "TemporaryFile", side_effect=OSError("쓰기 불가")), \
+                mock.patch.object(session_brief.subprocess, "Popen", return_value=proc) as popen:
+            self.assertEqual(session_brief.git_quiet(Path("."), "fetch", timeout=1), 0)
+        self.assertIs(popen.call_args.kwargs["stdout"], subprocess.DEVNULL)
+        self.assertIs(popen.call_args.kwargs["stderr"], subprocess.DEVNULL)
+
+    def test_spawn_timeout_kills_tree(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        marker = Path(tmp.name) / "alive"
+        code = (
+            "import subprocess, sys, tempfile, time\n"
+            "child = 'import pathlib, sys, time; time.sleep(2); pathlib.Path(sys.argv[1]).write_text(\"x\")'\n"
+            f"subprocess.Popen([sys.executable, '-c', child, {str(marker)!r}], cwd=tempfile.gettempdir())\n"
+            "sys.stdin.read()\n"
+            "time.sleep(30)\n"
+        )
+        started = time.monotonic()
+        run = session_brief.Spawn([sys.executable, "-c", code], None, dict(os.environ), 1, b"input\n")
+        try:
+            self.assertIsNone(run.wait())
+        finally:
+            run.close()
+        self.assertLess(time.monotonic() - started, 6)
+        time.sleep(max(0.0, 3.5 - (time.monotonic() - started)))
+        self.assertFalse(marker.exists(), "시간 초과 뒤에도 자식 프로세스가 남았다")
+
+    def test_temp_file_failure_reported_and_first_file_closed(self):
+        first = tempfile.TemporaryFile()
+        self.addCleanup(first.close)
+        with mock.patch.object(session_brief.tempfile, "TemporaryFile", side_effect=[first, OSError("디스크")]), \
+                mock.patch.object(session_brief.subprocess, "Popen") as popen:
+            code, text = session_brief.ToolRun("audit.py", Path("."), 1).result()
+        self.assertEqual(code, -1)
+        self.assertIn("audit.py 실행 실패", text)
+        self.assertTrue(first.closed)
+        popen.assert_not_called()
 
 
 class ExtensionTest(TempRepo):
