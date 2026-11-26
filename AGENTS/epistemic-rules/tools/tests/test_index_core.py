@@ -20,8 +20,8 @@ from _index_core import (  # noqa: E402
     BYPRODUCT_NAMES, INDEX_DESC_LIMIT, INDEX_KEYS, REFERENCE_STATUSES,
     SELF_KEY, STRUCTURE_KEY, Entry, IndexFormatError, entry_paths,
     front_matter_description, index_dirs, is_byproduct, list_entries,
-    load_index_yaml, page_name, parse_scalar, quote_scalar, render_all,
-    render_pages, sequential_structure)
+    load_index_yaml, page_name, parse_scalar, render_all,
+    sequential_structure)
 from audit_links import (  # noqa: E402
     check_link_text, check_link_whitespace, check_links)
 from audit_structure import check_filename_portability  # noqa: E402
@@ -30,6 +30,15 @@ FM_DESC = "---\ndescription: 짧은 설명\n---\n"
 FM = "---\ndescription: 문서 설명\n---\n본문\n"
 FM_LONG_DESC = ("---\ndescription: "
                 + "가나다라마바사아자차" * 15 + "\n---\n")
+
+
+def render_pages(root, d):
+    """render_all이 폴더 d에 만드는 색인 쪽 내용 목록. 첫 원소가 INDEX.md다."""
+    pages = render_all(root)
+    out = []
+    while d / page_name(len(out) + 1) in pages:
+        out.append(pages[d / page_name(len(out) + 1)])
+    return out
 
 
 class IndexNameTest(unittest.TestCase):
@@ -114,38 +123,6 @@ class ScalarTest(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(parse_scalar("  "), "")
         self.assertEqual(parse_scalar('""'), "")
-
-
-class QuoteScalarTest(unittest.TestCase):
-    def test_plain_stays_plain(self):
-        self.assertEqual(quote_scalar("보고서 원문"), "보고서 원문")
-
-    def test_quotes_when_needed(self):
-        self.assertEqual(quote_scalar("a: b"), '"a: b"')
-        self.assertEqual(quote_scalar("[a](b)"), '"[a](b)"')
-        self.assertEqual(quote_scalar(""), '""')
-        self.assertEqual(quote_scalar(" a"), '" a"')
-        self.assertEqual(quote_scalar("- a"), '"- a"')
-        self.assertEqual(quote_scalar("a:"), '"a:"')
-
-    def test_roundtrip(self):
-        values = ["x", 'a "b" c', "a\\b", "a: b", "a #b", "`YYYY/` 아래",
-                  "", " 앞공백", "뒤공백 ", "- a", "? a", "a:", "'a'",
-                  "[a]", "한글: 값", "100%", "@x", "a\\", '"']
-        for v in values:
-            self.assertEqual(parse_scalar(quote_scalar(v)), v, repr(v))
-
-    def test_quotes_non_string(self):
-        self.assertEqual(quote_scalar("null"), '"null"')
-        self.assertEqual(quote_scalar("12"), '"12"')
-        for v in ("null", "12", "~", "yes", "1e3", ",a", ".inf", "0x1F"):
-            self.assertEqual(parse_scalar(quote_scalar(v)), v, v)
-
-    def test_rejects_unrepresentable(self):
-        for v in ("a\nb", "a\rb", "a\tb", "a\x01b", "a\u2028b",
-                  "a\u2029b", "a\x85b"):
-            with self.assertRaises(IndexFormatError):
-                quote_scalar(v)
 
 
 class ErrorAttrTest(unittest.TestCase):

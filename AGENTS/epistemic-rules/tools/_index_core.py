@@ -25,7 +25,7 @@ INDEX.yaml:
   아니고 AGENTS.md가 있는 폴더다. 중첩 레포 안, reference/ 하위 폴더,
   순차 분류 최상위로 선언된 폴더의 자손은 들지 않는다.
 - 항목은 폴더 직속 항목에서 점 파일, 운영 파일(AGENTS.md, CLAUDE.md,
-  AGENTS/, 색인 쪽 파일, INDEX.yaml), EXEMPT_DIRS 이름, 심볼릭 링크,
+  AGENTS/, 색인 쪽 파일, INDEX.yaml), EXEMPT_DIRS 이름, 심볼릭 링크와 정션,
   OS와 편집기 부산물을 뺀 전부다. .git이 파일인 중첩 레포(서브모듈, 연결된
   worktree)는 항목 하나로만 보이고, .git이 폴더인 내장 클론은 항목에서 빠진다.
 - 이름은 NFC로 바꾸고 코드 포인트 순으로 정렬한다. 링크 대상은 공백,
@@ -51,7 +51,7 @@ from typing import Optional
 from _audit_core import (
     DESCRIPTOR_NAME, EXEMPT_DIRS, FRONT_MATTER_RE, INDEX_NAME,
     INDEX_YAML_NAME, NORMS_DIR_NAME, REFERENCE_DIR, SIZE_LIMIT_NODE,
-    content_dirs, in_norms_dir, is_index_file, nfc, read, text_size)
+    content_dirs, in_norms_dir, is_index_file, is_link, nfc, read, text_size)
 
 # 항목 필드로 허용하는 키.
 INDEX_KEYS = ("description", "status")
@@ -157,24 +157,6 @@ def parse_scalar(raw: str) -> str:
     if _NON_STRING_RE.match(text):
         raise IndexFormatError("따옴표 없는 값이 문자열이 아닌 값으로 읽힌다")
     return text
-
-
-def quote_scalar(value: str) -> str:
-    """값을 부분집합 규칙을 지키는 YAML 스칼라 문자열로 쓴다.
-
-    따옴표 없이 읽히는 값은 그대로, 아니면 큰따옴표로 감싼다. 숫자나 null처럼
-    읽히는 값도 감싼다. 탭, 줄바꿈 등 제어 문자와 줄 구분자를 담은 값은
-    쓸 수 없어 IndexFormatError다.
-    """
-    if _has_control(value):
-        raise IndexFormatError("제어 문자가 든 값은 쓸 수 없다")
-    if value == value.strip() and value:
-        try:
-            if parse_scalar(value) == value and not value.startswith('"'):
-                return value
-        except IndexFormatError:
-            pass
-    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
 def front_matter_description(path: Path) -> "Optional[str]":
@@ -453,7 +435,7 @@ def _entry_children(d: Path) -> "list[Path]":
         name = p.name
         if name.startswith(".") or name in EXEMPT_DIRS:
             continue
-        if p.is_symlink():
+        if is_link(p):  # 심볼릭 링크와 윈도우 정션
             continue
         if name in OPERATION_FILES or is_index_file(name):
             continue
@@ -603,6 +585,11 @@ def _page(blocks: "list[str]") -> str:
 
 
 def _render(root: Path, d: Path, indexed: "set[Path]") -> "list[str]":
+    """폴더 d의 색인 쪽 내용 목록. 첫 원소가 INDEX.md다.
+
+    순차 분류 최상위로 선언된 폴더는 머리말, 제목, 구성 설명 한 문단의
+    한 쪽만 내고 항목을 나열하지 않는다.
+    """
     structure = sequential_structure(d)
     if structure is not None:
         return [_page([INDEX_HEADER, _title(root, d, 1), structure])]
@@ -632,15 +619,6 @@ def _render(root: Path, d: Path, indexed: "set[Path]") -> "list[str]":
         pages.append(_page(
             [INDEX_HEADER, _title(root, d, n), nav, "\n".join(group)]))
     return pages
-
-
-def render_pages(root: Path, d: Path) -> "list[str]":
-    """폴더 d의 색인 쪽 내용 목록. 첫 원소가 INDEX.md다.
-
-    순차 분류 최상위로 선언된 폴더는 머리말, 제목, 구성 설명 한 문단의
-    한 쪽만 내고 항목을 나열하지 않는다.
-    """
-    return _render(root, d, set(index_dirs(root)))
 
 
 def render_all(root: Path) -> "dict[Path, str]":

@@ -25,13 +25,13 @@ def check_front_matter(root: Path) -> list[Finding]:
             continue
         body = match.group(1)
         for field in ("date created", "date modified", "tags"):
-            if not re.search(rf"^{re.escape(field)}\s*:", body, re.MULTILINE):
+            if not re.search(field_key_pattern(field), body, re.MULTILINE):
                 out.append(Finding(VIOLATION, "front-matter", rel, f"필수 필드 누락 - {field}"))
         # 날짜 필드 값 형식 검증 - 필드 존재만 보면 잘못된 값이 통과하므로 값도
         # 검사한다. 필드가 있을 때만 값을 검사한다.
         dates = {}
         for field in ("date created", "date modified", "date closed"):
-            vm = re.search(rf"^{re.escape(field)}\s*:\s*(\S.*?)\s*$", body, re.MULTILINE)
+            vm = re.search(field_key_pattern(field) + r"\s*(\S.*?)\s*$", body, re.MULTILINE)
             if vm and not DATE_VALUE_RE.match(vm.group(1)):
                 out.append(Finding(
                     VIOLATION, "front-matter", rel,
@@ -52,7 +52,7 @@ def check_front_matter(root: Path) -> list[Finding]:
         dated = has_date_prefix(path) or any(
             DATE_PREFIX_RE.match(part) for part in path.relative_to(root).parts[:-1]
         )
-        if re.search(r"^date closed\s*:", body, re.MULTILINE) and not dated:
+        if re.search(field_key_pattern("date closed"), body, re.MULTILINE) and not dated:
             out.append(Finding(
                 VIOLATION, "temporality", rel,
                 "날짜 프리픽스 없는 문서에 date closed - 현재적 문서에는 종결 개념이 없다 (시간성 혼합)",
@@ -87,7 +87,7 @@ def check_strategy_fields(root: Path) -> list[Finding]:
             continue  # front matter 부재는 check_front_matter가 잡는다
         body = m.group(1)
         for field in STRATEGY_FIELDS:
-            if not re.search(rf"^{re.escape(field)}\s*:", body, re.MULTILINE):
+            if not re.search(field_key_pattern(field), body, re.MULTILINE):
                 out.append(Finding(
                     WARNING, "strategy", str(p.relative_to(root)),
                     f"전략 문서 추가 필수 속성 누락 - {field} (ref: strategy/AGENTS/epistemic-rules.md)",

@@ -7,6 +7,7 @@ Finding 데이터클래스, 상수, 공용 헬퍼(순회/읽기/링크 해석 �
 
 import os
 import re
+import stat
 import subprocess
 import sys
 import unicodedata
@@ -18,10 +19,14 @@ REFERENCE_DIR = "reference"
 IMPLEMENTATION_DIR = "implementation"
 WORKLOG_DIR = "worklog"
 # 도구 전용 파일은 front matter 면제 (ref: writing-style.md "도구 전용 설정 파일 예외"). SKILL.md는 자체 규격(name, description).
-# 아래 두 목록이나 git 무시 경로의 처리(git_ignored_paths)를 바꾸면 writing-style.md
-# "도구 전용 설정 파일 예외"의 도구 전용 파일과 대상 밖 목록도 함께 고친다.
+# 아래 두 목록, 점으로 시작하는 이름의 제외(is_exempt_name), git 무시 경로의 처리
+# (git_ignored_paths)를 바꾸면 writing-style.md "도구 전용 설정 파일 예외"의 도구
+# 전용 파일과 대상 밖 목록도 함께 고친다.
 EXEMPT_FILENAMES = {"CLAUDE.md", "copilot-instructions.md", "SKILL.md"}
+# 순회에서 빼는 폴더 이름. 점으로 시작하는 이름은 이 목록과 별개로 모두 빠진다.
 EXEMPT_DIRS = {".git", ".claude", ".agents", ".github", ".kiro", "node_modules", ".tmp", "__pycache__"}
+# 윈도우 정션의 재분석 태그. stat 모듈은 이 상수를 윈도우에서만 두므로 값을 함께 둔다.
+IO_REPARSE_TAG_MOUNT_POINT = getattr(stat, "IO_REPARSE_TAG_MOUNT_POINT", 0xA0000003)
 
 # 폴더 디스크립터 파일명. 예외로 정한 폴더를 뺀 모든 폴더가 이 파일을 가진다 (folder-structure.md
 # "폴더 구조와 디스크립터"). 같은 폴더의 CLAUDE.md가 @AGENTS.md로 가져온다.
@@ -103,6 +108,18 @@ WINDOWS_FORBIDDEN_RE = re.compile(r'[<>:"|?*\\\x00-\x1f]')
 WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {
     f"LPT{i}" for i in range(1, 10)
 }
+
+
+def field_key_pattern(field: str) -> str:
+    """front matter 줄 머리의 매핑 키 field를 찾는 정규식 문자열(re.MULTILINE으로 쓴다).
+
+    YAML처럼 콜론 뒤에 공백이나 줄 끝이 와야 키다. tags:[a]나
+    date created:2026-01-01은 YAML이 키가 아닌 한 덩어리 값으로 읽으므로
+    키로 보지 않는다. 필수 필드 검사와 태그 파서가 같은 규칙을 쓴다.
+    """
+    return rf"^{re.escape(field)}[ \t]*:(?=[ \t\r]|$)"
+
+
 # front matter 날짜 필드 값 형식 (yyyy-MM-dd). 필드 존재만 보면 잘못된 값이
 # 통과하므로 값도 검사한다.
 DATE_VALUE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -183,32 +200,70 @@ def text_size(text: str) -> int:
     return len(re.sub(r"\s", "", text))
 
 
-_nested_repo_cache: dict[Path, tuple[Path, ...]] = {}
+def is_exempt_name(name: str) -> bool:
+    """순회에서 빼는 이름이면 참: 점으로 시작하는 이름과 EXEMPT_DIRS 이름.
+
+    색인 항목(_index_core)과 상류 묶음 목록(_bundle_core)도 점으로 시작하는
+    이름을 빼므로, 감사도 같은 규칙을 써서 셋의 범위가 어긋나지 않게 한다.
+    추적하지 않는 편집기 폴더(.vscode 등) 하나로 감사 위반이 생기지 않는다.
+    """
+    return name.startswith(".") or name in EXEMPT_DIRS
 
 
-def nested_repo_dirs(root: Path) -> tuple[Path, ...]:
+def is_link_stat(st: os.stat_result) -> bool:
+    """lstat 결과가 심볼릭 링크나 윈도우 정션(마운트 지점 재분석 지점)이면 참."""
+    if stat.S_ISLNK(st.st_mode):
+        return True
+    if getattr(st, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
+        tag = getattr(st, "st_reparse_tag", None)
+        return tag is None or tag == IO_REPARSE_TAG_MOUNT_POINT
+    return False
+
+
+def is_link(path: Path) -> bool:
+    """path가 심볼릭 링크나 윈도우 정션이면 참. lstat에 실패하면 거짓.
+
+    Python 3.12 미만의 os.walk와 is_symlink()는 정션을 링크로 보지 않으므로
+    lstat의 재분석 태그로 가린다.
+    """
+    try:
+        st = os.lstat(path)
+    except OSError:
+        return False
+    return is_link_stat(st)
+
+
+_nested_repo_cache: "dict[tuple[Path, bool], tuple[Path, ...]]" = {}
+
+
+def nested_repo_dirs(root: Path, skip_dot: bool = True) -> tuple[Path, ...]:
     """루트 아래 중첩 git 레포(서브모듈, 내장 클론)의 최상위 폴더들.
 
     자체 .git(폴더 또는 파일)을 가진 폴더는 독립 워크스페이스이며 자기
     규약으로 별도 감사한다. 스캐폴드를 서브모듈로 품는 배치에서 감사가
     서브모듈 내부까지 이중 스캔하는 것을 막는다.
 
-    os.walk로 순회하며 EXEMPT_DIRS를 가지치기하고 중첩 레포를 발견하면 그
-    내부로 더 내려가지 않는다 - 대형 자식 트리 전체를 rglob으로 훑던 비용을
-    없앤다. followlinks=False로 심볼릭 링크를 따르지 않는다(루트 밖 탈출/순환
-    방지).
+    os.walk로 순회하며 순회에서 빼는 이름과 심볼릭 링크, 정션을 가지치기하고
+    중첩 레포를 발견하면 그 내부로 더 내려가지 않는다. 링크를 따르지 않아
+    루트 밖 탈출과 순환을 막는다. 빼는 이름은 순회(walk_paths)와 같은
+    skip_dot 정책을 따른다(참이면 is_exempt_name, 거짓이면 EXEMPT_DIRS만).
+    점 폴더 아래로 내려가는 순회도 그 안의 중첩 레포를 알아야 하기 때문이다.
+    결과는 루트와 정책별로 캐시한다.
     """
-    if root not in _nested_repo_cache:
+    key = (root, skip_dot)
+    if key not in _nested_repo_cache:
+        exempt = is_exempt_name if skip_dot else EXEMPT_DIRS.__contains__
         found: list[Path] = []
         for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
             d = Path(dirpath)
             has_git = ".git" in dirnames or ".git" in filenames
-            dirnames[:] = sorted(n for n in dirnames if n not in EXEMPT_DIRS)
+            dirnames[:] = sorted(
+                n for n in dirnames if not exempt(n) and not is_link(d / n))
             if d != root and has_git:
                 found.append(d)
                 dirnames[:] = []  # 중첩 레포 내부는 더 순회하지 않는다
-        _nested_repo_cache[root] = tuple(sorted(found))
-    return _nested_repo_cache[root]
+        _nested_repo_cache[key] = tuple(sorted(found))
+    return _nested_repo_cache[key]
 
 
 _ignored_cache: "dict[Path, frozenset[str]]" = {}
@@ -266,25 +321,31 @@ def is_git_ignored(root: Path, path: Path) -> bool:
     return False
 
 
-def in_nested_repo(root: Path, path: Path) -> bool:
+def in_nested_repo(root: Path, path: Path, skip_dot: bool = True) -> bool:
     return any(
-        path == repo or repo in path.parents for repo in nested_repo_dirs(root)
+        path == repo or repo in path.parents
+        for repo in nested_repo_dirs(root, skip_dot)
     )
 
 
-def is_excluded(root: Path, path: Path) -> bool:
-    """순회 공통 제외 판정 (iter_md_files, content_dirs, 이식성 검사 공유).
+def is_excluded(root: Path, path: Path, skip_dot: bool = True) -> bool:
+    """순회 공통 제외 판정 (walk_paths와 그 위의 순회, 묶음 목록 공유).
 
-    도구 전용 폴더(EXEMPT_DIRS) 하위, 중첩 git 레포 하위, 심볼릭 링크,
-    git이 무시하는 미추적 경로(is_git_ignored)는 제외한다. 카테고리별 추가 규칙(reference, implementation)은 각 호출부가
-    자기 책임으로 덧붙인다.
+    루트 상대 경로 성분에 순회에서 빼는 이름(is_exempt_name: 점으로 시작하는
+    이름과 EXEMPT_DIRS)이 있는 경로, 중첩 git 레포 하위, 심볼릭 링크와 정션,
+    git이 무시하는 미추적 경로(is_git_ignored)는 제외한다. skip_dot이 거짓이면
+    점으로 시작하는 이름은 EXEMPT_DIRS에 든 것만 뺀다. 링크 판정은 path
+    자신만 보므로 링크 아래로 내려가지 않는 일은 순회(walk_paths)가 맡는다.
+    카테고리별 추가 규칙(reference, implementation)은 각 호출부가 자기 책임으로
+    덧붙인다.
     """
     parts = path.relative_to(root).parts
-    if any(part in EXEMPT_DIRS for part in parts):
+    exempt = is_exempt_name if skip_dot else EXEMPT_DIRS.__contains__
+    if any(exempt(part) for part in parts):
         return True
-    if in_nested_repo(root, path):
+    if in_nested_repo(root, path, skip_dot):
         return True
-    if path.is_symlink():  # 심링크는 순회 대상에서 뺀다 (루트 밖 탈출/순환 방지)
+    if is_link(path):  # 링크와 정션은 순회 대상에서 뺀다 (루트 밖 탈출/순환 방지)
         return True
     if is_git_ignored(root, path):
         return True
@@ -320,6 +381,29 @@ def in_progress_dir(rel_posix: str, registered: "tuple[str, ...]") -> bool:
     return any(rel.startswith(d) for d in registered)
 
 
+def walk_paths(root: Path, skip_dot: bool = True) -> "list[Path]":
+    """root 아래에서 제외(is_excluded)되지 않은 폴더와 파일의 경로(정렬, root 자신 제외).
+
+    os.walk로 위에서부터 내려가며 제외된 폴더(점으로 시작하는 폴더와 도구 전용
+    폴더, 중첩 레포, 심볼릭 링크와 정션, git 무시 폴더)를 내려가기 전에
+    가지친다. 그 아래 항목은 열거하지 않는다. skip_dot은 is_excluded에 넘긴다.
+    """
+    found: "list[Path]" = []
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        d = Path(dirpath)
+        keep = []
+        for name in dirnames:
+            path = d / name
+            if is_excluded(root, path, skip_dot):
+                continue
+            keep.append(name)
+            found.append(path)
+        dirnames[:] = keep
+        found.extend(d / name for name in filenames
+                     if not is_excluded(root, d / name, skip_dot))
+    return sorted(found)
+
+
 def iter_md_files(root: Path):
     """규약 검사 대상 .md 순회.
 
@@ -333,12 +417,12 @@ def iter_md_files(root: Path):
     ...)은 감사 대상이다. 그 하위 폴더의 색인 쪽 파일은 대상이 아니다.
     reference/AGENTS.md가 등재한 진척 기록 폴더(registered_progress_dirs) 안의
     문서는 자료가 아니라 운영 파일이라 감사 대상이다.
-    도구 전용 폴더, 중첩 git 레포, 심링크 제외는 is_excluded가 담당한다.
+    순회와 제외는 walk_paths가 담당한다. 이름이 .md로 끝나는(대소문자 구분)
+    일반 파일만 낸다.
     """
-    ref_descriptor = (root / REFERENCE_DIR / DESCRIPTOR_NAME).resolve()
     progress = registered_progress_dirs(root)
-    for path in sorted(root.rglob("*.md")):
-        if is_excluded(root, path):
+    for path in walk_paths(root):
+        if not (path.name.endswith(".md") and path.is_file()):
             continue
         parts = path.relative_to(root).parts
         if (
@@ -348,7 +432,7 @@ def iter_md_files(root: Path):
             yield path
             continue
         descriptor = (
-            (parts[0] == REFERENCE_DIR and path.resolve() == ref_descriptor)
+            (parts[0] == REFERENCE_DIR and parts[1:] == (DESCRIPTOR_NAME,))
             or (parts[0] == IMPLEMENTATION_DIR and parts[1:] == (DESCRIPTOR_NAME,))
         )
         if in_material_content(root, path) and not descriptor:
@@ -475,30 +559,85 @@ def links_in(path: Path) -> list[str]:
     return LINK_RE.findall(text)
 
 
-def resolve_link(source: Path, target: str) -> "Path | None":
-    """상대 링크를 파일시스템 경로로 해석. 외부/앵커 링크는 None."""
-    if SCHEME_RE.match(target):  # https:, mailto: 등 (2글자 이상 스킴)
+def join_raw(source: Path, target: str) -> str:
+    """source 문서 위치 기준으로 target(퍼센트 인코딩 해제)을 이은 경로. .. 을 접지 않는다.
+
+    실재 확인에 쓴다. 링크 폴더 뒤의 .. 은 OS가 링크를 따라간 뒤에 풀어야
+    실제 대상과 같다.
+    """
+    return os.path.join(str(source.parent), urllib.parse.unquote(target))
+
+
+def join_target(source: Path, target: str) -> Path:
+    """join_raw 결과를 문자열로만 정규화한 절대 경로. 표기 대조(classify_target)에 쓴다.
+
+    resolve()는 윈도우와 macOS에서 경로의 대소문자를 디스크 표기로 고치고
+    심볼릭 링크를 풀어, classify_target이 대소문자 불일치를 보지 못하게 한다.
+    """
+    return Path(os.path.abspath(join_raw(source, target)))
+
+
+def _local_link(target: str) -> "str | None":
+    """링크 대상에서 앵커를 뗀 로컬 경로. 외부 링크(2글자 이상 스킴)나 앵커뿐이면 None."""
+    if SCHEME_RE.match(target):  # https:, mailto: 등
         return None
     target = target.split("#", 1)[0]
-    if not target:
-        return None
-    return (source.parent / urllib.parse.unquote(target)).resolve()
+    return target or None
 
 
-def classify_target(root: Path, target: Path) -> str:
-    """링크 대상의 실재를 OS 특성에 기대지 않고 판정한다.
+def resolve_link(source: Path, target: str) -> "Path | None":
+    """상대 링크를 표기 대조용 경로로 해석(join_target). 외부/앵커 링크는 None."""
+    local = _local_link(target)
+    return None if local is None else join_target(source, local)
 
-    반환: "exact"(표기까지 일치) / "nfc"(유니코드 정규화만 다름) /
-          "case"(대소문자만 다름) / "missing"(없음) / "outside"(루트 밖).
+
+def raw_link(source: Path, target: str) -> "str | None":
+    """상대 링크를 실재 확인용 경로로 잇는다(join_raw). 외부/앵커 링크는 None."""
+    local = _local_link(target)
+    return None if local is None else join_raw(source, local)
+
+
+def classify_target(root: Path, target: Path, raw: "str | None" = None) -> str:
+    """링크 대상의 실재를 OS 특성에 기대지 않고 판정한다 (locate_target의 판정만)."""
+    return locate_target(root, target, raw)[0]
+
+
+def _inside(path: str, root: Path) -> bool:
+    """실제 경로 path가 루트의 실제 경로 안이면 참."""
+    top = os.path.realpath(str(root))
+    try:
+        return os.path.commonpath([path, top]) == top
+    except ValueError:  # 윈도우에서 드라이브가 다름
+        return False
+
+
+def locate_target(
+    root: Path, target: Path, raw: "str | None" = None,
+) -> "tuple[str, str | None, bool]":
+    """링크 대상의 실재를 OS 특성에 기대지 않고 판정하고, 실제로 읽을 경로를 돌려준다.
+
+    반환은 (판정, 실제 경로, 실제 경로가 루트 안인가)다. 실제 경로는 판정이
+    exact, nfc, case일 때만 있고 링크를 모두 푼 경로(realpath)다. exact이면
+    raw를 OS가 푼 경로, nfc와 case이면 대조로 찾은 디스크 엔트리다.
+    절 참조처럼 대상 내용을 읽는 검사는 이 경로를 읽고, 루트 밖이면 읽지 않는다.
+
+    판정: "exact"(표기까지 일치, 또는 링크 폴더 뒤 .. 을 거친 대상. _via_link) /
+          "nfc"(유니코드 정규화만 다름) / "case"(대소문자만 다름) /
+          "missing"(없음) / "outside"(접은 경로가 루트 밖).
 
     exists()는 대소문자 무시 파일시스템(윈도우, 기본 macOS)에서 잘못된
     표기도 True가 되고, 리눅스에서는 NFC/NFD 차이로 False가 되어 OS마다
     결과가 갈린다. 디렉토리 엔트리를 직접 대조해 판정을 통일한다.
+    target은 join_target이 문자열로 정규화한 절대 경로이고, root도 같은
+    방식(abspath)으로 맞춰 비교한다. 표기가 맞아도 실제로 열리지 않는 대상
+    (끊어진 심볼릭 링크나 정션)은 "missing"이다. 표기까지 일치하면 실재는
+    raw(접지 않은 결합 경로, 없으면 대조한 경로)로 OS에 확인한다. 링크 폴더
+    뒤의 .. 을 문자열로 접은 경로는 실제 대상과 다를 수 있기 때문이다.
     """
     try:
-        rel = target.relative_to(root.resolve())
+        rel = target.relative_to(os.path.abspath(root))
     except ValueError:
-        return "outside"
+        return "outside", None, False
     current = root
     verdict = "exact"
     for part in rel.parts:
@@ -507,7 +646,7 @@ def classify_target(root: Path, target: Path) -> str:
         except OSError:
             # 목록 불가(부재 또는 접근 불가)는 정적 감사 관점에서 해당 경로
             # 성분이 없는 것으로 본다. 환경성 오류의 구분은 정적 도구 범위 밖.
-            return "missing"
+            return _via_link(root, raw)
         if part in entries:
             current = entries[part]
             continue
@@ -523,8 +662,26 @@ def classify_target(root: Path, target: Path) -> str:
             current = entries[case_match]
             verdict = "case"
             continue
-        return "missing"
-    return verdict
+        return _via_link(root, raw)
+    check = raw if verdict == "exact" and raw is not None else str(current)
+    if not os.path.exists(check):
+        return "missing", None, False
+    real = os.path.realpath(check)
+    return verdict, real, _inside(real, root)
+
+
+def _via_link(root: Path, raw: "str | None") -> "tuple[str, str | None, bool]":
+    """접은 경로에 엔트리가 없을 때의 판정.
+
+    raw에 .. 성분이 있고 OS가 raw를 열면, 링크 폴더를 따라간 뒤 .. 을 푼
+    대상이라 표기 대조 없이 exact로 본다(POSIX의 alias/../x.md). .. 이
+    없는 raw는 접은 경로와 같은 대상이므로 OS가 열어도(윈도우가 끝 점을
+    떼어 여는 이름 등) missing이다.
+    """
+    if raw is not None and os.pardir in Path(raw).parts and os.path.exists(raw):
+        real = os.path.realpath(raw)
+        return "exact", real, _inside(real, root)
+    return "missing", None, False
 
 
 def link_text_points_to_real(root: Path, source: Path, disp: str, target_path: str) -> bool:
@@ -600,18 +757,16 @@ def headings_of(path: Path) -> "set[str]":
 def content_dirs(root: Path):
     """디스크립터 검사 대상 폴더 순회.
 
-    EXEMPT_DIRS(.git, .claude 등 도구 전용)와 그 하위, 중첩 git 레포, 심링크는
-    is_excluded가 제외한다.
+    점으로 시작하는 폴더와 도구 전용 폴더(EXEMPT_DIRS)와 그 하위, 중첩 git
+    레포, 심볼릭 링크와 정션은 walk_paths가 제외한다.
     implementation/ 하위 프로젝트 내부(소스 트리)는 제외한다 - 직할
     문서 폴더 AGENTS/만 대상 (ref: folder-structure.md "폴더 구조와 디스크립터"
     implementation 예외).
     루트 자신도 디스크립터(루트 AGENTS.md)를 가진다.
     """
     yield root
-    for path in sorted(root.rglob("*")):
+    for path in walk_paths(root):
         if not path.is_dir():
-            continue
-        if is_excluded(root, path):
             continue
         parts = path.relative_to(root).parts
         if len(parts) >= 2 and parts[0] == IMPLEMENTATION_DIR and parts[1] != "AGENTS":
