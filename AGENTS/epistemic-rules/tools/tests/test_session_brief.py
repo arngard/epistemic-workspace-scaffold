@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import session_brief  # noqa: E402
 
 from session_brief import (  # noqa: E402
-    MARKER, MAX_CHARS, MAX_DOCS_PER_MERGE, doc_summary, main, merge_lines,
+    MARKER, MAX_CHARS, MAX_DOCS_PER_MERGE, doc_summary, main, merge_lines, origin_main_state,
     parse_audit, pending_references, recent_merges, render, unmerged_branches,
 )
 
@@ -66,7 +66,8 @@ class TempDir(unittest.TestCase):
     def write(self, rel, text):
         p = self.root / rel
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(text, encoding="utf-8", newline="\n")
+        with p.open("w", encoding="utf-8", newline="\n") as f:  # write_text의 newline은 Python 3.10부터다.
+            f.write(text)
 
 
 class TempRepo(TempDir):
@@ -168,7 +169,104 @@ class UnmergedBranchesTest(TempRepo):
         self.write("worklog/TASK_TREE.md", "# 작업 트리\n\n- [/] 진행 중인 일\n  - 설명: x\n")
         git(self.root, "commit", "-q", "-am", "start")
         git(self.root, "checkout", "-q", "main")
-        self.assertEqual(unmerged_branches(self.root), [("feature/y", ["- [/] 진행 중인 일"])])
+        self.assertEqual(unmerged_branches(self.root), [("feature/y", ["- [/] 진행 중인 일"], False)])
+        self.assertEqual(origin_main_state(self.root), (None, 0))
+
+    def test_origin_main_prefix_ref_not_taken_as_origin_main(self):
+        git(self.root, "update-ref", "refs/remotes/origin/main/x", "main")
+        self.assertEqual(origin_main_state(self.root), (None, 0))
+
+    def make_stale_main(self):
+        """다른 곳에서 feature/z를 머지해 push했고 로컬 main은 아직 pull하지 않은 상태."""
+        git(self.root, "checkout", "-q", "-b", "feature/z")
+        self.write("worklog/TASK_TREE.md", "# 작업 트리\n\n- [/] 다른 곳에서 끝난 일\n")
+        git(self.root, "commit", "-q", "-am", "start")
+        git(self.root, "checkout", "-q", "-b", "remote-main", "main")
+        git(self.root, "merge", "-q", "--no-ff", "-m", "Merge z", "feature/z")
+        git(self.root, "update-ref", "refs/remotes/origin/main", "remote-main")
+        git(self.root, "checkout", "-q", "main")
+        git(self.root, "branch", "-q", "-D", "remote-main")
+
+    def test_branch_merged_only_on_origin_main_excluded(self):
+        self.make_stale_main()
+        _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertIn("로컬 main이 origin/main보다 2커밋 뒤다", text)
+        self.assertNotIn("feature/z", text)
+        self.assertNotIn("다른 곳에서 끝난 일", text)
+
+    def test_inherited_node_not_attributed_to_new_branch(self):
+        self.make_stale_main()
+        self.assert_new_branch_without_inherited_node()
+
+    def test_inherited_node_hidden_when_main_diverged(self):
+        self.make_stale_main()
+        self.write("local-only.md", "# 로컬 main에만 있는 문서\n")
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "local only")
+        self.assert_new_branch_without_inherited_node()
+
+    def test_same_title_under_other_parent_kept_once(self):
+        self.make_stale_main()
+        git(self.root, "checkout", "-q", "-b", "feature/dup", "refs/remotes/origin/main")
+        self.write("worklog/TASK_TREE.md", (
+            "# 작업 트리\n\n- [/] 다른 곳에서 끝난 일\n\n- [/] 부모\n  - [/] 다른 곳에서 끝난 일\n"
+        ))
+        git(self.root, "commit", "-q", "-am", "dup")
+        git(self.root, "checkout", "-q", "main")
+        commit, _ = origin_main_state(self.root)
+        self.assertEqual(
+            unmerged_branches(self.root, commit),
+            [("feature/dup", ["- [/] 부모", "- [/] 다른 곳에서 끝난 일"], False)],
+        )
+
+    def test_inter_hunk_context_setting_does_not_shift_lines(self):
+        self.make_stale_main()
+        git(self.root, "config", "diff.interHunkContext", "20")
+        git(self.root, "checkout", "-q", "-b", "feature/two", "refs/remotes/origin/main")
+        self.write("worklog/TASK_TREE.md", (
+            "- [/] 위에 더한 일\n# 작업 트리\n\n- [/] 다른 곳에서 끝난 일\n\n- [/] 아래에 더한 일\n"
+        ))
+        git(self.root, "commit", "-q", "-am", "two")
+        git(self.root, "checkout", "-q", "main")
+        commit, _ = origin_main_state(self.root)
+        self.assertEqual(
+            unmerged_branches(self.root, commit),
+            [("feature/two", ["- [/] 위에 더한 일", "- [/] 아래에 더한 일"], False)],
+        )
+
+    def test_remote_diff_failure_keeps_local_nodes(self):
+        git(self.root, "checkout", "-q", "-b", "feature/y")
+        self.write("worklog/TASK_TREE.md", "# 작업 트리\n\n- [/] 진행 중인 일\n")
+        git(self.root, "commit", "-q", "-am", "start")
+        git(self.root, "checkout", "-q", "main")
+        # 공통 조상이 없는 origin/main을 만든다(얕은 클론 등).
+        git(self.root, "checkout", "-q", "--orphan", "unrelated")
+        git(self.root, "commit", "-q", "-m", "unrelated")
+        git(self.root, "update-ref", "refs/remotes/origin/main", "unrelated")
+        git(self.root, "checkout", "-q", "main")
+        commit, _ = origin_main_state(self.root)
+        self.assertEqual(unmerged_branches(self.root, commit), [("feature/y", ["- [/] 진행 중인 일"], True)])
+
+    def assert_new_branch_without_inherited_node(self):
+        git(self.root, "checkout", "-q", "-b", "feature/new", "refs/remotes/origin/main")
+        self.write("other.md", "# 다른 문서\n")
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "work")
+        git(self.root, "checkout", "-q", "main")
+        _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertIn("- feature/new", text)
+        self.assertNotIn("다른 곳에서 끝난 일", text)
+
+    def test_same_named_tag_does_not_shadow_refs(self):
+        self.make_stale_main()
+        git(self.root, "tag", "origin/main", "main")
+        git(self.root, "tag", "main", "refs/remotes/origin/main")
+        commit, behind = origin_main_state(self.root)
+        self.assertEqual(behind, 2)
+        self.assertIsNotNone(commit)
+        self.assertEqual(unmerged_branches(self.root, commit), [])
+        _, text = run_main(str(self.root), "--no-audit", "--no-fetch")
+        self.assertNotIn("Merge z", text)  # 최근 머지는 main 태그가 아닌 로컬 main 브랜치 기준이다.
 
 
 class PendingReferencesTest(TempDir):

@@ -86,6 +86,7 @@ REFERENCE_YAML = "reference/INDEX.yaml"
 PENDING_STATES = ("미등록", "처리 대기")
 STATE_RE = re.compile(r"`([^`]+)`")
 INDEX_PAGE_RE = re.compile(r"^INDEX\d*\.md$")
+HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 IN_PROGRESS_PREFIX = "- [/]"
 EXTENSION_DIR_REL = Path("AGENTS/session-brief")
 EXTENSION_TIMEOUT = 30
@@ -145,20 +146,43 @@ def main_doc_summary(root: Path, rel: str) -> "str | None":
     """main 브랜치에 있는 문서의 요약 한 줄. main에 없으면 None, 시간 예산을 넘겼으면 ""."""
     if _started is not None and time.monotonic() - _started > DOC_SUMMARY_BUDGET:
         return ""
-    code, text = git(root, "show", f"main:{rel}")
+    code, text = git(root, "show", f"{LOCAL_MAIN}:{rel}")
     return summarize(text) if code == 0 else None
 
 
+LOCAL_MAIN = "refs/heads/main"
+ORIGIN_MAIN = "refs/remotes/origin/main"
+
+
 def has_main(root: Path) -> bool:
-    code, _ = git(root, "rev-parse", "--verify", "--quiet", "refs/heads/main")
+    code, _ = git(root, "rev-parse", "--verify", "--quiet", LOCAL_MAIN)
     return code == 0
+
+
+def origin_main_state(root: Path) -> "tuple[str | None, int | None]":
+    """(origin/main 커밋, 로컬 main이 그보다 뒤진 커밋 수).
+
+    origin/main이 없으면 (None, 0), 조회가 실패하면 (None, None), 커밋 수만 세지 못하면
+    (커밋, None)이다. 커밋을 한 번만 풀어 이후 판정이 모두 같은 커밋을 보게 한다.
+    """
+    code, out = git(root, "for-each-ref", "--format=%(refname) %(objectname)", ORIGIN_MAIN)
+    if code != 0:
+        return None, None
+    # for-each-ref는 경로 접두사로도 일치하므로(origin/main/x) 이름이 정확히 같은 줄만 쓴다.
+    commit = next((obj for ref, _, obj in (l.partition(" ") for l in out.splitlines()) if ref == ORIGIN_MAIN), None)
+    if commit is None:
+        return None, 0
+    code, count = git(root, "rev-list", "--count", f"{LOCAL_MAIN}..{commit}")
+    if code != 0 or not count.strip().isdigit():
+        return commit, None
+    return commit, int(count.strip())
 
 
 def recent_merges(root: Path, count: int) -> "list[tuple[str, str, list[tuple[str, str | None]]]] | None":
     """main의 최근 첫 부모 커밋 count건(.md를 바꾼 것)과 바뀐 문서의 요약. 실패하면 None."""
     code, out = git(
         root, "log", "--first-parent", "-m", "-n", str(count), "--name-only",
-        "--format=%x1e%h %s", "main", "--", "*.md",
+        "--format=%x1e%h %s", LOCAL_MAIN, "--", "*.md",
     )
     if code != 0:
         return None
@@ -177,31 +201,68 @@ def recent_merges(root: Path, count: int) -> "list[tuple[str, str, list[tuple[st
     return merges
 
 
-def unmerged_branches(root: Path) -> "list[tuple[str, list[str] | None]] | None":
-    """main에 머지되지 않은 로컬과 origin 브랜치와 각 브랜치가 TASK_TREE에 더한 진행 노드.
+def added_nodes(root: Path, base: str, ref: str) -> "list[tuple[int, str]] | None":
+    """ref가 base와의 공통 조상 뒤로 TASK_TREE에 더한 진행 노드와 ref 쪽 파일의 줄 번호.
 
-    목록 조회가 실패하면 None, 브랜치별 diff가 실패하면 그 브랜치의 노드가 None이다.
+    diff가 실패하면 None. 줄 번호는 같은 ref를 서로 다른 base와 비교한 결과를 맞춰 보는 데 쓴다.
     """
+    # 문맥 줄이 끼면 줄 번호가 틀어지므로 diff.interHunkContext 설정과 무관하게 끈다.
+    code, diff = git(
+        root, "diff", "--unified=0", "--inter-hunk-context=0", f"{base}...{ref}", "--", TASK_TREE_REL,
+    )
+    if code != 0:
+        return None
+    nodes = []
+    lineno = None
+    for line in diff.splitlines():
+        match = HUNK_RE.match(line)
+        if match:
+            lineno = int(match.group(1))
+        elif lineno is not None and line.startswith("+"):
+            text = line[1:].strip()
+            if text.startswith(IN_PROGRESS_PREFIX):
+                nodes.append((lineno, text))
+            lineno += 1
+    return nodes
+
+
+def unmerged_branches(
+    root: Path, origin_main: "str | None" = None,
+) -> "list[tuple[str, list[str] | None, bool]] | None":
+    """main에 머지되지 않은 로컬과 origin 브랜치, 각 브랜치가 TASK_TREE에 더한 진행 노드,
+    origin/main 기준 비교에 실패했는가.
+
+    origin_main(origin/main 커밋)을 주면 거기에 머지된 브랜치도 빼고, 진행 노드는 로컬 main과
+    origin/main 양쪽 기준으로 모두 더해진 것만 남긴다. 로컬 main을 pull하기 전에도 다른 곳에서
+    머지된 작업이나 원격 main에서 물려받은 노드가 그 브랜치의 작업으로 나오지 않게 하려는 것이다.
+    origin/main 기준 비교만 실패하면 로컬 main 기준 노드를 남기고 세 번째 값을 참으로 둔다.
+    참조는 같은 이름의 태그나 브랜치와 헷갈리지 않게 전체 이름으로 넘긴다.
+    목록 조회가 실패하면 None, 로컬 main 기준 diff가 실패하면 그 브랜치의 노드가 None이다.
+    """
+    merged_into = ["--no-merged", LOCAL_MAIN] + (["--no-merged", origin_main] if origin_main else [])
     code, out = git(
-        root, "for-each-ref", "--no-merged", "main", "--format=%(refname:short)",
+        root, "for-each-ref", *merged_into, "--format=%(refname) %(objectname) %(refname:short)",
         "refs/heads", "refs/remotes/origin",
     )
     if code != 0:
         return None
     result = []
-    for name in out.split():
-        if name in ("origin", "origin/HEAD"):
+    for line in out.splitlines():
+        ref, _, rest = line.partition(" ")
+        commit, _, name = rest.partition(" ")
+        if not commit or ref == "refs/remotes/origin/HEAD":
             continue
-        dcode, diff = git(root, "diff", f"main...{name}", "--", TASK_TREE_REL)
-        if dcode != 0:
-            result.append((name, None))
-            continue
-        nodes = [
-            line[1:].strip() for line in diff.splitlines()
-            if line.startswith("+") and not line.startswith("+++")
-            and line[1:].strip().startswith(IN_PROGRESS_PREFIX)
-        ]
-        result.append((name, nodes))
+        # 두 비교가 같은 브랜치 내용을 보도록 목록 조회 때의 커밋으로 비교한다.
+        nodes = added_nodes(root, LOCAL_MAIN, commit)
+        remote_failed = False
+        if nodes is not None and origin_main:
+            remote = added_nodes(root, origin_main, commit)
+            if remote is None:
+                remote_failed = True
+            else:
+                remote_set = set(remote)
+                nodes = [n for n in nodes if n in remote_set]
+        result.append((name, None if nodes is None else [text for _, text in nodes], remote_failed))
     return result
 
 
@@ -469,11 +530,23 @@ def main(argv: "list[str] | None" = None) -> int:
     if not main_ok:
         branch_lines += failed("로컬 main 브랜치가 없어 머지 전 브랜치를 판정하지 못했다")
     else:
-        branches = unmerged_branches(root)
+        origin_main, behind = origin_main_state(root)
+        if origin_main is None and behind is None:
+            branch_lines += failed("origin/main 조회. 아래 브랜치 판정은 로컬 main 기준이다")
+        elif behind is None:
+            branch_lines += failed("로컬 main이 origin/main보다 뒤진 커밋 수 계산")
+        elif behind:
+            branch_lines.append(
+                f"로컬 main이 origin/main보다 {behind}커밋 뒤다. 아래 브랜치 판정은 origin/main도 기준으로 삼았고,"
+                " 다음 절의 최근 머지는 로컬 main 기준이다."
+            )
+        branches = unmerged_branches(root, origin_main)
         if branches is None:
             branch_lines += failed("git for-each-ref --no-merged main")
-        for name, nodes in branches or []:
+        for name, nodes, remote_failed in branches or []:
             branch_lines.append(f"- {name}")
+            if remote_failed:
+                branch_lines.append(f"  - 수집 실패: git diff origin/main...{name} -- {TASK_TREE_REL}. 아래 노드는 로컬 main 기준이다")
             if nodes is None:
                 branch_lines.append(f"  - 수집 실패: git diff main...{name} -- {TASK_TREE_REL}")
             else:
