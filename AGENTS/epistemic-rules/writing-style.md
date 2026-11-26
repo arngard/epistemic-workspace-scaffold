@@ -57,7 +57,7 @@ description: 문장과 서술 수준의 작성 규약 세부(표준 표현, 개�
 
 ## 도구 전용 설정 파일 예외
 
-도구가 형식을 정하는 파일(어디에 있든 이름이 `CLAUDE.md`, `SKILL.md`, `copilot-instructions.md`인 파일과 도구 폴더 `.claude/`, `.agents/`, `.github/`, `.kiro/` 아래 파일)은 그 도구의 형식을 따라 front matter 의무에서 빠지지만, 본문에는 다른 문서 규범이 그대로 걸리고 지침을 담은 파일이면 [norm-authoring.md](norm-authoring.md) "근거와 기록"도 걸린다. 생성 색인과 `.git/`, `node_modules/`, `.tmp/`, `__pycache__/` 아래, git이 무시하는 경로는 문서 영역이 아니라 대상 밖이다. `description`은 없어도 감사가 경고하지 않는다 (see: [folder-index.md](folder-index.md)).
+도구가 형식을 정하는 파일(어디에 있든 이름이 `CLAUDE.md`, `SKILL.md`, `copilot-instructions.md`인 파일과 `.claude/`, `.agents/`, `.github/`, `.kiro/`처럼 이름이 점으로 시작하는 도구 폴더 아래 파일)은 그 도구의 형식을 따라 front matter 의무에서 빠지지만, 본문에는 다른 문서 규범이 그대로 걸리고 지침을 담은 파일이면 [norm-authoring.md](norm-authoring.md) "근거와 기록"도 걸린다. 생성 색인과 `.git/`, `.tmp/`, `node_modules/`, `__pycache__/` 아래, git이 무시하는 경로는 문서 영역이 아니라 대상 밖이다. 형식 감사의 문서와 폴더 순회는 색인 항목처럼 이름이 점으로 시작하는 파일과 폴더를 뺀다. 스킬 사본 대조는 `.claude/skills`와 `.agents/skills`를 직접 읽고, 파일 이름 이식성 검사는 위 두 목록 밖의 점 폴더 아래도 본다. `description`은 없어도 감사가 경고하지 않는다 (see: [folder-index.md](folder-index.md)).
 
 ## 하위 문서
 

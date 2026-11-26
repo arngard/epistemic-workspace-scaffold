@@ -15,11 +15,13 @@ sys.path.insert(0, TOOLS)
 
 from _audit_core import (  # noqa: E402
     Finding, VIOLATION, WARNING, content_dirs, git_ignored_paths,
-    in_implementation_project, in_reference_material, iter_md_files,
-    registered_progress_dirs)
+    in_implementation_project, in_reference_material, is_link, iter_md_files,
+    registered_progress_dirs, walk_paths)
+from _index_core import render_all  # noqa: E402
 from audit_frontmatter import check_front_matter  # noqa: E402
 from audit_structure import (  # noqa: E402
-    check_claude_pointers, check_descriptors, check_empty_folders)
+    check_claude_pointers, check_codex_skill_mirror, check_date_prefix_separator,
+    check_descriptors, check_empty_folders, check_filename_portability)
 
 HAS_GIT = shutil.which("git") is not None
 
@@ -195,8 +197,8 @@ class GitScopeBase(unittest.TestCase):
 
     def workspace(self, root):
         self.write(root, "AGENTS.md", FM)
-        self.write(root, ".gitignore", ".sp/\n*.log\nbuild/\n")
-        self.write(root, ".sp/notes.md", "no front matter\n")
+        self.write(root, ".gitignore", "sp/\n*.log\nbuild/\n")
+        self.write(root, "sp/notes.md", "no front matter\n")
         self.write(root, "docs/AGENTS.md", FM)
         self.write(root, "docs/new.md", "no front matter\n")
 
@@ -217,11 +219,11 @@ class GitIgnoredScopeTest(GitScopeBase):
 
     def test_ignored_folder_skipped(self):
         paths = self.front_matter_paths(self.root)
-        self.assertNotIn(".sp/notes.md", paths)
+        self.assertNotIn("sp/notes.md", paths)
         dirs = {d.relative_to(self.root).as_posix() for d in content_dirs(self.root)
                 if d != self.root}
-        self.assertNotIn(".sp", dirs)
-        self.assertNotIn(".sp", {f.path for f in check_descriptors(self.root)})
+        self.assertNotIn("sp", dirs)
+        self.assertNotIn("sp", {f.path for f in check_descriptors(self.root)})
 
     def test_untracked_not_ignored_checked(self):
         self.assertIn("docs/new.md", self.front_matter_paths(self.root))
@@ -237,7 +239,7 @@ class GitIgnoredScopeTest(GitScopeBase):
     def test_ignored_paths_listed(self):
         self.write(self.root, "docs/run.log", "x\n")
         ignored = git_ignored_paths(self.root)
-        self.assertIn(".sp", ignored)
+        self.assertIn("sp", ignored)
         self.assertIn("docs/run.log", ignored)
         self.assertNotIn("docs/new.md", ignored)
 
@@ -272,7 +274,7 @@ class GitFallbackTest(GitScopeBase):
         root = root.resolve()
         self.workspace(root)
         self.assertEqual(git_ignored_paths(root), frozenset())
-        self.assertIn(".sp/notes.md", self.front_matter_paths(root))
+        self.assertIn("sp/notes.md", self.front_matter_paths(root))
 
     def test_copy_inside_ignored_folder_of_outer_repo(self):
         # 바깥 저장소의 무시 폴더 안에 둔 사본은 통째로 무시로 판정되지 않는다.
@@ -286,7 +288,143 @@ class GitFallbackTest(GitScopeBase):
         self.workspace(root)
         paths = self.front_matter_paths(root)
         self.assertIn("docs/new.md", paths)
-        self.assertIn(".sp/notes.md", paths)
+        self.assertIn("sp/notes.md", paths)
+
+
+BASE_MD = {"AGENTS.md", "CLAUDE.md"}
+
+
+class WalkScopeTest(unittest.TestCase):
+    """순회 범위: 점으로 시작하는 이름, .md 이름의 폴더, 확장자 대소문자, 링크와 정션."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name) / "ws"
+        self.write("AGENTS.md", FM)
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+
+    def write(self, rel, text):
+        p = self.root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text, encoding="utf-8")
+        return p
+
+    def md_rels(self):
+        # 경로 정렬은 OS마다 대소문자 처리가 달라 집합으로 비교한다.
+        return {p.relative_to(self.root).as_posix() for p in iter_md_files(self.root)}
+
+    def dir_rels(self):
+        return {d.relative_to(self.root).as_posix() for d in content_dirs(self.root)
+                if d != self.root}
+
+    def test_dot_folder_not_audited(self):
+        # 추적하지 않는 편집기 폴더 하나로 감사 위반이 생기지 않는다(색인과 같은 범위).
+        self.write(".vscode/notes.md", "no front matter\n")
+        self.write(".notes.md", "no front matter\n")
+        self.assertEqual(self.md_rels(), BASE_MD)
+        self.assertNotIn(".vscode", self.dir_rels())
+        self.assertEqual(check_front_matter(self.root), [])
+        self.assertEqual(check_descriptors(self.root), [])
+
+    def test_dot_folder_skill_mirror_still_checked(self):
+        self.write(".claude/skills/x/SKILL.md", "---\nname: x\n---\n")
+        found = [(f.severity, f.path) for f in check_codex_skill_mirror(self.root)]
+        self.assertEqual(found, [(VIOLATION, ".agents/skills/x/SKILL.md")])
+
+    def test_md_named_folder(self):
+        # 이름이 .md로 끝나는 폴더는 문서가 아니다. 읽다가 감사가 멈추지 않는다.
+        self.write("x.md/AGENTS.md", FM)
+        self.write("x.md/a.md", FM)
+        self.assertEqual(self.md_rels(), BASE_MD | {"x.md/AGENTS.md", "x.md/a.md"})
+        self.assertEqual(check_front_matter(self.root), [])
+
+    def test_upper_case_extension_not_audited(self):
+        # 확장자 비교는 OS와 무관하게 대소문자를 구분한다.
+        self.write("Notes.MD", "no front matter\n")
+        self.write("b.Md", "no front matter\n")
+        self.assertEqual(self.md_rels(), BASE_MD)
+        self.assertEqual(check_front_matter(self.root), [])
+
+    def outside_tree(self):
+        outside = Path(self._tmp.name) / "outside"
+        (outside / "deep").mkdir(parents=True)
+        (outside / "deep" / "x.md").write_text("no front matter\n", encoding="utf-8")
+        return outside
+
+    def assert_link_pruned(self, link):
+        self.assertTrue(is_link(link))
+        rels = {p.relative_to(self.root).as_posix() for p in walk_paths(self.root)}
+        self.assertNotIn("j", rels)
+        self.assertFalse([r for r in rels if r.startswith("j/")], rels)
+        self.assertEqual(self.md_rels(), BASE_MD)
+        self.assertNotIn("j", self.dir_rels())
+        # 생성 색인도 링크와 정션을 항목으로 싣지 않는다.
+        index = render_all(self.root)[self.root / "INDEX.md"]
+        self.assertNotIn("(j/", index)
+        self.assertNotIn("[j", index)
+        self.assertEqual(check_filename_portability(self.root), [])
+
+    def test_dot_folder_portability_checked(self):
+        # 추적되는 점 폴더 항목도 clone을 막으므로 이식성 검사는 본다.
+        try:
+            self.write(".docs/CON.md", "x\n")
+            self.write(".claude/CON.md", "x\n")
+        except OSError:
+            self.skipTest("예약 이름 파일을 만들 수 없는 파일시스템")
+        found = [(f.severity, f.path) for f in check_filename_portability(self.root)]
+        self.assertEqual(found, [(VIOLATION, ".docs/CON.md")])
+
+    def test_nested_repo_under_dot_folder_skipped_by_portability(self):
+        # 점 폴더 아래로 내려가는 이식성 순회도 그 안의 중첩 레포는 뺀다.
+        try:
+            self.write(".local/CON.md", "x\n")
+            self.write(".local/child/CON.md", "x\n")
+        except OSError:
+            self.skipTest("예약 이름 파일을 만들 수 없는 파일시스템")
+        (self.root / ".local/child/.git").mkdir()
+        found = [(f.severity, f.path) for f in check_filename_portability(self.root)]
+        self.assertEqual(found, [(VIOLATION, ".local/CON.md")])
+
+    @unittest.skipIf(os.name != "nt", "윈도우 정션")
+    def test_junction_pruned(self):
+        import _winapi
+        outside = self.outside_tree()
+        link = self.root / "j"
+        _winapi.CreateJunction(str(outside), str(link))
+        self.assert_link_pruned(link)
+
+    def test_symlink_pruned(self):
+        outside = self.outside_tree()
+        link = self.root / "j"
+        try:
+            os.symlink(str(outside), str(link), target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("심볼릭 링크를 만들 권한이 없음")
+        self.assert_link_pruned(link)
+
+    def test_is_link_on_plain_paths(self):
+        self.assertFalse(is_link(self.root))
+        self.assertFalse(is_link(self.root / "AGENTS.md"))
+        self.assertFalse(is_link(self.root / "none"))
+
+
+class DatePrefixScopeTest(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name)
+
+    def write(self, rel):
+        p = self.root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(FM, encoding="utf-8")
+
+    def test_only_root_reference_skipped(self):
+        self.write("reference/2026-01-01-raw.md")
+        self.write("epistemic-structure/reference/2026-01-01-note.md")
+        found = [f.path for f in check_date_prefix_separator(self.root)]
+        self.assertEqual(found, ["epistemic-structure/reference/2026-01-01-note.md"])
 
 
 if __name__ == "__main__":

@@ -165,17 +165,15 @@ def check_date_prefix_separator(root: Path) -> list[Finding]:
     """날짜 프리픽스 뒤를 하이픈으로 이은 문서, 폴더를 검출한다 (경고).
 
     규약상 날짜 뒤 제목은 띄어쓰기로 잇는다 (ref: document-temporality.md).
-    reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. implementation/
-    하위 프로젝트 내부도 문서 규약 대상이 아니므로 그 아래에서는 AGENTS/ 하위만
-    본다.
+    루트의 reference/ 하위는 원본 파일명을 바꾸지 않으므로 제외한다. 다른 곳에
+    있는 같은 이름의 폴더는 제외하지 않는다. implementation/ 하위 프로젝트
+    내부도 문서 규약 대상이 아니므로 그 아래에서는 AGENTS/ 하위만 본다.
     """
     out: list[Finding] = []
-    for path in sorted(root.rglob("*")):
-        if is_excluded(root, path):
-            continue
+    for path in walk_paths(root):
         rel_path = path.relative_to(root)
         parts = rel_path.parts
-        if REFERENCE_DIR in parts:
+        if parts[0] == REFERENCE_DIR:
             continue
         if len(parts) >= 2 and parts[0] == IMPLEMENTATION_DIR and parts[1] != "AGENTS":
             continue
@@ -190,11 +188,13 @@ def check_date_prefix_separator(root: Path) -> list[Finding]:
 
 
 def check_filename_portability(root: Path) -> list[Finding]:
-    """윈도우 등 다른 OS에서 clone조차 불가능한 이름을 잡는다."""
+    """윈도우 등 다른 OS에서 clone조차 불가능한 이름을 잡는다.
+
+    추적 파일이면 문서 영역 밖이어도 clone을 막으므로, 점으로 시작하는 폴더도
+    EXEMPT_DIRS에 든 것 말고는 본다(walk_paths의 skip_dot=False).
+    """
     out: list[Finding] = []
-    for path in sorted(root.rglob("*")):
-        if is_excluded(root, path):
-            continue
+    for path in walk_paths(root, skip_dot=False):
         name = path.name
         rel = str(path.relative_to(root))
         if WINDOWS_FORBIDDEN_RE.search(name):
@@ -251,18 +251,6 @@ SKILL_FILE = "SKILL.md"
 
 # _lstat_kind의 결과. BLOCKED는 발견을 이미 낸 경로다(링크, 정션, 읽기 실패).
 _MISSING, _DIR, _FILE, _OTHER, _BLOCKED = "missing", "dir", "file", "other", "blocked"
-# 윈도우 정션의 재분석 태그. stat 모듈은 이 상수를 윈도우에서만 두므로 값을 함께 둔다.
-IO_REPARSE_TAG_MOUNT_POINT = getattr(stat, "IO_REPARSE_TAG_MOUNT_POINT", 0xA0000003)
-
-
-def _is_link(st: os.stat_result) -> bool:
-    """lstat 결과가 심볼릭 링크나 윈도우 정션(마운트 지점 재분석 지점)이면 참."""
-    if stat.S_ISLNK(st.st_mode):
-        return True
-    if getattr(st, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
-        tag = getattr(st, "st_reparse_tag", None)
-        return tag is None or tag == IO_REPARSE_TAG_MOUNT_POINT
-    return False
 
 
 def _skill_finding(rel: str, message: str) -> Finding:
@@ -279,7 +267,7 @@ def _lstat_kind(root: Path, path: Path, out: "list[Finding]") -> str:
     except OSError as e:
         out.append(_skill_finding(rel, f"읽기 실패 ({type(e).__name__})"))
         return _BLOCKED
-    if _is_link(st):
+    if is_link_stat(st):
         out.append(_skill_finding(rel, "심볼릭 링크나 정션. 따라가지 않으므로 실제 폴더나 파일로 둔다"))
         return _BLOCKED
     if stat.S_ISDIR(st.st_mode):

@@ -33,7 +33,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from _audit_core import (
-    EXEMPT_FILENAMES, FRONT_MATTER_RE, INDEX_PAGE_RE, iter_md_files, nfc, read)
+    EXEMPT_FILENAMES, FRONT_MATTER_RE, INDEX_PAGE_RE, field_key_pattern,
+    iter_md_files, nfc, read)
 
 
 class TagFormatError(ValueError):
@@ -64,7 +65,7 @@ class TagsBlock:
 
 
 # 키 뒤에는 공백이나 줄 끝이 와야 한다(tags:[a]는 YAML이 키로 읽지 않는다).
-_KEY_RE = re.compile(r"^tags[ \t]*:(?=[ \t\r]|$)", re.MULTILINE)
+_KEY_RE = re.compile(field_key_pattern("tags"), re.MULTILINE)
 # 블록 목록을 끝내는 다음 매핑 키 줄(따옴표 키 포함).
 _NEXT_KEY_RE = re.compile(r"^(?:\"[^\"]*\"|'[^']*'|[^\s#\"'][^:]*?):(?:[ \t]|$)")
 _ITEM_RE = re.compile(r"^( *)-( +)(.*)$")
@@ -343,13 +344,3 @@ def scan_tags(
         if tags is not None:
             docs[path] = tags
     return docs, errors
-
-
-def tag_documents(root: Path) -> "dict[Path, list[str]]":
-    """태그를 읽은 문서와 그 태그. 읽을 수 없는 문서는 담지 않는다."""
-    return scan_tags(root)[0]
-
-
-def unreadable_tags(root: Path) -> "list[tuple[Path, TagFormatError]]":
-    """tags를 읽을 수 없는 문서와 그 오류."""
-    return scan_tags(root)[1]

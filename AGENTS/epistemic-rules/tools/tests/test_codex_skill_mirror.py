@@ -198,26 +198,26 @@ class IsLinkTest(unittest.TestCase):
     """링크 판정 분기를 가짜 lstat 결과로 시험한다. 실제 링크를 만들 수 없는 OS에서도 돈다."""
 
     def test_symlink_mode(self):
-        self.assertTrue(audit_structure._is_link(SimpleNamespace(st_mode=stat.S_IFLNK | 0o777)))
+        self.assertTrue(audit_structure.is_link_stat(SimpleNamespace(st_mode=stat.S_IFLNK | 0o777)))
 
     def test_mount_point_reparse(self):
         st = SimpleNamespace(
             st_mode=stat.S_IFDIR, st_file_attributes=stat.FILE_ATTRIBUTE_REPARSE_POINT,
             st_reparse_tag=MOUNT_POINT_TAG)
-        self.assertTrue(audit_structure._is_link(st))
+        self.assertTrue(audit_structure.is_link_stat(st))
 
     def test_reparse_without_tag(self):
         st = SimpleNamespace(st_mode=stat.S_IFDIR, st_file_attributes=stat.FILE_ATTRIBUTE_REPARSE_POINT)
-        self.assertTrue(audit_structure._is_link(st))
+        self.assertTrue(audit_structure.is_link_stat(st))
 
     def test_other_reparse_tag(self):
         st = SimpleNamespace(
             st_mode=stat.S_IFREG, st_file_attributes=stat.FILE_ATTRIBUTE_REPARSE_POINT,
             st_reparse_tag=APPEXECLINK_TAG)
-        self.assertFalse(audit_structure._is_link(st))
+        self.assertFalse(audit_structure.is_link_stat(st))
 
     def test_plain_dir(self):
-        self.assertFalse(audit_structure._is_link(SimpleNamespace(st_mode=stat.S_IFDIR)))
+        self.assertFalse(audit_structure.is_link_stat(SimpleNamespace(st_mode=stat.S_IFDIR)))
 
 
 class AgentsDirExemptTest(unittest.TestCase):

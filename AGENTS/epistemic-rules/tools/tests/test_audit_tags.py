@@ -13,7 +13,7 @@ import _audit_core  # noqa: E402
 from _audit_core import WARNING, is_bundle_path  # noqa: E402
 from _tags_core import (  # noqa: E402
     TagFormatError, TagsBlock, find_tags_block, front_matter_tags, in_tag_scope,
-    parse_tags, tag_documents, tag_form_problem, tag_key, unreadable_tags)
+    parse_tags, scan_tags, tag_form_problem, tag_key)
 from audit_frontmatter import check_tags  # noqa: E402
 
 FM = "---\ndate created: 2026-01-01\ndate modified: 2026-01-01\n"
@@ -293,7 +293,7 @@ class DocumentsTest(TagTreeCase):
         self.write("reference/r.md", "[skip]")
         self.write_raw("s/none.md", "본문\n")
         self.write_raw("s/notags.md", "---\ndescription: d\n---\n")
-        got = tag_documents(self.root)
+        got = scan_tags(self.root)[0]
         rels = sorted(p.relative_to(self.root).as_posix() for p in got)
         self.assertEqual(
             rels, ["AGENTS.md", "AGENTS/epistemic-rules.md",
@@ -302,16 +302,16 @@ class DocumentsTest(TagTreeCase):
 
     def test_unreadable_excluded_from_documents(self):
         bad = self.write("s/bad.md", "a, b")
-        self.assertNotIn(bad, tag_documents(self.root))
-        found = unreadable_tags(self.root)
+        self.assertNotIn(bad, scan_tags(self.root)[0])
+        found = scan_tags(self.root)[1]
         self.assertEqual([p for p, _ in found], [bad])
         self.assertIsInstance(found[0][1], TagFormatError)
 
     def test_same_traversal(self):
         self.write("s/ok.md", "[x]")
         self.write("s/bad.md", "a, b")
-        docs = {p.name for p in tag_documents(self.root)}
-        bad = {p.name for p, _ in unreadable_tags(self.root)}
+        docs = {p.name for p in scan_tags(self.root)[0]}
+        bad = {p.name for p, _ in scan_tags(self.root)[1]}
         self.assertIn("ok.md", docs)
         self.assertEqual(bad, {"bad.md"})
         self.assertFalse(docs & bad)

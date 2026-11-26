@@ -2,6 +2,7 @@
 
 공용 인프라는 _audit_core, 오케스트레이션은 audit.py.
 """
+import os
 import re
 import urllib.parse
 from pathlib import Path
@@ -20,9 +21,10 @@ def check_links(root: Path) -> list[Finding]:
             resolved = resolve_link(path, raw)
             if resolved is None:
                 continue
-            verdict = classify_target(root, resolved)
+            joined = raw_link(path, raw)
+            verdict = classify_target(root, resolved, joined)
             if verdict == "outside":
-                if not resolved.exists():
+                if not os.path.exists(joined):
                     out.append(Finding(VIOLATION, "link", rel, f"깨진 링크(루트 밖) -> {raw}"))
             elif verdict == "missing":
                 out.append(Finding(VIOLATION, "link", rel, f"깨진 링크 -> {raw}"))
@@ -154,16 +156,19 @@ def check_section_refs(root: Path) -> list[Finding]:
             resolved = resolve_link(path, target)
             if resolved is None:
                 continue
-            if classify_target(root, resolved) in ("missing", "outside"):
-                continue  # 대상 부재는 check_links가 위반으로 잡는다
-            if resolved not in heading_cache:
+            verdict, real, inside = locate_target(root, resolved, raw_link(path, target))
+            if verdict in ("missing", "outside", "case", "nfc") or not inside:
+                # 대상 부재, 대소문자와 유니코드 정규화 불일치는 check_links가
+                # 위반이나 경고로 잡는다. 표기가 다른 대상은 OS에 따라 열리거나
+                # 열리지 않아 건너뛴다. 링크를 따라 루트 밖으로 나간 대상은
+                # 읽지 않는다.
+                continue
+            if real not in heading_cache:
                 try:
-                    heading_cache[resolved] = (
-                        headings_of(resolved) if resolved.exists() else None
-                    )
+                    heading_cache[real] = headings_of(Path(real))
                 except OSError:
-                    heading_cache[resolved] = None
-            hs = heading_cache[resolved]
+                    heading_cache[real] = None
+            hs = heading_cache[real]
             if hs is None or normalize_heading(section) in hs:
                 continue
             out.append(Finding(
@@ -254,8 +259,10 @@ def check_imports(root: Path) -> list[Finding]:
     """`@` 가져오기 줄의 대상 실재 검사.
 
     줄 전체가 @경로인 줄만 가져오기로 본다. 대상은 줄을 둔 파일 위치 기준이며
-    없으면 위반이다. 묶음 세부 폴더 안의 가져오기는 경고한다. 검사 파일은
-    iter_md_files의 파일과 각 폴더의 CLAUDE.md다.
+    링크 검사와 같은 판정(classify_target)을 쓴다. 없거나 대소문자만 다르면
+    위반, 유니코드 정규화만 다르면 경고다. 루트 밖 대상은 실재만 본다. 묶음
+    세부 폴더 안의 가져오기는 경고한다. 검사 파일은 iter_md_files의 파일과 각
+    폴더의 CLAUDE.md다.
     """
     files = set(iter_md_files(root))
     for d in content_dirs(root):
@@ -266,9 +273,20 @@ def check_imports(root: Path) -> list[Finding]:
     for path in sorted(files):
         rel = str(path.relative_to(root))
         for lineno, raw in imports_in(path):
-            target = (path.parent / urllib.parse.unquote(raw)).resolve()
-            if not target.exists():
+            joined = join_raw(path, raw)
+            verdict = classify_target(root, join_target(path, raw), joined)
+            if verdict == "missing" or (verdict == "outside" and not os.path.exists(joined)):
                 out.append(Finding(VIOLATION, "import", rel, f"{lineno}행 가져오기 대상 없음 -> @{raw}"))
+            elif verdict == "case":
+                out.append(Finding(
+                    VIOLATION, "import", rel,
+                    f"{lineno}행 대소문자 불일치 가져오기 (리눅스에서 깨짐) -> @{raw}",
+                ))
+            elif verdict == "nfc":
+                out.append(Finding(
+                    WARNING, "import", rel,
+                    f"{lineno}행 유니코드 정규화 불일치 가져오기 (OS 간 상이 위험) -> @{raw}",
+                ))
             if in_bundle_detail(root, path.parent):
                 out.append(Finding(
                     WARNING, "import", rel,
