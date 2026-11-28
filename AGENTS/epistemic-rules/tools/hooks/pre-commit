@@ -102,7 +102,7 @@ if [ "$status" -ne 0 ]; then
     if [ "$status" -eq 1 ] && printf '%s\n' "$summary" | LC_ALL=C grep -qE '^감사 완료: 위반 [0-9]+건'; then
         echo "$hook: audit violations. 형식 감사 위반이 있어 막는다. 위반을 고친 뒤 다시 커밋한다(머지면 git commit으로 마친다)." >&2
     else
-        echo "$hook: audit failed. 형식 감사가 종료 코드 $status로 끝나 막는다." >&2
+        echo "$hook: audit failed. 형식 감사가 종료 코드 ${status}로 끝나 막는다." >&2
     fi
     if [ "$mode" != merge ]; then
         restage_hint
