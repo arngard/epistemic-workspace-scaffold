@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-23
-date modified: 2026-11-08
+date modified: 2026-11-28
 tags: [agents, 워크스페이스, 운영, epistemic-rules]
 ---
 
@@ -15,6 +15,8 @@ tags: [agents, 워크스페이스, 운영, epistemic-rules]
 ## PR 타입
 
 [pr-workflow.md](../pr-workflow.md)를 조립한다(PR 생성, 검토 대응, 능동 확인, 머지, 브랜치 정리).
+
+원격 저장소에서 하는 머지는 로컬 훅을 거치지 않아 형식 감사와 main 머지 검사가 돌지 않는다. 그래서 머지 전에 작업 브랜치에서 `audit.py`와 main 머지 검사([main-merge-checks.md](../main-merge-checks.md))를 손으로 돌리고, 위반이나 실패가 없을 때 머지한다 (see: [commit-hook.md](../folder-index/commit-hook.md)).
 
 ## 브랜치 관리자 타입
 

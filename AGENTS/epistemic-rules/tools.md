@@ -1,6 +1,6 @@
 ---
 date created: 2026-10-26
-date modified: 2026-11-25
+date modified: 2026-11-28
 tags: [규칙, 도구, epistemic-rules]
 ---
 
@@ -14,7 +14,7 @@ tags: [규칙, 도구, epistemic-rules]
 
 검사 진입점은 [audit.py](tools/audit.py) 하나, 파일을 쓰는 생성 진입점은 [build_index.py](tools/build_index.py) 하나다. 검사 로직은 공용 인프라([_audit_core.py](tools/_audit_core.py) 등)와 의미별 검사 모듈로 나뉘며 audit.py가 import해 조합한다. 모듈 구성은 audit.py 모듈 docstring의 "구조"에 있다.
 
-그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. 설치기 [setup.py](tools/setup.py)는 사용자 동의 뒤 클론 설정을 바꾸는 도구다(아래 "설치기"). [session_brief.py](tools/session_brief.py)는 파일을 고치지 않지만 `git fetch`로 원격 참조를 갱신하고, 레포의 확장 코드를 실행하며, 설치 항목마다 점검 명령을 실행한다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md)(감사)와 [session-brief-extensions.md](session-brief-extensions.md)(세션 시작 요약).
+그 밖의 도구는 성격으로 나뉜다. 사용자가 승인한 일만 명시적으로 실행하는 편집 도구는 [retag.py](tools/retag.py)이고, 읽기 전용 보조 도구는 [check_semantic_audit.py](tools/check_semantic_audit.py)(git 이력이 있어야 판정해 audit.py와 따로 둔다)와 [tag_inventory.py](tools/tag_inventory.py)다. 설치기 [setup.py](tools/setup.py)는 사용자 동의 뒤 클론 설정을 바꾸는 도구다(아래 "설치기"). [session_brief.py](tools/session_brief.py)는 파일을 고치지 않지만 `git fetch`로 원격 참조를 갱신하고, 레포의 확장 코드를 실행하며, 설치 항목마다 점검 명령을 실행한다. 사용 안내는 각 자리에 있다: 상류 묶음 목록은 아래 "색인 생성 스크립트", 태그 도구는 [tags.md](tags.md) "어휘 정리", 확장 지점은 [audit-extensions.md](audit-extensions.md)(감사), [session-brief-extensions.md](session-brief-extensions.md)(세션 시작 요약), [main-merge-checks.md](main-merge-checks.md)(main 머지).
 
 ## 시험
 
@@ -26,16 +26,16 @@ tags: [규칙, 도구, epistemic-rules]
 
 - 임계값은 공용 인프라 `tools/_audit_core.py` 상단의 상수이고 상류가 운영하며 조정한다. 상속한 레포(레포지토리)는 이 상수를 고치지 않는다(항목 30). 다른 값이 필요하면 경고를 의식적으로 수용하거나 상류에 변경을 제안한다.
 - `.tmp/`는 에이전트의 임시 작업 공간이다. gitignore 대상이며 감사에서 제외된다.
-- 실행: `python3 AGENTS/epistemic-rules/tools/audit.py .`는 새 세션 시작 시와 커밋, 머지 커밋 시에 돈다. 새 세션 시작 시에는 아래 "세션 시작 요약 스크립트"가 (see: [session-boundaries.md](session-boundaries.md) "세션 시작"), 커밋과 머지 커밋 시에는 커밋 전 훅이 실행한다 (see: [commit-hook.md](folder-index/commit-hook.md)). 훅이 돌지 않은 머지 뒤와 감사 결과를 직접 볼 때 말고는 답변마다 따로 돌리지 않는다. 오래 걸릴 수 있는 검증은 커밋과 한 명령으로 묶지 않는다. 묶으면 검증이 끝날 때까지 커밋과 응답이 밀린다.
+- 실행: `python3 AGENTS/epistemic-rules/tools/audit.py .`는 새 세션 시작 시와 main으로 들어오는 머지 커밋 시에 돈다. 새 세션 시작 시에는 아래 "세션 시작 요약 스크립트"가 (see: [session-boundaries.md](session-boundaries.md) "세션 시작"), main 머지 커밋 시에는 커밋 전 훅과 머지 커밋 전 훅이 실행하고, 통과하면 이어서 자손의 main 머지 검사([main-merge-checks.md](main-merge-checks.md))를 돌린다 (see: [commit-hook.md](folder-index/commit-hook.md)). 일반 커밋과 main이 아닌 브랜치의 머지에서는 돌지 않는다. 훅을 거치지 않는 머지(PR 머지 등)의 앞뒤와 감사 결과를 직접 볼 때 말고는 답변마다 따로 돌리지 않는다. 오래 걸릴 수 있는 검증은 커밋과 한 명령으로 묶지 않는다. 묶으면 검증이 끝날 때까지 커밋과 응답이 밀린다.
 - 의존성: Python 3.9+ 표준 라이브러리만. 특정 AI 도구, OS에 의존하지 않는다. git이 있으면 git이 무시하는 경로를 뺀다.
-- 종료 코드와 강제력: 위반이 없으면(경고만 있거나 없음) 0, 위반이 있으면 1, 사용법 오류는 2, 처리하지 못한 예외는 3이고 예외의 traceback은 표준 오류에 낸다. 커밋 전 훅은 1을 위반으로, 그 밖의 0이 아닌 값을 실행 오류로 안내하고 커밋을 막는다. 경고(warning)는 통과시킨다 - 경고는 사람이나 LLM의 판단이 필요한 신호라 기계적으로 차단하지 않는다. 경고는 방치하면 쌓이므로 감사 시 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)한다.
+- 종료 코드와 강제력: 위반이 없으면(경고만 있거나 없음) 0, 위반이 있으면 1, 사용법 오류는 2, 처리하지 못한 예외는 3이고 예외의 traceback은 표준 오류에 낸다. 훅은 1을 위반으로, 그 밖의 0이 아닌 값을 실행 오류로 안내하고 main 머지 커밋을 막는다. 경고(warning)는 통과시킨다 - 경고는 사람이나 LLM의 판단이 필요한 신호라 기계적으로 차단하지 않는다. 경고는 방치하면 쌓이므로 감사 시 훑어 정리(수정)하거나 의식적으로 수용(현 상태가 맞다고 판단)한다.
 
 ## 색인 생성 스크립트
 
 [tools/build_index.py](tools/build_index.py)는 폴더 색인을 만든다. 규칙은 [folder-index.md](folder-index.md) "생성과 확인", 훅은 [commit-hook.md](folder-index/commit-hook.md).
 
 - 실행: `python3 AGENTS/epistemic-rules/tools/build_index.py .`. `--dry-run`은 바뀔 경로만 내고, `--bundle-manifest`는 색인 대신 상류 묶음 목록만 만든다. 누가 다시 만드는가는 [instance-specialization.md](instance-specialization.md) "특수화 방식".
-- 커밋 전 훅 연결: 설치 명세의 `hooks-path` 항목(`core.hooksPath`를 `AGENTS/epistemic-rules/tools/hooks`로)이 맡고, 설치기가 클론마다 맞춘다 (see: [workspace-setup.md](workspace-setup.md)). 훅은 색인을 다시 만들고 형식 감사를 돌리며, 상류 묶음 목록은 만들지 않는다.
+- 커밋 전 훅 연결: 설치 명세의 `hooks-path` 항목(`core.hooksPath`를 `AGENTS/epistemic-rules/tools/hooks`로)이 맡고, 설치기가 클론마다 맞춘다 (see: [workspace-setup.md](workspace-setup.md)). 훅은 색인을 다시 만들고 main 머지에서 형식 감사를 돌리며, 상류 묶음 목록은 만들지 않는다.
 
 ## 의미 감사 트리거 판정 스크립트
 
